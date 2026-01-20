@@ -2,7 +2,13 @@ import React from "react";
 
 import LogoHeader from "@/shared/components/layout/headers/LogoHeader";
 
-function AuthLayout({ children }: { children: React.ReactNode }) {
+interface AuthLayoutProps {
+	children: React.ReactNode;
+}
+
+function AuthLayout(props: AuthLayoutProps) {
+	const { children } = props;
+
 	return (
 		<>
 			<LogoHeader />
