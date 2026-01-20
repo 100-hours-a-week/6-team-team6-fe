@@ -6,7 +6,7 @@ function LogoHeader() {
 	return (
 		<HeaderLayout>
 			<div className="m-auto">
-				<Image src="/text-logo.png" alt="Logo" width={70} height={20} />
+				<Image src="/text-logo.png" alt="Logo" width={70} height={21} />
 			</div>
 		</HeaderLayout>
 	);
