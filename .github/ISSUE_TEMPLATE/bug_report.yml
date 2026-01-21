@@ -1,6 +1,6 @@
 name: 🐞 Bug
 description: 버그 제보용 템플릿
-title: "[BUG] "
+title: "[FE] "
 labels: ["bug"]
 
 body:

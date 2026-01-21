@@ -1,6 +1,6 @@
 name: 📝 Task
 description: 단순 작업/할 일 템플릿
-title: "[TASK] "
+title: "[FE] "
 labels: ["task"]
 
 body:

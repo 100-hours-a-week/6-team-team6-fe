@@ -1,6 +1,6 @@
 name: ✨ Feature
 description: 새로운 기능 요청 템플릿
-title: "[FEATURE] "
+title: "[FE] "
 labels: ["feature"]
 
 body:
