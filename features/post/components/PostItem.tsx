@@ -8,17 +8,18 @@ import { Typography } from "@/shared/components/ui/typography";
 type PostItemProps = Post;
 
 function PostItem(props: PostItemProps) {
-	const { postTitle, postFirstImageUrl, rentalFee, feeUnit, rentalStatus } = props;
+	const { title, images, rentalFee, feeUnit, rentalStatus } = props;
+	const firstImageUrl = images[0] ?? "/dummy-post-image.png";
 
 	return (
 		<div className="flex gap-x-4">
 			<div>
-				<Image src={postFirstImageUrl} alt={postTitle} width={100} height={100} />
+				<Image src={firstImageUrl} alt={title} width={100} height={100} />
 			</div>
 			<div className="flex flex-col">
 				<div>
 					<div>
-						<Typography type="body">{postTitle}</Typography>
+						<Typography type="body">{title}</Typography>
 					</div>
 					<div>
 						{rentalFee === 0 ? (
