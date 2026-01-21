@@ -12,23 +12,17 @@ import { uiConst } from "@/shared/lib/constants";
 
 interface PostDetailHeaderProps {
 	onClickMore: () => void;
+	isSeller: boolean;
 }
 
 function PostDetailHeader(props: PostDetailHeaderProps) {
-	const { onClickMore } = props;
+	const { onClickMore, isSeller } = props;
 
 	return (
 		<HeaderLayout>
 			<BackButton />
-			<div className="m-auto">
-				<Image
-					src="/text-logo.png"
-					alt="Logo"
-					width={uiConst.WIDTH.HEADER_LOGO}
-					height={uiConst.HEIGHT.HEADER_LOGO}
-				/>
-			</div>
-			<IconButton icon={<EllipsisVerticalIcon />} onClick={onClickMore} />
+			<div className="m-auto"></div>
+			{isSeller && <IconButton icon={<EllipsisVerticalIcon />} onClick={onClickMore} />}
 		</HeaderLayout>
 	);
 }

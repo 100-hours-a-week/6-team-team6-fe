@@ -1,6 +1,8 @@
 // TODO: 404
 "use client";
 
+import { useState } from "react";
+
 import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 
@@ -11,7 +13,15 @@ import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeade
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import { Carousel, CarouselContent, CarouselItem } from "@/shared/components/ui/carousel";
+import {
+	Drawer,
+	DrawerClose,
+	DrawerContent,
+	DrawerFooter,
+	DrawerTitle,
+} from "@/shared/components/ui/drawer";
 import {
 	Select,
 	SelectContent,
@@ -24,6 +34,7 @@ import { Typography } from "@/shared/components/ui/typography";
 
 function PostDetailPage() {
 	const { groupId, postId } = useParams<{ groupId: string; postId: string }>();
+	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
 	const postIdNumber = Number(postId);
 	const post = DUMMY_POSTS.find((item) => item.postId === postIdNumber);
@@ -37,11 +48,23 @@ function PostDetailPage() {
 
 	return (
 		<>
-			<PostDetailHeader
-				onClickMore={() => {
-					alert("1");
-				}}
-			/>
+			<PostDetailHeader onClickMore={() => setIsDrawerOpen(true)} isSeller={post.isSeller} />
+			<Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
+				<DrawerContent>
+					<DrawerTitle />
+					<DrawerFooter>
+						<Button size="xl">수정하기</Button>
+						<Button size="xl" variant="destructive">
+							삭제하기
+						</Button>
+						<DrawerClose>
+							<Button size="xl" variant="outline" className="w-full">
+								닫기
+							</Button>
+						</DrawerClose>
+					</DrawerFooter>
+				</DrawerContent>
+			</Drawer>
 			<div className="flex flex-1 pb-(--h-bottom-nav)">
 				<section className={`flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar`}>
 					<div className="py-4">
