@@ -1,6 +1,8 @@
+"use client";
+
 import Image from "next/image";
 
-import { SearchIcon } from "lucide-react";
+import { EllipsisVerticalIcon } from "lucide-react";
 
 import { BackButton } from "@/shared/components/layout/headers/BackButton";
 import HeaderLayout from "@/shared/components/layout/headers/HeaderLayout";
@@ -8,8 +10,13 @@ import { IconButton } from "@/shared/components/ui/icon-button";
 
 import { uiConst } from "@/shared/lib/constants";
 
-// TODO: link
-function DefaultHeader() {
+interface PostDetailHeaderProps {
+	onClickMore: () => void;
+}
+
+function PostDetailHeader(props: PostDetailHeaderProps) {
+	const { onClickMore } = props;
+
 	return (
 		<HeaderLayout>
 			<BackButton />
@@ -21,9 +28,9 @@ function DefaultHeader() {
 					height={uiConst.HEIGHT.HEADER_LOGO}
 				/>
 			</div>
-			<IconButton icon={<SearchIcon />} />
+			<IconButton icon={<EllipsisVerticalIcon />} onClick={onClickMore} />
 		</HeaderLayout>
 	);
 }
 
-export default DefaultHeader;
+export default PostDetailHeader;
