@@ -4,6 +4,7 @@
 import { useState } from "react";
 
 import Image from "next/image";
+import Link from "next/link";
 import { notFound, useParams } from "next/navigation";
 
 import { toast } from "sonner";
@@ -66,7 +67,9 @@ function PostDetailPage() {
 				<DrawerContent>
 					<DrawerTitle />
 					<DrawerFooter>
-						<Button size="xl">수정하기</Button>
+						<Button asChild size="xl">
+							<Link href={`/groups/${groupId}/posts/${postId}/edit`}>수정하기</Link>
+						</Button>
 						<Button
 							size="xl"
 							variant="destructive"
