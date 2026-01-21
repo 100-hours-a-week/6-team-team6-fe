@@ -4,6 +4,8 @@ import { Geist, Geist_Mono, Inter } from "next/font/google";
 
 import type { Metadata } from "next";
 
+import { Toaster } from "@/shared/components/ui/sonner";
+
 import Providers from "@/shared/providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
@@ -39,6 +41,7 @@ function RootLayout({
 				<Providers>
 					<div className="app">
 						<main className="flex-1 flex flex-col">{children}</main>
+						<Toaster />
 					</div>
 				</Providers>
 			</body>

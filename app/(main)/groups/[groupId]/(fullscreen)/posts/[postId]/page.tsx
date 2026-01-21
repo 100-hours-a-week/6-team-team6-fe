@@ -6,6 +6,8 @@ import { useState } from "react";
 import Image from "next/image";
 import { notFound, useParams } from "next/navigation";
 
+import { toast } from "sonner";
+
 import { DUMMY_POSTS } from "@/features/post/constants";
 
 import PostDetailNavigation from "@/shared/components/layout/bottomNavigations/PostDetailNavigation";
@@ -71,6 +73,7 @@ function PostDetailPage() {
 							onClick={() => {
 								setIsDrawerOpen(false);
 								setIsDeleteDialogOpen(true);
+								toast.success("삭제되었습니다.");
 							}}
 						>
 							삭제하기
