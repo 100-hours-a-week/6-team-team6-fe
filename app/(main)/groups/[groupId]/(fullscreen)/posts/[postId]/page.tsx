@@ -11,6 +11,16 @@ import { DUMMY_POSTS } from "@/features/post/constants";
 import PostDetailNavigation from "@/shared/components/layout/bottomNavigations/PostDetailNavigation";
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
+import {
+	AlertDialog,
+	AlertDialogAction,
+	AlertDialogCancel,
+	AlertDialogContent,
+	AlertDialogDescription,
+	AlertDialogFooter,
+	AlertDialogHeader,
+	AlertDialogTitle,
+} from "@/shared/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -35,6 +45,7 @@ import { Typography } from "@/shared/components/ui/typography";
 function PostDetailPage() {
 	const { groupId, postId } = useParams<{ groupId: string; postId: string }>();
 	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
 
 	const postIdNumber = Number(postId);
 	const post = DUMMY_POSTS.find((item) => item.postId === postIdNumber);
@@ -54,7 +65,14 @@ function PostDetailPage() {
 					<DrawerTitle />
 					<DrawerFooter>
 						<Button size="xl">수정하기</Button>
-						<Button size="xl" variant="destructive">
+						<Button
+							size="xl"
+							variant="destructive"
+							onClick={() => {
+								setIsDrawerOpen(false);
+								setIsDeleteDialogOpen(true);
+							}}
+						>
 							삭제하기
 						</Button>
 						<DrawerClose>
@@ -65,6 +83,20 @@ function PostDetailPage() {
 					</DrawerFooter>
 				</DrawerContent>
 			</Drawer>
+			<AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+				<AlertDialogContent>
+					<AlertDialogHeader>
+						<AlertDialogTitle>게시글을 삭제할까요?</AlertDialogTitle>
+						<AlertDialogDescription>삭제하면 복구할 수 없어요.</AlertDialogDescription>
+					</AlertDialogHeader>
+					<AlertDialogFooter className="flex flex-row justify-end">
+						<AlertDialogCancel className="flex flex-2">취소</AlertDialogCancel>
+						<AlertDialogAction className="flex flex-2" variant="destructive">
+							삭제
+						</AlertDialogAction>
+					</AlertDialogFooter>
+				</AlertDialogContent>
+			</AlertDialog>
 			<div className="flex flex-1 pb-(--h-bottom-nav)">
 				<section className={`flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar`}>
 					<div className="py-4">
