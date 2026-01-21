@@ -332,7 +332,8 @@ const POST_SUMMARIES: PostSummary[] = [
 ];
 
 const POST_DETAIL_DEFAULTS = {
-	content: "content",
+	content:
+		"카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다 카메라를 대여해드립니다",
 	sellerId: 3,
 	sellerNickname: "Tester",
 	sellerAvartar: "/default-profile.png",

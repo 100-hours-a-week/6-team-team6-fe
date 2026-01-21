@@ -25,19 +25,8 @@ type TypographyProps = React.ComponentPropsWithoutRef<"p"> &
 		asChild?: boolean;
 	};
 
-function Typography({
-	className,
-	type = "body",
-	asChild = false,
-	...props
-}: TypographyProps) {
-	const Comp = asChild
-		? Slot.Root
-		: type === "title"
-			? "h2"
-			: type === "caption"
-				? "span"
-				: "p";
+function Typography({ className, type = "body", asChild = false, ...props }: TypographyProps) {
+	const Comp = asChild ? Slot.Root : type === "title" ? "h2" : type === "caption" ? "span" : "p";
 
 	return (
 		<Comp

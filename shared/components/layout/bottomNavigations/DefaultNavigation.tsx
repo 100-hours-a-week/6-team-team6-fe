@@ -17,9 +17,11 @@ const navigationItems = [
 
 function DefaultNavigation() {
 	const pathname = usePathname();
+	// TODO: groupId 정규식
+
 	return (
 		<NavigationLayout>
-			<nav aria-label="Bottom navigation" className="h-11 w-full">
+			<div className="h-11 w-full">
 				<ul className="grid h-full w-full grid-cols-3">
 					{navigationItems.map((item) => {
 						const Icon = item.icon;
@@ -43,7 +45,7 @@ function DefaultNavigation() {
 						);
 					})}
 				</ul>
-			</nav>
+			</div>
 		</NavigationLayout>
 	);
 }

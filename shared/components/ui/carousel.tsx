@@ -19,6 +19,7 @@ type CarouselProps = {
 	plugins?: CarouselPlugin;
 	orientation?: "horizontal" | "vertical";
 	setApi?: (api: CarouselApi) => void;
+	showDots?: boolean;
 };
 
 type CarouselContextProps = {
@@ -47,6 +48,7 @@ function Carousel({
 	opts,
 	setApi,
 	plugins,
+	showDots = false,
 	className,
 	children,
 	...props
@@ -60,11 +62,19 @@ function Carousel({
 	);
 	const [canScrollPrev, setCanScrollPrev] = React.useState(false);
 	const [canScrollNext, setCanScrollNext] = React.useState(false);
+	const [selectedIndex, setSelectedIndex] = React.useState(0);
+	const [scrollSnaps, setScrollSnaps] = React.useState<number[]>([]);
 
 	const onSelect = React.useCallback((api: CarouselApi) => {
 		if (!api) return;
 		setCanScrollPrev(api.canScrollPrev());
 		setCanScrollNext(api.canScrollNext());
+		setSelectedIndex(api.selectedScrollSnap());
+	}, []);
+
+	const onInit = React.useCallback((api: CarouselApi) => {
+		if (!api) return;
+		setScrollSnaps(api.scrollSnapList());
 	}, []);
 
 	const scrollPrev = React.useCallback(() => {
@@ -74,6 +84,13 @@ function Carousel({
 	const scrollNext = React.useCallback(() => {
 		api?.scrollNext();
 	}, [api]);
+
+	const scrollTo = React.useCallback(
+		(index: number) => {
+			api?.scrollTo(index);
+		},
+		[api],
+	);
 
 	const handleKeyDown = React.useCallback(
 		(event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -95,14 +112,18 @@ function Carousel({
 
 	React.useEffect(() => {
 		if (!api) return;
+		onInit(api);
 		onSelect(api);
+		api.on("reInit", onInit);
 		api.on("reInit", onSelect);
 		api.on("select", onSelect);
 
 		return () => {
+			api?.off("reInit", onInit);
+			api?.off("reInit", onSelect);
 			api?.off("select", onSelect);
 		};
-	}, [api, onSelect]);
+	}, [api, onInit, onSelect]);
 
 	return (
 		<CarouselContext.Provider
@@ -126,6 +147,30 @@ function Carousel({
 				{...props}
 			>
 				{children}
+				{showDots && scrollSnaps.length > 1 ? (
+					<div
+						data-slot="carousel-dots"
+						className={cn(
+							"mt-4 flex items-center justify-center gap-2",
+							orientation === "vertical" && "flex-col",
+						)}
+					>
+						{scrollSnaps.map((_, index) => (
+							<button
+								key={index}
+								type="button"
+								aria-label={`Go to slide ${index + 1}`}
+								aria-current={index === selectedIndex ? "true" : undefined}
+								className={cn(
+									"h-2.5 w-2.5 rounded-full transition-colors",
+									"focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
+									index === selectedIndex ? "bg-foreground" : "bg-foreground/30",
+								)}
+								onClick={() => scrollTo(index)}
+							/>
+						))}
+					</div>
+				) : null}
 			</div>
 		</CarouselContext.Provider>
 	);
