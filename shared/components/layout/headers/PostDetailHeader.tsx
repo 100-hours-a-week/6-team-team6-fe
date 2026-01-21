@@ -19,11 +19,13 @@ function PostDetailHeader(props: PostDetailHeaderProps) {
 	const { onClickMore, isSeller } = props;
 
 	return (
-		<HeaderLayout>
-			<BackButton />
-			<div className="m-auto"></div>
-			{isSeller && <IconButton icon={<EllipsisVerticalIcon />} onClick={onClickMore} />}
-		</HeaderLayout>
+		<HeaderLayout
+			left={<BackButton />}
+			center={undefined}
+			right={
+				isSeller ? <IconButton icon={<EllipsisVerticalIcon />} onClick={onClickMore} /> : <></>
+			}
+		/>
 	);
 }
 

@@ -11,18 +11,18 @@ import { uiConst } from "@/shared/lib/constants";
 // TODO: link
 function DefaultHeader() {
 	return (
-		<HeaderLayout>
-			<BackButton />
-			<div className="m-auto">
+		<HeaderLayout
+			left={<BackButton />}
+			center={
 				<Image
 					src="/text-logo.png"
 					alt="Logo"
 					width={uiConst.WIDTH.HEADER_LOGO}
 					height={uiConst.HEIGHT.HEADER_LOGO}
 				/>
-			</div>
-			<IconButton icon={<SearchIcon />} />
-		</HeaderLayout>
+			}
+			right={<IconButton icon={<SearchIcon />} />}
+		/>
 	);
 }
 
