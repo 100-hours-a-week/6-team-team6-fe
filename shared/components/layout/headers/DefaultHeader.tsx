@@ -1,4 +1,5 @@
 import Image from "next/image";
+import Link from "next/link";
 
 import { SearchIcon } from "lucide-react";
 
@@ -21,7 +22,14 @@ function DefaultHeader() {
 					height={uiConst.HEIGHT.HEADER_LOGO}
 				/>
 			}
-			right={<IconButton icon={<SearchIcon />} />}
+			right={
+				<IconButton asChild>
+					{/* TODO: groupId */}
+					<Link href={`/groups/1/search`}>
+						<SearchIcon />
+					</Link>
+				</IconButton>
+			}
 		/>
 	);
 }
