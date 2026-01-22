@@ -1,11 +1,8 @@
-import { toast } from "sonner";
-
+import { submitPost } from "@/features/post/api/editPost";
 import PostEditor from "@/features/post/components/PostEditor";
 import { DUMMY_POSTS } from "@/features/post/constants";
 
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
-
-import { submitPost } from "@/app/(main)/groups/[groupId]/(fullscreen)/posts/[postId]/edit/actions";
 
 interface PostEditPageProps {
 	params: Promise<{ postId: string }>;

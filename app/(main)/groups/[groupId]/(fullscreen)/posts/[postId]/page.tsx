@@ -9,9 +9,9 @@ import { notFound, useParams } from "next/navigation";
 
 import { toast } from "sonner";
 
+import PostDetailNavigation from "@/features/post/components/PostDetailNavigation";
 import { DUMMY_POSTS } from "@/features/post/constants";
 
-import PostDetailNavigation from "@/shared/components/layout/bottomNavigations/PostDetailNavigation";
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import {
@@ -59,6 +59,13 @@ function PostDetailPage() {
 
 	const rentalStatusValue = post.rentalStatus === "RENTED_OUT" ? "rented_out" : "available";
 	const isAvailable = rentalStatusValue === "available";
+
+	const onClickButton = () => {
+		if (post.isSeller) {
+		} else {
+			// post.
+		}
+	};
 
 	return (
 		<>

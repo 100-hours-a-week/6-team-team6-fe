@@ -1,8 +1,7 @@
+import { submitPost } from "@/features/post/api/createPost";
 import PostEditor from "@/features/post/components/PostEditor";
 
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
-
-import { submitPost } from "@/app/(main)/groups/[groupId]/(fullscreen)/posts/create/actions";
 
 async function PostCreatePage() {
 	return (

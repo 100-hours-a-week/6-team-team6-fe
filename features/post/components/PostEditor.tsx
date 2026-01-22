@@ -7,7 +7,8 @@ import Image from "next/image";
 import { Plus, X } from "lucide-react";
 import { z } from "zod";
 
-import PostEditorNavigation from "@/shared/components/layout/bottomNavigations/PostEditorNavigation";
+import PostEditorNavigation from "@/features/post/components/PostEditorNavigation";
+
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Button } from "@/shared/components/ui/button";
 import { IconButton } from "@/shared/components/ui/icon-button";
