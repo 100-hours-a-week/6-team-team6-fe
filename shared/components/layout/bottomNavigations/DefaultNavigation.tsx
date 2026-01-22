@@ -9,23 +9,27 @@ import NavigationLayout from "@/shared/components/layout/bottomNavigations/Navig
 
 import { cn } from "@/shared/lib/utils";
 
-const navigationItems = [
-	{ href: "/", label: "홈", icon: HomeIcon },
-	{ href: "/chat", label: "채팅", icon: MessagesSquareIcon },
-	{ href: "/mypage", label: "마이페이지", icon: UserRound },
-];
-
 function DefaultNavigation() {
 	const pathname = usePathname();
+	// TODO: implement - Getting GroupId logic
+	const groupId = 1;
+	const homeHref = groupId ? `/groups/${groupId}/posts` : "/";
+
+	const navigationItems = [
+		{ href: homeHref, label: "홈", icon: HomeIcon },
+		{ href: "/chat", label: "채팅", icon: MessagesSquareIcon },
+		{ href: "/mypage", label: "마이페이지", icon: UserRound },
+	];
+
 	return (
 		<NavigationLayout>
-			<nav aria-label="Bottom navigation" className="h-11 w-full">
+			<div className="h-11 w-full">
 				<ul className="grid h-full w-full grid-cols-3">
 					{navigationItems.map((item) => {
 						const Icon = item.icon;
 						const isActive =
-							item.href === "/"
-								? pathname === item.href
+							item.href === homeHref
+								? pathname === homeHref || pathname.startsWith(`${homeHref}/`)
 								: pathname === item.href || pathname.startsWith(`${item.href}/`);
 						return (
 							<li key={item.href} className="h-full">
@@ -43,7 +47,7 @@ function DefaultNavigation() {
 						);
 					})}
 				</ul>
-			</nav>
+			</div>
 		</NavigationLayout>
 	);
 }
