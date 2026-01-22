@@ -114,10 +114,6 @@ function ChatList() {
 
 	useChatListSSE();
 
-	const handleClickRoom = (roomId: number) => {
-		router.push(`/chats/${roomId}`);
-	};
-
 	useEffect(() => {
 		if (!loaderRef.current) {
 			return;
@@ -168,7 +164,7 @@ function ChatList() {
 			<ul className="flex flex-col ">
 				{rooms.map((room) => (
 					<li key={room.chatRoomId}>
-						<ChatRoomItem room={room} onClickRoom={handleClickRoom} />
+						<ChatRoomItem room={room} />
 					</li>
 				))}
 			</ul>
@@ -190,16 +186,11 @@ function ChatList() {
 
 type ChatRoomItemProps = {
 	room: RoomSummary;
-	onClickRoom: (roomId: number) => void;
 };
 
-function ChatRoomItem({ room, onClickRoom }: ChatRoomItemProps) {
-	const handleClickRoom = () => {
-		onClickRoom(room.chatRoomId);
-	};
-
+function ChatRoomItem({ room }: ChatRoomItemProps) {
 	return (
-		<Link href={`/chats/${room.chatRoomId}`} className="w-full text-left" onClick={handleClickRoom}>
+		<Link href={`/chat/${room.chatRoomId}`} className="w-full text-left">
 			<div className="transition-colors hover:bg-muted/40  py-3">
 				<div className="flex items-center gap-3">
 					<Avatar size="xl">
