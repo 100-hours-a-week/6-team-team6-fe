@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -60,7 +60,7 @@ const DUMMY_CHAT_ROOMS: ChatRoomSource[] = [
 		postId: 22,
 		postFirstImageUrl: "/dummy-post-image.png",
 		lastMessageAt: "3일 전",
-		lastMessage: "픽업 장소는 학교 정문으로 괜찮을까요?",
+		lastMessage: "픽업 장소는 학교 정문으로 괜찮을까요?픽업 장소는 학교 정문으로 괜찮을까요?",
 		unreadCount: 1,
 		chatPartnerId: 3,
 		chatPartnerAvatarUrl: "/default-profile.png",
@@ -113,7 +113,11 @@ const DUMMY_CHAT_ROOMS: ChatRoomSource[] = [
 ];
 
 function ChatPage() {
-	return <ChatList />;
+	return (
+		<Suspense>
+			<ChatList />
+		</Suspense>
+	);
 }
 
 function ChatList() {

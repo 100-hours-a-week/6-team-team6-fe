@@ -13,7 +13,7 @@ function ChatPageLayout(props: ChatPageLayoutProps) {
 		<>
 			<DefaultHeader />
 			<div className="flex flex-1">
-				<section className="flex flex-1 flex-col h-full px-5 py-10">
+				<section className="flex flex-1  flex-col h-full px-5 py-10 max-w-(--app-max-width)">
 					<Typography type={"title"} className="mb-8">
 						채팅
 					</Typography>
