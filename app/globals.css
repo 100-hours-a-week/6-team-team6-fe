@@ -38,6 +38,7 @@
 	--color-popover: var(--popover);
 	--color-card-foreground: var(--card-foreground);
 	--color-card: var(--card);
+	--color-product: oklch(0.65 0.15 153);
 	--radius-sm: calc(var(--radius) - 4px);
 	--radius-md: calc(var(--radius) - 2px);
 	--radius-lg: var(--radius);
@@ -90,6 +91,7 @@
 	--sidebar-ring: var(--app-gray-300);
 
 	/* Custom Values */
+	--app-product: var(--app-product);
 	--app-max-width: 480px;
 	--app-min-height: 100dvh;
 
@@ -168,5 +170,11 @@
 	}
 	.no-scrollbar::-webkit-scrollbar {
 		display: none;
+	}
+	.truncate-1 {
+		min-width: 0;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 }
