@@ -19,10 +19,12 @@ function PostItem(props: PostItemProps) {
 			<div>
 				<Image src={firstImageUrl} alt={title} width={100} height={100} />
 			</div>
-			<div className="flex flex-col">
+			<div className="flex flex-col min-w-0 flex-1">
 				<div>
 					<div>
-						<Typography type="body">{title}</Typography>
+						<Typography type="body" className="truncate">
+							{title}
+						</Typography>
 					</div>
 					<div>
 						<Typography type="subtitle">{rentalFeeLabel}</Typography>
