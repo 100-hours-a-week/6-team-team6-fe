@@ -44,7 +44,7 @@ import {
 import { Separator } from "@/shared/components/ui/separator";
 import { Typography } from "@/shared/components/ui/typography";
 
-import { formatRentalFeeLabel } from "@/shared/lib/format";
+import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
 
 // TODO: 404
 export function PostDetailPage() {
@@ -168,7 +168,7 @@ export function PostDetailPage() {
 									</Select>
 								)}
 							</div>
-							<div>{post.updatedAt}</div>
+							<div>{formatKoreanDateYMD(post.updatedAt)}</div>
 						</div>
 						<Separator className="my-6" />
 						<Typography type="body">{post.content}</Typography>

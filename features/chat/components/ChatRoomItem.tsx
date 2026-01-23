@@ -6,12 +6,15 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avat
 import { Badge } from "@/shared/components/ui/badge";
 import { Typography } from "@/shared/components/ui/typography";
 
+import { formatRelativeTimeLabel } from "@/shared/lib/format";
+
 interface ChatRoomItemProps {
 	room: RoomSummary;
 }
 
 export function ChatRoomItem(props: ChatRoomItemProps) {
 	const { room } = props;
+	const lastMessageAtLabel = formatRelativeTimeLabel(room.lastMessageAt);
 
 	return (
 		<Link href={`/chat/${room.chatRoomId}`} className="w-full text-left">
@@ -29,7 +32,7 @@ export function ChatRoomItem(props: ChatRoomItemProps) {
 							<Typography type="subtitle" className="truncate">
 								{room.chatPartnerNickname}
 							</Typography>
-							<Typography type="caption">{room.lastMessageAt}</Typography>
+							<Typography type="caption">{lastMessageAtLabel}</Typography>
 						</div>
 						<div className="flex min-w-0 items-center justify-between gap-2">
 							<Typography type="body-sm" className="truncate text-muted-foreground">

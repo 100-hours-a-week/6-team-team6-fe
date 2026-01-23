@@ -1,5 +1,7 @@
 import type { ChatMessages } from "@/features/chat/lib/types";
 import { CHAT_ROOM_LIST_VIEW_STATE, ChatRoomSource } from "@/features/chat/lib/types";
+
+import { formatKoreanTime } from "@/shared/lib/format";
 interface GetChatRoomListViewStateProps {
 	isLoading: boolean;
 	isError: boolean;
@@ -28,15 +30,7 @@ export const createTimestamp = (minutesAgo: number) =>
 	new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
 
 export function formatMessageTime(value: string) {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) {
-		return value;
-	}
-
-	return new Intl.DateTimeFormat("ko-KR", {
-		hour: "2-digit",
-		minute: "2-digit",
-	}).format(date);
+	return formatKoreanTime(value);
 }
 
 function getMinuteKey(value: string) {
