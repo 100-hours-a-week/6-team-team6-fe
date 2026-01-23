@@ -17,6 +17,8 @@ import { Spinner } from "@/shared/components/ui/spinner";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Typography } from "@/shared/components/ui/typography";
 
+import { formatRentalFeeLabel } from "@/shared/lib/format";
+
 interface ChatPostInfoProps {
 	postInfo: ChatPostInfoData;
 }
@@ -25,10 +27,7 @@ function ChatPostInfo(props: ChatPostInfoProps) {
 	const { postInfo } = props;
 	const { groupId, postId, postFirstImageUrl, postTitle, rentalFee, feeUnit, rentalStatus } =
 		postInfo;
-	const feeLabel =
-		rentalFee === 0
-			? "무료 대여"
-			: `${rentalFee.toLocaleString()} / ${feeUnit === "HOUR" ? "시간" : "일"}`;
+	const feeLabel = formatRentalFeeLabel(rentalFee, feeUnit);
 	const statusLabel = rentalStatus === "RENTED_OUT" ? "대여 중" : "대여 가능";
 
 	return (

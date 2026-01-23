@@ -13,7 +13,11 @@ function TitleBackHeader(props: TitleBackHeaderProps) {
 	return (
 		<HeaderLayout
 			left={<BackButton />}
-			center={<Typography type="subtitle">{title}</Typography>}
+			center={
+				<Typography type="subtitle" className="truncate max-w-full">
+					{title}
+				</Typography>
+			}
 			right={<div className="w-8 h-8"></div>}
 		/>
 	);

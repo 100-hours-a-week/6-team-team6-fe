@@ -44,6 +44,8 @@ import {
 import { Separator } from "@/shared/components/ui/separator";
 import { Typography } from "@/shared/components/ui/typography";
 
+import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
+
 // TODO: 404
 export function PostDetailPage() {
 	const { groupId, postId } = useParams<{ groupId: string; postId: string }>();
@@ -88,7 +90,7 @@ export function PostDetailPage() {
 						>
 							삭제하기
 						</Button>
-						<DrawerClose>
+						<DrawerClose asChild>
 							<Button size="xl" variant="outline" className="w-full">
 								닫기
 							</Button>
@@ -147,10 +149,9 @@ export function PostDetailPage() {
 								{!post.isSeller && !isAvailable && <Badge>대여중</Badge>}
 							</div>
 							<div className="flex items-center justify-between">
-								<Typography
-									type="title"
-									className="text-xl"
-								>{`${post.rentalFee} / ${post.feeUnit === "DAY" ? "일" : "시간"}`}</Typography>
+								<Typography type="title" className="text-xl">
+									{formatRentalFeeLabel(post.rentalFee, post.feeUnit)}
+								</Typography>
 								{post.isSeller && (
 									<Select defaultValue={rentalStatusValue}>
 										<SelectTrigger size="sm" aria-label="대여 상태">
@@ -167,7 +168,7 @@ export function PostDetailPage() {
 									</Select>
 								)}
 							</div>
-							<div>{post.updatedAt}</div>
+							<div>{formatKoreanDateYMD(post.updatedAt)}</div>
 						</div>
 						<Separator className="my-6" />
 						<Typography type="body">{post.content}</Typography>
