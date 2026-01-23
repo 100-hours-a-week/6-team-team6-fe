@@ -2,7 +2,7 @@
 
 import { Suspense } from "react";
 
-import { ChatRoomList } from "@/features/chat/components/ChatRoomList";
+import ChatRoomList from "@/features/chat/components/ChatRoomList";
 import type { ChatRoomSource } from "@/features/chat/types";
 
 import { Spinner } from "@/shared/components/ui/spinner";

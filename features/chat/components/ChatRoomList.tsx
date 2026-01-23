@@ -3,18 +3,21 @@
 import type { ReactNode } from "react";
 
 import { ChatRoomItem } from "@/features/chat/components/ChatRoomItem";
+import {
+	ChatRoomListEmpty,
+	ChatRoomListError,
+	ChatRoomListLoading,
+} from "@/features/chat/components/ChatRoomListStates";
 import { useChatList } from "@/features/chat/hooks/useChatList";
-import type { ChatRoomSource, RoomSummary } from "@/features/chat/types";
+import {
+	CHAT_ROOM_LIST_VIEW_STATE,
+	type ChatRoomListViewState,
+	type ChatRoomSource,
+	type RoomSummary,
+} from "@/features/chat/types";
 
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
-
-type ChatRoomListProps = {
-	sourceRooms: ChatRoomSource[];
-	labels: ChatRoomListLabels;
-};
-
-type ChatRoomListViewState = "loading" | "error" | "empty" | "content";
 
 type ChatRoomListLabels = {
 	loading: string;
@@ -24,50 +27,18 @@ type ChatRoomListLabels = {
 	endOfList: string;
 };
 
-type ChatRoomListViewProps = {
+interface ChatRoomListViewProps {
 	state: ChatRoomListViewState;
 	rooms: RoomSummary[];
 	setLoaderRef: (node: HTMLDivElement | null) => void;
 	hasNextPage: boolean;
 	isFetchingNextPage: boolean;
 	labels: ChatRoomListLabels;
-};
-
-export function ChatRoomList(props: ChatRoomListProps) {
-	const { sourceRooms, labels } = props;
-
-	const { rooms, setLoaderRef, hasNextPage, isFetchingNextPage, isLoading, isError } = useChatList({
-		sourceRooms,
-	});
-
-	const state: ChatRoomListViewState = isLoading
-		? "loading"
-		: isError
-			? "error"
-			: rooms.length === 0
-				? "empty"
-				: "content";
-
-	return (
-		<ChatRoomListView
-			state={state}
-			rooms={rooms}
-			setLoaderRef={setLoaderRef}
-			hasNextPage={hasNextPage}
-			isFetchingNextPage={isFetchingNextPage}
-			labels={labels}
-		/>
-	);
 }
 
-function ChatRoomListView({
-	state,
-	rooms,
-	setLoaderRef,
-	hasNextPage,
-	isFetchingNextPage,
-	labels,
-}: ChatRoomListViewProps) {
+function ChatRoomListView(props: ChatRoomListViewProps) {
+	const { state, rooms, setLoaderRef, hasNextPage, isFetchingNextPage, labels } = props;
+
 	const views: Record<ChatRoomListViewState, () => ReactNode> = {
 		loading: () => <ChatRoomListLoading label={labels.loading} />,
 		error: () => <ChatRoomListError label={labels.error} />,
@@ -84,31 +55,6 @@ function ChatRoomListView({
 	};
 
 	return <>{views[state]()}</>;
-}
-
-function ChatRoomListLoading({ label }: { label: string }) {
-	return (
-		<div className="flex items-center gap-2 text-muted-foreground">
-			<Spinner />
-			<Typography type="body-sm">{label}</Typography>
-		</div>
-	);
-}
-
-function ChatRoomListError({ label }: { label: string }) {
-	return (
-		<Typography type="body-sm" className="text-destructive">
-			{label}
-		</Typography>
-	);
-}
-
-function ChatRoomListEmpty({ label }: { label: string }) {
-	return (
-		<Typography type="body-sm" className="text-muted-foreground">
-			{label}
-		</Typography>
-	);
 }
 
 interface ChatRoomListContentProps {
@@ -146,3 +92,37 @@ function ChatRoomListContent(props: ChatRoomListContentProps) {
 		</div>
 	);
 }
+
+interface ChatRoomListProps {
+	sourceRooms: ChatRoomSource[];
+	labels: ChatRoomListLabels;
+}
+
+function ChatRoomList(props: ChatRoomListProps) {
+	const { sourceRooms, labels } = props;
+
+	const { rooms, setLoaderRef, hasNextPage, isFetchingNextPage, isLoading, isError } = useChatList({
+		sourceRooms,
+	});
+
+	const state: ChatRoomListViewState = isLoading
+		? CHAT_ROOM_LIST_VIEW_STATE.loading
+		: isError
+			? CHAT_ROOM_LIST_VIEW_STATE.error
+			: rooms.length === 0
+				? CHAT_ROOM_LIST_VIEW_STATE.empty
+				: CHAT_ROOM_LIST_VIEW_STATE.content;
+
+	return (
+		<ChatRoomListView
+			state={state}
+			rooms={rooms}
+			setLoaderRef={setLoaderRef}
+			hasNextPage={hasNextPage}
+			isFetchingNextPage={isFetchingNextPage}
+			labels={labels}
+		/>
+	);
+}
+
+export default ChatRoomList;
