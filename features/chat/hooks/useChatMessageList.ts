@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
-import { formatMessageTime, shouldShowTime } from "@/features/chat/room/utils";
-import type { ChatMessages } from "@/features/chat/types";
+import type { ChatMessages } from "@/features/chat/lib/types";
+import { formatMessageTime, shouldShowTime } from "@/features/chat/lib/utils";
 
 type ChatMessageEntry = {
 	message: ChatMessages[number];

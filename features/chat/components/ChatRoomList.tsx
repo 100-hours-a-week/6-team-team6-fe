@@ -9,13 +9,13 @@ import {
 	ChatRoomListLoading,
 } from "@/features/chat/components/ChatRoomListStates";
 import { useChatList } from "@/features/chat/hooks/useChatList";
-import { getChatRoomListViewState } from "@/features/chat/lib/utils";
 import {
 	type ChatRoomListLabels,
 	type ChatRoomListViewState,
 	type ChatRoomSource,
 	type RoomSummary,
-} from "@/features/chat/types";
+} from "@/features/chat/lib/types";
+import { getChatRoomListViewState } from "@/features/chat/lib/utils";
 
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";

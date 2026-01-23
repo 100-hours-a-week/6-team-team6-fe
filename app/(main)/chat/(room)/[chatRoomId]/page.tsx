@@ -3,10 +3,10 @@
 import Image from "next/image";
 import Link from "next/link";
 
-import { useChatInput } from "@/features/chat/room/hooks/useChatInput";
-import { useChatMessageList } from "@/features/chat/room/hooks/useChatMessageList";
-import { useChatRoom } from "@/features/chat/room/hooks/useChatRoom";
-import type { ChatMessages, ChatPostInfoData } from "@/features/chat/types";
+import { useChatInput } from "@/features/chat/hooks/useChatInput";
+import { useChatMessageList } from "@/features/chat/hooks/useChatMessageList";
+import { useChatRoom } from "@/features/chat/hooks/useChatRoom";
+import type { ChatMessages, ChatPostInfoData } from "@/features/chat/lib/types";
 
 import NavigationLayout from "@/shared/components/layout/bottomNavigations/NavigationLayout";
 import { Badge } from "@/shared/components/ui/badge";

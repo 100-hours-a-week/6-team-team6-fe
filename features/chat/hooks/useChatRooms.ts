@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import type { ChatRoomSource } from "@/features/chat/types";
+import type { ChatRoomSource } from "@/features/chat/lib/types";
 
 const DEFAULT_PAGE_SIZE = 5;
 

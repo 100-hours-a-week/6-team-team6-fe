@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 
 import { useChatListSSE } from "@/features/chat/hooks/useChatListSSE";
 import { useChatRooms } from "@/features/chat/hooks/useChatRooms";
-import type { ChatRoomSource } from "@/features/chat/types";
+import type { ChatRoomSource } from "@/features/chat/lib/types";
 
 type UseChatListParams = {
 	sourceRooms: ChatRoomSource[];

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-import { DUMMY_CHAT_POST_INFO, INITIAL_MESSAGES, OLDER_MESSAGES } from "@/features/chat/room/constants";
-import type { ChatMessage, ChatMessages, ChatPostInfoData } from "@/features/chat/types";
+import { DUMMY_CHAT_POST_INFO, INITIAL_MESSAGES, OLDER_MESSAGES } from "@/features/chat/lib/dummy";
+import type { ChatMessage, ChatMessages, ChatPostInfoData } from "@/features/chat/lib/types";
 
 const LOAD_MORE_DELAY_MS = 300;
 
@@ -34,12 +34,12 @@ export function useChatRoom(): UseChatRoomResult {
 		}
 		setIsLoadingPreviousMessage(true);
 
-	loadMoreTimerRef.current = window.setTimeout(() => {
-		setMessages((prev) => [...prev, ...OLDER_MESSAGES]);
-		setHasMoreMessage(false);
-		setIsLoadingPreviousMessage(false);
-		loadMoreTimerRef.current = null;
-	}, LOAD_MORE_DELAY_MS);
+		loadMoreTimerRef.current = window.setTimeout(() => {
+			setMessages((prev) => [...prev, ...OLDER_MESSAGES]);
+			setHasMoreMessage(false);
+			setIsLoadingPreviousMessage(false);
+			loadMoreTimerRef.current = null;
+		}, LOAD_MORE_DELAY_MS);
 	}, [hasMoreMessage, isLoadingPreviousMessage]);
 
 	const submitMessage = useCallback((text: string) => {

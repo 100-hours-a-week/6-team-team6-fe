@@ -1,12 +1,5 @@
-import type { ChatRoomListLabels, ChatRoomSource } from "@/features/chat/types";
-
-export const CHAT_LIST_LABELS: ChatRoomListLabels = {
-	loading: "채팅방 목록 로딩중...",
-	error: "채팅방 목록을 불러오는 중 오류가 발생했어요.",
-	empty: "아직 시작된 채팅이 없어요.",
-	fetchingNextPage: "더 가져오는 중...",
-	endOfList: "마지막입니다.",
-};
+import type { ChatMessages, ChatPostInfoData, ChatRoomSource } from "@/features/chat/lib/types";
+import { createTimestamp } from "@/features/chat/lib/utils";
 
 export const DUMMY_CHAT_ROOMS: ChatRoomSource[] = [
 	{
@@ -85,5 +78,59 @@ export const DUMMY_CHAT_ROOMS: ChatRoomSource[] = [
 		chatPartnerId: 7,
 		chatPartnerAvatarUrl: "/default-profile.png",
 		chatPartnerNickname: "지민",
+	},
+];
+
+export const DUMMY_CHAT_POST_INFO: ChatPostInfoData = {
+	partnerId: 3,
+	partnerNickname: "테스트닉네임",
+	groupId: 7,
+	groupName: "테스트그룹",
+	postId: 14,
+	postTitle: "산악자전거 대여~",
+	postFirstImageUrl: "/dummy-post-image.png",
+	rentalFee: 5000,
+	feeUnit: "HOUR",
+	rentalStatus: "RENTED_OUT",
+};
+
+export const INITIAL_MESSAGES: ChatMessages = [
+	{
+		who: "me",
+		message: "네, 지금 바로 갈게요.",
+		createdAt: createTimestamp(1),
+	},
+	{
+		who: "partner",
+		message: "네! 기다리고 있을게요.",
+		createdAt: createTimestamp(1),
+	},
+	{
+		who: "partner",
+		message: "오늘 오후 2시에 만나도 될까요?",
+		createdAt: createTimestamp(6),
+	},
+	{
+		who: "me",
+		message: "가능해요. 장소는 정문으로 할까요?",
+		createdAt: createTimestamp(6),
+	},
+	{
+		who: "partner",
+		message: "안녕하세요. 대여 가능 시간 알려주세요.",
+		createdAt: createTimestamp(80),
+	},
+];
+
+export const OLDER_MESSAGES: ChatMessages = [
+	{
+		who: "partner",
+		message: "혹시 대여 기간은 하루로 가능한가요?",
+		createdAt: createTimestamp(140),
+	},
+	{
+		who: "me",
+		message: "네 가능합니다. 원하는 시간 알려주세요.",
+		createdAt: createTimestamp(160),
 	},
 ];

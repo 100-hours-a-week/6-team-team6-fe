@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-import type { RoomSummary } from "@/features/chat/types";
+import type { RoomSummary } from "@/features/chat/lib/types";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Badge } from "@/shared/components/ui/badge";

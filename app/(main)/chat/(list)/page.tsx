@@ -3,7 +3,8 @@
 import { Suspense } from "react";
 
 import { ChatRoomList } from "@/features/chat/components/ChatRoomList";
-import { CHAT_LIST_LABELS, DUMMY_CHAT_ROOMS } from "@/features/chat/constants";
+import { CHAT_LIST_LABELS } from "@/features/chat/lib/constants";
+import { DUMMY_CHAT_ROOMS } from "@/features/chat/lib/dummy";
 
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
