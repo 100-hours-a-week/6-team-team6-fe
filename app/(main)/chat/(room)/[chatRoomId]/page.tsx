@@ -5,6 +5,14 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
+import {
+	DUMMY_CHAT_POST_INFO,
+	INITIAL_MESSAGES,
+	OLDER_MESSAGES,
+} from "@/features/chat/room/constants";
+import { formatMessageTime, shouldShowTime } from "@/features/chat/room/utils";
+import type { ChatMessage, ChatMessages, ChatPostInfoData } from "@/features/chat/types";
+
 import NavigationLayout from "@/shared/components/layout/bottomNavigations/NavigationLayout";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
@@ -13,84 +21,6 @@ import { Separator } from "@/shared/components/ui/separator";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Typography } from "@/shared/components/ui/typography";
-
-type ChatMessage = {
-	who: "me" | "partner";
-	message: string;
-	createdAt: string;
-};
-
-type ChatMessages = ChatMessage[];
-
-type ChatPostInfoData = {
-	partnerId: number;
-	partnerNickname: string;
-	groupId: number;
-	groupName: string;
-	postId: number;
-	postTitle: string;
-	postFirstImageUrl: string;
-	rentalFee: number;
-	feeUnit: "HOUR" | "DAY";
-	rentalStatus: "AVAILABLE" | "RENTED_OUT";
-};
-
-const createTimestamp = (minutesAgo: number) =>
-	new Date(Date.now() - minutesAgo * 60 * 1000).toISOString();
-
-const DUMMY_CHAT_POST_INFO: ChatPostInfoData = {
-	partnerId: 3,
-	partnerNickname: "테스트닉네임",
-	groupId: 7,
-	groupName: "테스트그룹",
-	postId: 14,
-	postTitle: "산악자전거 대여~",
-	postFirstImageUrl: "/dummy-post-image.png",
-	rentalFee: 5000,
-	feeUnit: "HOUR",
-	rentalStatus: "RENTED_OUT",
-};
-
-const INITIAL_MESSAGES: ChatMessages = [
-	{
-		who: "me",
-		message: "네, 지금 바로 갈게요.",
-		createdAt: createTimestamp(1),
-	},
-	{
-		who: "partner",
-		message: "네! 기다리고 있을게요.",
-		createdAt: createTimestamp(1),
-	},
-	{
-		who: "partner",
-		message: "오늘 오후 2시에 만나도 될까요?",
-		createdAt: createTimestamp(6),
-	},
-	{
-		who: "me",
-		message: "가능해요. 장소는 정문으로 할까요?",
-		createdAt: createTimestamp(6),
-	},
-	{
-		who: "partner",
-		message: "안녕하세요. 대여 가능 시간 알려주세요.",
-		createdAt: createTimestamp(80),
-	},
-];
-
-const OLDER_MESSAGES: ChatMessages = [
-	{
-		who: "partner",
-		message: "혹시 대여 기간은 하루로 가능한가요?",
-		createdAt: createTimestamp(140),
-	},
-	{
-		who: "me",
-		message: "네 가능합니다. 원하는 시간 알려주세요.",
-		createdAt: createTimestamp(160),
-	},
-];
 
 function ChatRoom() {
 	const [messages, setMessages] = useState<ChatMessages>(INITIAL_MESSAGES);
@@ -288,35 +218,6 @@ function ChatMessageList({
 			<div ref={bottomRef} />
 		</div>
 	);
-}
-
-function formatMessageTime(value: string) {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) {
-		return value;
-	}
-
-	return new Intl.DateTimeFormat("ko-KR", {
-		hour: "2-digit",
-		minute: "2-digit",
-	}).format(date);
-}
-
-function getMinuteKey(value: string) {
-	const date = new Date(value);
-	if (Number.isNaN(date.getTime())) {
-		return value;
-	}
-
-	return `${date.getFullYear()}-${date.getMonth()}-${date.getDate()}-${date.getHours()}-${date.getMinutes()}`;
-}
-
-function shouldShowTime(index: number, messages: ChatMessages) {
-	if (index >= messages.length - 1) {
-		return true;
-	}
-
-	return getMinuteKey(messages[index].createdAt) !== getMinuteKey(messages[index + 1].createdAt);
 }
 
 function ChatInput({ onSubmit }: { onSubmit: (text: string) => void }) {

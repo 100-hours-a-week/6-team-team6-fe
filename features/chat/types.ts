@@ -18,6 +18,27 @@ export type ChatRoomSource = RoomSummary & {
 	postId: number;
 };
 
+export type ChatMessage = {
+	who: "me" | "partner";
+	message: string;
+	createdAt: string;
+};
+
+export type ChatMessages = ChatMessage[];
+
+export type ChatPostInfoData = {
+	partnerId: number;
+	partnerNickname: string;
+	groupId: number;
+	groupName: string;
+	postId: number;
+	postTitle: string;
+	postFirstImageUrl: string;
+	rentalFee: number;
+	feeUnit: "HOUR" | "DAY";
+	rentalStatus: "AVAILABLE" | "RENTED_OUT";
+};
+
 export type ChatRoomListLabels = {
 	loading: string;
 	error: string;
