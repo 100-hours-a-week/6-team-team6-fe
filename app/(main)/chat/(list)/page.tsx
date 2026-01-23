@@ -2,20 +2,24 @@
 
 import { Suspense } from "react";
 
-import Link from "next/link";
+import { ChatRoomList } from "@/features/chat/components/ChatRoomList";
+import type { ChatRoomSource } from "@/features/chat/types";
 
-import { useChatList } from "@/features/chat/hooks/useChatList";
-import type { ChatRoomSource, RoomSummary } from "@/features/chat/types";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
-import { Badge } from "@/shared/components/ui/badge";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
+
+const CHAT_LIST_LABELS = {
+	loading: "채팅방 목록 로딩중...",
+	error: "채팅방 목록을 불러오는 중 오류가 발생했어요.",
+	empty: "아직 시작된 채팅이 없어요.",
+	fetchingNextPage: "더 가져오는 중...",
+	endOfList: "마지막입니다.",
+};
 
 const CHAT_LIST_FALLBACK = (
 	<div className="flex items-center gap-2 text-muted-foreground">
 		<Spinner />
-		<Typography type="body-sm">채팅방 목록 로딩중...</Typography>
+		<Typography type="body-sm">{CHAT_LIST_LABELS.loading}</Typography>
 	</div>
 );
 
@@ -102,99 +106,8 @@ const DUMMY_CHAT_ROOMS: ChatRoomSource[] = [
 function ChatPage() {
 	return (
 		<Suspense fallback={CHAT_LIST_FALLBACK}>
-			<ChatList />
+			<ChatRoomList sourceRooms={DUMMY_CHAT_ROOMS} labels={CHAT_LIST_LABELS} />
 		</Suspense>
-	);
-}
-
-function ChatList() {
-	const { rooms, setLoaderRef, hasNextPage, isFetchingNextPage, isLoading, isError } =
-		useChatList({ sourceRooms: DUMMY_CHAT_ROOMS });
-
-	if (isLoading) {
-		return (
-			<div className="flex items-center gap-2 text-muted-foreground">
-				<Spinner />
-				<Typography type="body-sm">채팅방 목록 로딩중...</Typography>
-			</div>
-		);
-	}
-
-	if (isError) {
-		return (
-			<Typography type="body-sm" className="text-destructive">
-				채팅방 목록을 불러오는 중 오류가 발생했어요.
-			</Typography>
-		);
-	}
-
-	if (rooms.length === 0) {
-		return (
-			<Typography type="body-sm" className="text-muted-foreground">
-				아직 시작된 채팅이 없어요.
-			</Typography>
-		);
-	}
-
-	return (
-		<div className="flex flex-col gap-4">
-			<ul className="flex flex-col ">
-				{rooms.map((room) => (
-					<li key={room.chatRoomId}>
-						<ChatRoomItem room={room} />
-					</li>
-				))}
-			</ul>
-			<div ref={setLoaderRef} className="h-4" />
-			{isFetchingNextPage && (
-				<div className="flex items-center gap-2 text-muted-foreground">
-					<Spinner />
-					<Typography type="body-sm">더 가져오는 중...</Typography>
-				</div>
-			)}
-			{!hasNextPage && (
-				<Typography type="caption" className="text-center text-muted-foreground">
-					마지막입니다.
-				</Typography>
-			)}
-		</div>
-	);
-}
-
-type ChatRoomItemProps = {
-	room: RoomSummary;
-};
-
-function ChatRoomItem({ room }: ChatRoomItemProps) {
-	return (
-		<Link href={`/chat/${room.chatRoomId}`} className="w-full text-left">
-			<div className="transition-colors hover:bg-muted/40  py-3">
-				<div className="flex items-center gap-3">
-					<Avatar size="xl">
-						<AvatarImage src={room.chatPartnerAvatarUrl} alt="채팅방 프로필 이미지" />
-						<AvatarFallback>{room.chatPartnerNickname.slice(0, 1)}</AvatarFallback>
-					</Avatar>
-					<div className="flex min-w-0 flex-1 flex-col gap-1">
-						<div className="flex items-center justify-between gap-2">
-							<Typography type="subtitle" className="truncate">
-								{room.chatPartnerNickname}
-							</Typography>
-							<Typography type="caption">{room.lastMessageAt}</Typography>
-						</div>
-						<div className="flex min-w-0 items-center justify-between gap-2">
-							<Typography type="body-sm" className="truncate text-muted-foreground">
-								{room.lastMessage}
-							</Typography>
-							{room.unreadCount > 0 ? (
-								<Badge variant="product" className="h-5 min-w-5 justify-center px-1">
-									{room.unreadCount}
-								</Badge>
-							) : null}
-						</div>
-					</div>
-				</div>
-			</div>
-		</Link>
 	);
 }
 
