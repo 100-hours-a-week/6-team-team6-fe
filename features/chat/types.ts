@@ -18,6 +18,14 @@ export type ChatRoomSource = RoomSummary & {
 	postId: number;
 };
 
+export type ChatRoomListLabels = {
+	loading: string;
+	error: string;
+	empty: string;
+	fetchingNextPage: string;
+	endOfList: string;
+};
+
 export const CHAT_ROOM_LIST_VIEW_STATE = {
 	loading: "loading",
 	error: "error",

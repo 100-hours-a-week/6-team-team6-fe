@@ -9,8 +9,9 @@ import {
 	ChatRoomListLoading,
 } from "@/features/chat/components/ChatRoomListStates";
 import { useChatList } from "@/features/chat/hooks/useChatList";
+import { getChatRoomListViewState } from "@/features/chat/lib/utils";
 import {
-	CHAT_ROOM_LIST_VIEW_STATE,
+	type ChatRoomListLabels,
 	type ChatRoomListViewState,
 	type ChatRoomSource,
 	type RoomSummary,
@@ -18,14 +19,6 @@ import {
 
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
-
-type ChatRoomListLabels = {
-	loading: string;
-	error: string;
-	empty: string;
-	fetchingNextPage: string;
-	endOfList: string;
-};
 
 interface ChatRoomListViewProps {
 	state: ChatRoomListViewState;
@@ -98,20 +91,14 @@ interface ChatRoomListProps {
 	labels: ChatRoomListLabels;
 }
 
-function ChatRoomList(props: ChatRoomListProps) {
+export function ChatRoomList(props: ChatRoomListProps) {
 	const { sourceRooms, labels } = props;
 
 	const { rooms, setLoaderRef, hasNextPage, isFetchingNextPage, isLoading, isError } = useChatList({
 		sourceRooms,
 	});
 
-	const state: ChatRoomListViewState = isLoading
-		? CHAT_ROOM_LIST_VIEW_STATE.loading
-		: isError
-			? CHAT_ROOM_LIST_VIEW_STATE.error
-			: rooms.length === 0
-				? CHAT_ROOM_LIST_VIEW_STATE.empty
-				: CHAT_ROOM_LIST_VIEW_STATE.content;
+	const state = getChatRoomListViewState({ isLoading, isError, rooms });
 
 	return (
 		<ChatRoomListView
