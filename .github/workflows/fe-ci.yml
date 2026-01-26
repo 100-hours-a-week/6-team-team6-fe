@@ -70,15 +70,13 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # ============================================
-      # Standalone 모드: 필요한 파일만 패키징
       - name: Package Standalone Build
         run: |
           echo "=== Packaging Standalone Build ==="
           
           # standalone 디렉토리 확인
           if [ ! -d ".next/standalone" ]; then
-            echo "❌ Error: .next/standalone not found!"
+            echo " Error: .next/standalone not found!"
             echo "next.config.ts에 output: 'standalone' 설정이 필요합니다."
             exit 1
           fi
@@ -91,19 +89,31 @@ jobs:
             cp -r public .next/standalone/
           fi
           
-          echo "=== Build Output Size ==="
-          echo "기존 방식 (.next 전체):"
-          du -sh .next/ || true
+          # ============================================
+          # 누락될 수 있는 필수 의존성 복사
+          # Standalone이 일부 패키지를 누락하는 이슈 대응
+          # ============================================
+          DEPS_TO_COPY="styled-jsx sharp"
+          for dep in $DEPS_TO_COPY; do
+            if [ -d "node_modules/$dep" ]; then
+              echo " Copying missing dependency: $dep"
+              cp -r node_modules/$dep .next/standalone/node_modules/
+            fi
+          done
+          
           echo ""
-          echo "Standalone 방식:"
+          echo "=== Build Output Size ==="
           du -sh .next/standalone/
-          du -sh .next/standalone/.next/ || true
+          echo ""
+          echo "=== Standalone Structure ==="
+          ls -la .next/standalone/
+          ls -la .next/standalone/node_modules/ | head -20
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: .next/standalone/    # 변경: standalone 폴더만 업로드
+          path: .next/standalone/
           retention-days: 1
           if-no-files-found: error
           include-hidden-files: true
