@@ -8,7 +8,7 @@ export function SignupPage() {
 			<div className="space-y-1 mx-auto">
 				<h1 className="text-2xl font-semibold">회원가입</h1>
 			</div>
-			<Suspense>
+			<Suspense fallback={<SignupForm />}>
 				<SignupForm />
 			</Suspense>
 		</>
