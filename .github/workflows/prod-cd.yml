@@ -25,12 +25,17 @@ jobs:
 
       - name: Verify Artifact
         run: |
-          echo "=== Downloaded files ==="
-          ls -la ./frontend-build
-          ls -la ./frontend-build/.next || echo ".next not found"
-          echo "=== .next size ==="
-          du -sh ./frontend-build/.next || true
-          du -sh ./frontend-build/.next/cache || true
+          echo "=== Downloaded Standalone Build ==="
+          ls -la ./frontend-build/
+          
+          # server.js 확인 (standalone의 진입점)
+          if [ ! -f "./frontend-build/server.js" ]; then
+            echo " Error: server.js not found! Standalone 빌드가 아닙니다."
+            exit 1
+          fi
+          
+          echo "=== Size Check ==="
+          du -sh ./frontend-build/
 
       - name: Setup SSH
         run: |
@@ -41,28 +46,34 @@ jobs:
 
       - name: Compress and Upload
         run: |
-          # 캐시 제외하고 압축
-          tar --exclude='.next/cache' -czf build.tar.gz -C ./frontend-build .
+          # Standalone 빌드 압축
+          tar -czf build.tar.gz -C ./frontend-build .
           
-          # 압축 파일 크기 확인
-          echo "=== Compressed size ==="
+          echo "=== Compressed Size ==="
           ls -lh build.tar.gz
           
           # 전송
           scp -i ~/.ssh/deploy_key build.tar.gz \
               ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/deploy/
 
-      - name: Extract and Deploy
+      - name: Deploy (Blue-Green)
         run: |
-          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} '
-            export PATH=$PATH:/home/ubuntu/.npm-global/bin:/home/ubuntu/.nvm/versions/node/*/bin
-            cd /home/ubuntu/deploy
-            rm -rf frontend
-            mkdir -p frontend
-            tar -xzf build.tar.gz -C frontend
-            rm build.tar.gz
+          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY_SCRIPT'
+            set -e
+            
+            echo " [PROD] Deployment started: $(date)"
+            
+            # 압축 해제 (임시 디렉토리)
+            mkdir -p /home/ubuntu/deploy/frontend
+            rm -rf /home/ubuntu/deploy/frontend/*
+            tar -xzf /home/ubuntu/deploy/build.tar.gz -C /home/ubuntu/deploy/frontend
+            rm /home/ubuntu/deploy/build.tar.gz
+            
+            # 기존 deploy.sh 실행 (무중단 배포)
             bash /home/ubuntu/scripts/deploy.sh frontend
-          '
+            
+            echo " [PROD] Deployment completed: $(date)"
+          DEPLOY_SCRIPT
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
@@ -76,3 +87,19 @@ jobs:
       #   run: |
       #     ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
       #         'bash /home/ubuntu/scripts/rollback.sh frontend'
+
+      - name: Notify Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"content": "🚀 **[PROD] Frontend 배포 완료**\nCommit: `${{ github.event.workflow_run.head_sha }}`"}' \
+               ${{ secrets.DISCORD_WEBHOOK }} || true
+
+      - name: Notify Failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d '{"content": " **[PROD] Frontend 배포 실패** @here\nCommit: `${{ github.event.workflow_run.head_sha }}`"}' \
+               ${{ secrets.DISCORD_WEBHOOK }} || true

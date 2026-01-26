@@ -24,7 +24,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: '9'
 
@@ -36,6 +36,9 @@ jobs:
 
       - name: Install Dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Type Check
+        run: pnpm tsc --noEmit
 
       - name: Lint
         run: pnpm lint
@@ -51,7 +54,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v2
+        uses: pnpm/action-setup@v4
         with:
           version: '9'
 
@@ -67,25 +70,42 @@ jobs:
       - name: Build
         run: pnpm build
 
-      # 추가: 빌드 결과 확인
-      - name: Verify Build Output
+      # ============================================
+      # Standalone 모드: 필요한 파일만 패키징
+      - name: Package Standalone Build
         run: |
-          echo "=== Build output ==="
-          ls -la .next/
-          du -sh .next/
+          echo "=== Packaging Standalone Build ==="
+          
+          # standalone 디렉토리 확인
+          if [ ! -d ".next/standalone" ]; then
+            echo "❌ Error: .next/standalone not found!"
+            echo "next.config.ts에 output: 'standalone' 설정이 필요합니다."
+            exit 1
+          fi
+          
+          # static 파일 복사 (standalone에는 포함 안됨)
+          cp -r .next/static .next/standalone/.next/
+          
+          # public 폴더 복사
+          if [ -d "public" ]; then
+            cp -r public .next/standalone/
+          fi
+          
+          echo "=== Build Output Size ==="
+          echo "기존 방식 (.next 전체):"
+          du -sh .next/ || true
+          echo ""
+          echo "Standalone 방식:"
+          du -sh .next/standalone/
+          du -sh .next/standalone/.next/ || true
 
       - name: Upload Build Artifact
         uses: actions/upload-artifact@v4
         with:
           name: frontend-build
-          path: |
-            .next/
-            public/
-            package.json
-            pnpm-lock.yaml
-            next.config.ts
+          path: .next/standalone/    # 변경: standalone 폴더만 업로드
           retention-days: 1
-          if-no-files-found: error  # 추가: 파일 없으면 에러
+          if-no-files-found: error
           include-hidden-files: true
 
   notify-failure:
