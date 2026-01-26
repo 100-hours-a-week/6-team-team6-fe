@@ -73,7 +73,7 @@ jobs:
             sudo mkdir -p /opt/billage/frontend
             
             # 파일 이동
-            sudo cp -r frontend_temp/* /opt/billage/frontend/
+            sudo cp -a frontend_temp/. /opt/billage/frontend/
             
             # 소유권 변경
             sudo chown -R ubuntu:ubuntu /opt/billage/frontend
