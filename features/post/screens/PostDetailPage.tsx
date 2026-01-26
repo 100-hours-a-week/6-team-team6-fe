@@ -34,17 +34,16 @@ import {
 	DrawerFooter,
 	DrawerTitle,
 } from "@/shared/components/ui/drawer";
-import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/shared/components/ui/select";
+import { SelectField, type SelectOption } from "@/shared/components/ui/select-field";
 import { Separator } from "@/shared/components/ui/separator";
 import { Typography } from "@/shared/components/ui/typography";
 
 import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
+
+const rentalStatusOptions: SelectOption[] = [
+	{ value: "available", label: <Typography>대여 가능</Typography> },
+	{ value: "rented_out", label: <Typography>대여중</Typography> },
+];
 
 // TODO: 404
 export function PostDetailPage() {
@@ -153,19 +152,12 @@ export function PostDetailPage() {
 									{formatRentalFeeLabel(post.rentalFee, post.feeUnit)}
 								</Typography>
 								{post.isSeller && (
-									<Select defaultValue={rentalStatusValue}>
-										<SelectTrigger size="sm" aria-label="대여 상태">
-											<SelectValue />
-										</SelectTrigger>
-										<SelectContent>
-											<SelectItem value="available">
-												<Typography>대여 가능</Typography>
-											</SelectItem>
-											<SelectItem value="rented_out">
-												<Typography>대여중</Typography>
-											</SelectItem>
-										</SelectContent>
-									</Select>
+									<SelectField
+										defaultValue={rentalStatusValue}
+										options={rentalStatusOptions}
+										ariaLabel="대여 상태"
+										size="sm"
+									/>
 								)}
 							</div>
 							<div>{formatKoreanDateYMD(post.updatedAt)}</div>

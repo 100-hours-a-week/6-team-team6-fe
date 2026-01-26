@@ -1,0 +1,242 @@
+"use client";
+
+import { type FormEvent } from "react";
+
+import Image from "next/image";
+
+import { Plus, X } from "lucide-react";
+
+import PostEditorNavigation from "@/features/post/components/PostEditorNavigation";
+import type {
+	PostEditorErrors,
+	PostEditorImageState,
+	PostEditorValues,
+} from "@/features/post/hooks/usePostEditor";
+
+import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
+import { Button } from "@/shared/components/ui/button";
+import { IconButton } from "@/shared/components/ui/icon-button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { SelectField, type SelectOption } from "@/shared/components/ui/select-field";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Typography } from "@/shared/components/ui/typography";
+
+const rentalUnitOptions: SelectOption[] = [
+	{ value: "HOUR", label: "시간" },
+	{ value: "DAY", label: "일" },
+];
+
+interface PostEditorViewProps {
+	mode: "create" | "edit";
+	values: PostEditorValues;
+	images: PostEditorImageState;
+	errors: PostEditorErrors;
+	isSubmitting: boolean;
+	onChangeField: <Key extends keyof PostEditorValues>(
+		key: Key,
+		value: PostEditorValues[Key],
+	) => void;
+	onAddImages: (fileList: FileList | null) => void | Promise<void>;
+	onRemoveExistingImage: (imageId: string) => void;
+	onRemoveAddedImage: (index: number) => void;
+	onSubmitForm: (event: FormEvent<HTMLFormElement>) => void | Promise<void>;
+	onCancel?: () => void;
+}
+
+export function PostEditorView(props: PostEditorViewProps) {
+	const {
+		mode,
+		values,
+		images,
+		errors,
+		isSubmitting,
+		onChangeField,
+		onAddImages,
+		onRemoveExistingImage,
+		onRemoveAddedImage,
+		onSubmitForm,
+		onCancel,
+	} = props;
+
+	return (
+		<>
+			<form className="flex flex-col gap-6" onSubmit={onSubmitForm}>
+				<div className="flex flex-col gap-2">
+					<Input
+						id="post-images"
+						type="file"
+						accept="image/*"
+						multiple
+						disabled={isSubmitting}
+						className="sr-only"
+						onChange={(event) => onAddImages(event.target.files)}
+					/>
+					<div className="flex flex-col gap-2 mt-2">
+						<ul className="flex gap-2 overflow-scroll no-scrollbar mx-(--p-layout-horizontal)">
+							<li className="flex items-center gap-2">
+								<Label
+									htmlFor="post-images"
+									className={`w-19 h-19 flex items-center justify-center rounded-md border border-dashed text-muted-foreground transition ${
+										isSubmitting
+											? "pointer-events-none opacity-50"
+											: "cursor-pointer hover:text-foreground hover:border-foreground/60"
+									}`}
+								>
+									<Plus className="h-5 w-5" />
+									<span className="sr-only">이미지 추가</span>
+								</Label>
+							</li>
+							{images.existing.length > 0 &&
+								images.existing.map((image) => {
+									console.log(image);
+									return (
+										<li key={image.id} className="flex items-center justify-between gap-2">
+											<div className="w-19 h-19 relative">
+												<div className="absolute top-0 right-0 z-1">
+													<IconButton
+														onClick={() => onRemoveExistingImage(image.id)}
+														disabled={isSubmitting}
+														icon={<X />}
+													/>
+												</div>
+												<Image alt="" src={image.url} width={100} height={100} />
+											</div>
+										</li>
+									);
+								})}
+							{images.added.map((addedImage, index) => {
+								return (
+									<li key={`${addedImage.file.name}-${index}`} className="flex items-center gap-2">
+										<div className="w-19 h-19 relative ">
+											<div className="absolute top-0 right-0 z-1 ">
+												<IconButton
+													onClick={() => onRemoveAddedImage(index)}
+													disabled={isSubmitting}
+													icon={<X />}
+												/>
+											</div>
+											<Image
+												alt=""
+												src={addedImage.previewUrl}
+												fill
+												sizes="76px"
+												className="object-cover"
+											/>
+										</div>
+									</li>
+								);
+							})}
+						</ul>
+					</div>
+					{errors.images && (
+						<Typography type="caption" className="text-destructive">
+							{errors.images}
+						</Typography>
+					)}
+				</div>
+
+				<HorizontalPaddingBox>
+					<div>
+						<Button type="button">AI 자동 작성</Button>
+					</div>
+				</HorizontalPaddingBox>
+
+				<HorizontalPaddingBox className="flex flex-col gap-4">
+					<div className="flex flex-col gap-2">
+						<Label className="text-sm font-bold" htmlFor="post-title">
+							제목
+						</Label>
+						<Input
+							id="post-title"
+							value={values.title}
+							onChange={(event) => onChangeField("title", event.target.value)}
+							aria-invalid={!!errors.title}
+							disabled={isSubmitting}
+						/>
+						{errors.title && (
+							<Typography type="caption" className="text-destructive">
+								{errors.title}
+							</Typography>
+						)}
+					</div>
+
+					<div className="flex flex-col gap-2">
+						<Label className="text-sm font-bold" htmlFor="post-content">
+							내용
+						</Label>
+						<Textarea
+							id="post-content"
+							value={values.content}
+							onChange={(event) => onChangeField("content", event.target.value)}
+							aria-invalid={!!errors.content}
+							disabled={isSubmitting}
+							className="resize-none"
+						/>
+						{errors.content && (
+							<Typography type="caption" className="text-destructive">
+								{errors.content}
+							</Typography>
+						)}
+					</div>
+
+					<div className="flex flex-col gap-2">
+						<Label className="text-sm font-bold" htmlFor="post-rentalFee">
+							대여료
+						</Label>
+						<div className="flex items-center gap-2">
+							<Input
+								id="post-rentalFee"
+								type="number"
+								inputMode="numeric"
+								min={0}
+								value={Number.isNaN(values.rentalFee) ? "" : values.rentalFee}
+								onChange={(event) => {
+									const nextValue = Number(event.target.value);
+									onChangeField("rentalFee", Number.isNaN(nextValue) ? 0 : nextValue);
+								}}
+								aria-invalid={!!errors.rentalFee}
+								disabled={isSubmitting}
+							/>
+							<SelectField
+								value={values.feeUnit}
+								onValueChange={(value) =>
+									onChangeField("feeUnit", value as PostEditorValues["feeUnit"])
+								}
+								disabled={isSubmitting}
+								options={rentalUnitOptions}
+								ariaLabel="대여 단위"
+								size="sm"
+							/>
+						</div>
+						{errors.rentalFee && (
+							<Typography type="caption" className="text-destructive">
+								{errors.rentalFee}
+							</Typography>
+						)}
+						{errors.feeUnit && (
+							<Typography type="caption" className="text-destructive">
+								{errors.feeUnit}
+							</Typography>
+						)}
+					</div>
+				</HorizontalPaddingBox>
+
+				<div className="flex items-center gap-2 ">
+					{onCancel && (
+						<Button
+							type="button"
+							variant="outline"
+							size="lg"
+							onClick={onCancel}
+							disabled={isSubmitting}
+						>
+							취소
+						</Button>
+					)}
+				</div>
+				<PostEditorNavigation mode={mode} onClick={() => {}} />
+			</form>
+		</>
+	);
+}

@@ -13,8 +13,6 @@ interface GroupPostsPageProps {
 export function GroupPostsPage(props: GroupPostsPageProps) {
 	const { groupId } = props;
 
-	console.log(groupId);
-
 	return (
 		<ul className="flex flex-col gap-6 py-6">
 			{DUMMY_POSTS.map((post, index) => (

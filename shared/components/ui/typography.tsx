@@ -25,6 +25,8 @@ type TypographyProps = React.ComponentPropsWithoutRef<"p"> &
 		asChild?: boolean;
 	};
 
+export type TypographyType = NonNullable<VariantProps<typeof typographyVariants>["type"]>;
+
 function Typography({ className, type = "body", asChild = false, ...props }: TypographyProps) {
 	const Comp = asChild ? Slot.Root : type === "title" ? "h2" : type === "caption" ? "span" : "p";
 
@@ -39,3 +41,4 @@ function Typography({ className, type = "body", asChild = false, ...props }: Typ
 }
 
 export { Typography, typographyVariants };
+export type { TypographyProps };
