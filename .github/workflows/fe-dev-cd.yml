@@ -12,78 +12,53 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: Download CI Artifacts
         uses: dawidd6/action-download-artifact@v6
         with:
-          workflow: fe-ci.yml
+          workflow: ${{ github.event.workflow_run.workflow_id }}
           run_id: ${{ github.event.workflow_run.id }}
           name: frontend-build
           path: ./frontend-build
 
-      - name: Verify Artifact
-        run: |
-          echo "=== Downloaded files ==="
-          ls -la ./frontend-build
-          ls -la ./frontend-build/.next || echo ".next not found"
-          echo "=== .next size ==="
-          du -sh ./frontend-build/.next || true
-          du -sh ./frontend-build/.next/cache || true
+      
+      # artifacts를 압축해서 서버로 전송합니다.
+      - name: Upload to EC2
+        uses: appleboy/scp-action@master
+        with:
+          host: ${{ secrets.DEV_EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          source: "frontend-build/**/*"
+          target: "/home/ubuntu/deploy_temp"
+          strip_components: 1 # frontend-build 폴더 껍데기 벗기기
 
-      - name: Setup SSH
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ~/.ssh/deploy_key
-          chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.DEV_EC2_HOST }} >> ~/.ssh/known_hosts
-
-      - name: Compress and Upload
-        run: |
-          # 캐시 제외하고 압축
-          tar --exclude='.next/cache' -czf build.tar.gz -C ./frontend-build .
-          
-          # 압축 파일 크기 확인
-          echo "=== Compressed size ==="
-          ls -lh build.tar.gz
-
-          # 디렉토리 생성
-          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.DEV_EC2_HOST }} 'mkdir -p /home/ubuntu/deploy'
-
-          # 전송
-          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no build.tar.gz \
-              ubuntu@${{ secrets.DEV_EC2_HOST }}:/home/ubuntu/deploy/
-
-      - name: Extract and Deploy
-        run: |
-          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.DEV_EC2_HOST }} '
-            export PATH=$PATH:/home/ubuntu/.npm-global/bin:/home/ubuntu/.nvm/versions/node/*/bin
-            cd /home/ubuntu/deploy
-            
-            # 이전 빌드 정리
-            rm -rf frontend_temp
-            mkdir -p frontend_temp
-            
-            # 압축 해제
-            tar -xzf build.tar.gz -C frontend_temp
-            
-            # 기존 폴더 삭제 및 새 폴더 생성
-            sudo rm -rf /opt/billage/frontend
+     
+      # 서버에 접속해서 압축 풀고 재시작
+      - name: Deploy & Restart
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.DEV_EC2_HOST }}
+          username: ubuntu
+          key: ${{ secrets.DEV_EC2_SSH_KEY }}
+          script: |
+            # 1. 배포 경로 준비
             sudo mkdir -p /opt/billage/frontend
+            sudo chown ubuntu:ubuntu /opt/billage/frontend
             
-            # 파일 이동
-            sudo cp -r frontend_temp/* /opt/billage/frontend/
+            # 2. 기존 파일 정리 (선택: 깔끔하게 지우고 시작)
+            rm -rf /opt/billage/frontend/*
             
-            # 소유권 변경
-            sudo chown -R ubuntu:ubuntu /opt/billage/frontend
-
-            # 임시 파일 정리
-            rm -rf frontend_temp
-            rm build.tar.gz
-
-            # 서비스 재시작
+            # 3. 파일 이동 (Standalone 빌드 기준)
+            # 주의: CI에서 업로드한 구조에 따라 경로가 다를 수 있습니다.
+            # 아래는 .next 통째로 받았을 때의 예시입니다.
+            cp -r /home/ubuntu/deploy_temp/* /opt/billage/frontend/
+            
+            # 4. 임시 파일 삭제
+            rm -rf /home/ubuntu/deploy_temp
+            
+            # 5. 서비스 재시작
             sudo systemctl restart billage-frontend
-          '
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+            
+            # 6. 확인
+            sleep 2
+            systemctl status billage-frontend --no-pager
