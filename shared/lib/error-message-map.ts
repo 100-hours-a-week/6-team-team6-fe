@@ -1,4 +1,4 @@
-import { type ApiErrorCode,apiErrorCodes } from "@/shared/lib/error-codes";
+import { type ApiErrorCode, apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { authErrorMessages, authValidationMessages } from "@/shared/lib/error-messages";
 
 export const apiErrorMessageMap: Record<ApiErrorCode, string> = {

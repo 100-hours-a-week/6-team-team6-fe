@@ -1,4 +1,4 @@
-import type { ApiErrorCode } from "@/shared/lib/error-codes";
+import type { ApiErrorCode } from "@/shared/lib/api/api-error-codes";
 
 declare global {
 	namespace Api {
