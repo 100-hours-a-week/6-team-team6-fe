@@ -45,11 +45,14 @@ export const authOptions: NextAuthOptions = {
 		async jwt({ token, user, trigger }) {
 			// 1. 초기 로그인 시
 			if (user) {
+				const userId = user.id ? String(user.id) : undefined;
 				const xsrfToken = user.xsrfToken ?? (await getAuthCookieValues()).xsrfToken;
 
 				return {
+					...token,
 					accessToken: user.accessToken,
 					accessTokenExpires: Date.now() + 1000 * 60 * 60, // 1시간
+					userId,
 					xsrfToken, // 재발행 시 헤더에 반영 필요
 				};
 			}
@@ -71,6 +74,9 @@ export const authOptions: NextAuthOptions = {
 			session.accessToken = token.accessToken;
 			session.xsrfToken = token.xsrfToken; // 클라이언트 API 호출 시 필요
 			session.error = token.error;
+			if (token.userId) {
+				session.user = { ...(session.user ?? {}), id: token.userId };
+			}
 			return session;
 		},
 	},
