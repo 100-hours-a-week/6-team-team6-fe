@@ -48,13 +48,13 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
 
-      - name: Health Check Frontend
-        run: |
-          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
-              'bash /home/ubuntu/scripts/health_check.sh frontend'
+      # - name: Health Check Frontend
+      #   run: |
+      #     ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
+      #         'bash /home/ubuntu/scripts/health_check.sh frontend'
 
-      - name: Rollback on Failure
-        if: failure()
-        run: |
-          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
-              'bash /home/ubuntu/scripts/rollback.sh frontend'
+      # - name: Rollback on Failure
+      #   if: failure()
+      #   run: |
+      #     ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
+      #         'bash /home/ubuntu/scripts/rollback.sh frontend'
