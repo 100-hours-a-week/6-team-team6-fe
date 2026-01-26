@@ -63,7 +63,7 @@ jobs:
             
             DEPLOY_PATH="/opt/billage/frontend"
             
-            echo "🚀 [DEV] Deployment started: $(date)"
+            echo " [DEV] Deployment started: $(date)"
             
             # 압축 해제
             mkdir -p /home/ubuntu/deploy/frontend_temp
@@ -87,17 +87,17 @@ jobs:
             # ============================================
             # 또는 PM2 사용 시 (선택 2: PM2)
             # ============================================
-              cd $DEPLOY_PATH
-              if command -v pm2 &> /dev/null; then
-                if pm2 describe billage-frontend-dev > /dev/null 2>&1; then
-                  pm2 reload billage-frontend-dev
-                else
-                  PORT=3000 HOSTNAME=0.0.0.0 pm2 start server.js --name billage-frontend-dev
-                  pm2 save
-                fi
+            cd $DEPLOY_PATH
+            if command -v pm2 &> /dev/null; then
+              if pm2 describe billage-frontend-dev > /dev/null 2>&1; then
+                pm2 reload billage-frontend-dev
               else
-                sudo systemctl restart billage-frontend
+                PORT=3000 HOSTNAME=0.0.0.0 pm2 start server.js --name billage-frontend-dev
+                pm2 save
               fi
+            else
+              sudo systemctl restart billage-frontend
+            fi
             
             echo " [DEV] Deployment completed: $(date)"
           DEPLOY_SCRIPT
@@ -113,7 +113,7 @@ jobs:
                 echo "Health check passed"
                 exit 0
               fi
-              echo "⏳ Waiting for app... ($i/10)"
+              echo " Waiting for app... ($i/10)"
               sleep 2
             done
             echo " Health check failed"
