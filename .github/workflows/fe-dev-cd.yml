@@ -1,10 +1,10 @@
-name: Frontend CD
+name: Frontend Dev CD
 
 on:
   workflow_run:
     workflows: ["Frontend CI"]
     types: [completed]
-    branches: [main]
+    branches: [develop]
 
 jobs:
   deploy:
@@ -35,9 +35,9 @@ jobs:
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/deploy_key
+          echo "${{ secrets.DEV_EC2_SSH_KEY }}" > ~/.ssh/deploy_key
           chmod 600 ~/.ssh/deploy_key
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
+          ssh-keyscan -H ${{ secrets.DEV_EC2_HOST }} >> ~/.ssh/known_hosts
 
       - name: Compress and Upload
         run: |
@@ -50,29 +50,37 @@ jobs:
           
           # 전송
           scp -i ~/.ssh/deploy_key build.tar.gz \
-              ubuntu@${{ secrets.EC2_HOST }}:/home/ubuntu/deploy/
+              ubuntu@${{ secrets.DEV_EC2_HOST }}:/home/ubuntu/deploy/
 
       - name: Extract and Deploy
         run: |
-          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} '
+          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.DEV_EC2_HOST }} '
             export PATH=$PATH:/home/ubuntu/.npm-global/bin:/home/ubuntu/.nvm/versions/node/*/bin
             cd /home/ubuntu/deploy
-            rm -rf frontend
-            mkdir -p frontend
-            tar -xzf build.tar.gz -C frontend
+            
+            # 이전 빌드 정리
+            rm -rf frontend_temp
+            mkdir -p frontend_temp
+            
+            # 압축 해제
+            tar -xzf build.tar.gz -C frontend_temp
+            
+            # 기존 폴더 삭제 및 새 폴더 생성
+            sudo rm -rf /opt/billage/frontend
+            sudo mkdir -p /opt/billage/frontend
+            
+            # 파일 이동
+            sudo cp -r frontend_temp/* /opt/billage/frontend/
+            
+            # 소유권 변경
+            sudo chown -R ubuntu:ubuntu /opt/billage/frontend
+
+            # 임시 파일 정리
+            rm -rf frontend_temp
             rm build.tar.gz
-            bash /home/ubuntu/scripts/deploy.sh frontend
+
+            # 서비스 재시작
+            sudo systemctl restart billage-frontend
           '
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-
-      # - name: Health Check Frontend
-      #   run: |
-      #     ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
-      #         'bash /home/ubuntu/scripts/health_check.sh frontend'
-
-      # - name: Rollback on Failure
-      #   if: failure()
-      #   run: |
-      #     ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} \
-      #         'bash /home/ubuntu/scripts/rollback.sh frontend'
