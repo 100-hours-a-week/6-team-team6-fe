@@ -48,8 +48,11 @@ jobs:
           echo "=== Compressed size ==="
           ls -lh build.tar.gz
           
+          # 디렉토리 생성
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ubuntu@${{ secrets.DEV_EC2_HOST }} 'mkdir -p /home/ubuntu/deploy'
+
           # 전송
-          scp -i ~/.ssh/deploy_key build.tar.gz \
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no build.tar.gz \
               ubuntu@${{ secrets.DEV_EC2_HOST }}:/home/ubuntu/deploy/
 
       - name: Extract and Deploy
