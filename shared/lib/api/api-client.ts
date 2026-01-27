@@ -72,8 +72,12 @@ export const apiClient = ky.create({
 					return;
 				}
 
-				// 그 외 401은 별도 처리 안 하고 그대로 리턴
-				return;
+				try {
+					return await response.clone().json();
+				} catch {
+					// JSON이 아니면 Response 객체 그대로 반환
+					return response;
+				}
 			},
 		],
 	},
