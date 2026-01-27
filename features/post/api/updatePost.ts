@@ -6,6 +6,7 @@ import { updateMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { request } from "@/shared/lib/api/request";
 
 const UpdatePostResponseSchema = z.object({
 	postId: z.number(),
@@ -77,21 +78,13 @@ async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse>
 		formData.append("newImages", file);
 	});
 
-	const response = await apiClient.put(`groups/${groupId}/posts/${postId}`, {
-		body: formData,
-	});
-
-	const data = await response.json().catch(() => null);
-
-	if (!response.ok) {
-		const errorCode =
-			typeof data === "object" && data !== null
-				? (data as { errorCode?: string }).errorCode
-				: undefined;
-		throw new UpdatePostError(response.status, errorCode);
-	}
-
-	return UpdatePostResponseSchema.parse(data);
+	return await request(
+		apiClient.put(`groups/${groupId}/posts/${postId}`, {
+			body: formData,
+		}),
+		UpdatePostResponseSchema,
+		UpdatePostError,
+	);
 }
 
 export type { UpdatePostImageInfo, UpdatePostParams, UpdatePostResponse };

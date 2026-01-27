@@ -5,6 +5,7 @@ import type { PostDetailDto } from "@/features/post/schemas";
 import { PostDetailDtoSchema, PostDetailResponseApiSchema } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { request } from "@/shared/lib/api/request";
 
 type GetPostDetailParams = {
 	groupId: string;
@@ -41,19 +42,12 @@ async function getPostDetail(params: GetPostDetailParams): Promise<PostDetailDto
 		return PostDetailDtoSchema.parse(mockPost);
 	}
 
-	const response = await apiClient.get(`groups/${groupId}/posts/${postId}`);
-	const data = await response.json().catch(() => null);
-
-	if (!response.ok) {
-		const errorCode =
-			typeof data === "object" && data !== null
-				? (data as { errorCode?: string }).errorCode
-				: undefined;
-		throw new PostDetailError(response.status, errorCode);
-	}
-
-	const parsed = PostDetailResponseApiSchema.parse(data);
-	const { imageUrls, ...rest } = parsed;
+	const data = await request(
+		apiClient.get(`groups/${groupId}/posts/${postId}`),
+		PostDetailResponseApiSchema,
+		PostDetailError,
+	);
+	const { imageUrls, ...rest } = data;
 
 	return PostDetailDtoSchema.parse({
 		...rest,

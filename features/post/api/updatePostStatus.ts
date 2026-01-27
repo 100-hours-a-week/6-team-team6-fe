@@ -5,6 +5,7 @@ import { z } from "zod";
 import { updateMockPostStatus, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { request } from "@/shared/lib/api/request";
 
 const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
 
@@ -51,21 +52,13 @@ async function updatePostStatus(params: UpdatePostStatusParams): Promise<UpdateP
 		return UpdatePostStatusResponseSchema.parse(updated);
 	}
 
-	const response = await apiClient.patch(`groups/${groupId}/posts/${postId}`, {
-		json: { status },
-	});
-
-	const data = await response.json().catch(() => null);
-
-	if (!response.ok) {
-		const errorCode =
-			typeof data === "object" && data !== null
-				? (data as { errorCode?: string }).errorCode
-				: undefined;
-		throw new UpdatePostStatusError(response.status, errorCode);
-	}
-
-	return UpdatePostStatusResponseSchema.parse(data);
+	return await request(
+		apiClient.patch(`groups/${groupId}/posts/${postId}`, {
+			json: { status },
+		}),
+		UpdatePostStatusResponseSchema,
+		UpdatePostStatusError,
+	);
 }
 
 export type { UpdatePostStatusParams, UpdatePostStatusResponse };

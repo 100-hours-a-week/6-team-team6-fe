@@ -8,6 +8,7 @@ import {
 } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { request } from "@/shared/lib/api/request";
 
 type GetGroupPostsParams = {
 	groupId: string;
@@ -38,18 +39,12 @@ async function getGroupPosts(params: GetGroupPostsParams): Promise<PostSummaries
 
 	const searchParams = cursor ? { cursor } : undefined;
 
-	const response = await apiClient.get(`groups/${groupId}/posts`, { searchParams });
-	const data = await response.json().catch(() => null);
+	const parsed = await request(
+		apiClient.get(`groups/${groupId}/posts`, { searchParams }),
+		PostSummariesResponseApiSchema,
+		GroupPostsError,
+	);
 
-	if (!response.ok) {
-		const errorCode =
-			typeof data === "object" && data !== null
-				? (data as { errorCode?: string }).errorCode
-				: undefined;
-		throw new GroupPostsError(response.status, errorCode);
-	}
-
-	const parsed = PostSummariesResponseApiSchema.parse(data);
 	return PostSummariesResponseDtoSchema.parse({
 		summaries: parsed.postSummaries,
 		nextCursor: parsed.nextCursor,

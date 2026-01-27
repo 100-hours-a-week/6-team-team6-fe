@@ -6,6 +6,7 @@ import { createMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { request } from "@/shared/lib/api/request";
 
 const CreatePostResponseSchema = z.object({
 	postId: z.number(),
@@ -56,23 +57,19 @@ async function createPost(params: CreatePostParams): Promise<CreatePostResponse>
 	formData.append("content", content);
 	formData.append("rentalFee", String(rentalFee));
 	formData.append("feeUnit", feeUnit);
-	formData.append("imageUrls", JSON.stringify(newImages.map((file) => file.name)));
+	formData.append(
+		"imageUrls",
+		JSON.stringify(newImages.map((file) => file.name)),
+	);
 	newImages.forEach((file) => {
 		formData.append("newImages", file);
 	});
 
-	const response = await apiClient.post(`groups/${groupId}/posts`, { body: formData });
-	const data = await response.json().catch(() => null);
-
-	if (!response.ok) {
-		const errorCode =
-			typeof data === "object" && data !== null
-				? (data as { errorCode?: string }).errorCode
-				: undefined;
-		throw new CreatePostError(response.status, errorCode);
-	}
-
-	return CreatePostResponseSchema.parse(data);
+	return await request(
+		apiClient.post(`groups/${groupId}/posts`, { body: formData }),
+		CreatePostResponseSchema,
+		CreatePostError,
+	);
 }
 
 export type { CreatePostParams, CreatePostResponse };

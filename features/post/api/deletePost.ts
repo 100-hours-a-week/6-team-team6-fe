@@ -3,6 +3,7 @@
 import { deleteMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { requestVoid } from "@/shared/lib/api/request";
 
 type DeletePostParams = {
 	groupId: string;
@@ -39,18 +40,7 @@ async function deletePost(params: DeletePostParams): Promise<void> {
 		return;
 	}
 
-	const response = await apiClient.delete(`groups/${groupId}/posts/${postId}`);
-
-	if (response.ok) {
-		return;
-	}
-
-	const data = await response.json().catch(() => null);
-	const errorCode =
-		typeof data === "object" && data !== null
-			? (data as { errorCode?: string }).errorCode
-			: undefined;
-	throw new DeletePostError(response.status, errorCode);
+	await requestVoid(apiClient.delete(`groups/${groupId}/posts/${postId}`), DeletePostError);
 }
 
 export type { DeletePostParams };
