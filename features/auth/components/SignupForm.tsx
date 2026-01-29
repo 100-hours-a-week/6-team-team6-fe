@@ -14,8 +14,16 @@ import { Button } from "@/shared/components/ui/button";
 import { Form } from "@/shared/components/ui/form";
 import { Spinner } from "@/shared/components/ui/spinner";
 
+import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
+import { ApiRequestError, request } from "@/shared/lib/api/request";
+import StatusCodes from "@/shared/lib/api/status-codes";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { authErrorMessages } from "@/shared/lib/error-messages";
+
+const SignupResponseSchema = z.object({
+	userId: z.number(),
+});
 
 type SignupFormValues = z.infer<typeof signupSchema>;
 
@@ -40,6 +48,7 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
 	const {
 		handleSubmit,
 		control,
+		setError,
 		formState: { isSubmitting },
 	} = form;
 
@@ -50,30 +59,36 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
 				return;
 			}
 
-			const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/auth/signup`, {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/json",
-				},
-				body: JSON.stringify({
-					loginId: values.loginId,
-					password: values.password,
+			await request(
+				apiClient.post("users", {
+					json: {
+						loginId: values.loginId,
+						password: values.password,
+					},
 				}),
-			});
-
-			const data = await response.json().catch(() => ({}));
-
-			if (!response.ok) {
-				const message =
-					getApiErrorMessage(data?.errorCode) ?? data?.message ?? authErrorMessages.signupFailed;
-				toast.error(message);
-				return;
-			}
+				SignupResponseSchema,
+			);
 
 			toast.success("회원가입이 완료되었습니다.");
 			router.push("/login");
 		} catch (error) {
-			toast.error(error instanceof Error ? error.message : authErrorMessages.signupFailed);
+			if (error instanceof ApiRequestError) {
+				if (
+					error.status === StatusCodes.CONFLICT &&
+					error.code === apiErrorCodes.USER_DUPLICATE_LOGIN_ID
+				) {
+					setError("loginId", {
+						type: "server",
+						message: authErrorMessages.signupExistingId,
+					});
+					return;
+				}
+			}
+
+			const errorCode =
+				error instanceof ApiRequestError ? (error.code ?? error.message) : undefined;
+			const message = getApiErrorMessage(errorCode) ?? authErrorMessages.signupFailed;
+			toast.error(message);
 		}
 	};
 
