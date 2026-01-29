@@ -1,4 +1,4 @@
-import { MyPage } from "@/features/mypage/screens/MyPage";
+import { MyPage } from "@/features/auth/screens/MyPage";
 
 export default function Page() {
 	return <MyPage />;

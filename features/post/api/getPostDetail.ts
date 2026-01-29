@@ -5,6 +5,7 @@ import type { PostDetailDto } from "@/features/post/schemas";
 import { PostDetailDtoSchema, PostDetailResponseApiSchema } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 type GetPostDetailParams = {
@@ -14,13 +15,13 @@ type GetPostDetailParams = {
 
 class PostDetailError extends Error {
 	status: number;
-	errorCode?: string;
+	code?: string;
 
-	constructor(status: number, errorCode?: string) {
-		super(errorCode ?? "UNKNOWN_ERROR");
+	constructor(status: number, code?: string) {
+		super(code ?? "UNKNOWN_ERROR");
 		this.name = "PostDetailError";
 		this.status = status;
-		this.errorCode = errorCode;
+		this.code = code;
 	}
 }
 
@@ -29,15 +30,15 @@ async function getPostDetail(params: GetPostDetailParams): Promise<PostDetailDto
 
 	if (USE_POST_MOCKS) {
 		if (!groupId) {
-			throw new PostDetailError(404, "GROUP_NOT_FOUND");
+			throw new PostDetailError(404, apiErrorCodes.GROUP_NOT_FOUND);
 		}
 		const postIdNumber = Number(postId);
 		if (Number.isNaN(postIdNumber)) {
-			throw new PostDetailError(404, "POST_NOT_FOUND");
+			throw new PostDetailError(404, apiErrorCodes.POST_NOT_FOUND);
 		}
 		const mockPost = getMockPostDetail(postIdNumber);
 		if (!mockPost) {
-			throw new PostDetailError(404, "POST_NOT_FOUND");
+			throw new PostDetailError(404, apiErrorCodes.POST_NOT_FOUND);
 		}
 		return PostDetailDtoSchema.parse(mockPost);
 	}

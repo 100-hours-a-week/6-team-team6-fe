@@ -6,8 +6,10 @@ import { getSession, signOut } from "next-auth/react";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import StatusCodes from "@/shared/lib/api/status-codes";
 
+const API_PROXY_PREFIX = "/api/proxy";
+
 export const apiClient = ky.create({
-	prefixUrl: process.env.NEXT_PUBLIC_API_URL,
+	prefixUrl: API_PROXY_PREFIX,
 	throwHttpErrors: false,
 	hooks: {
 		beforeRequest: [
@@ -44,11 +46,11 @@ export const apiClient = ky.create({
 					return;
 				}
 
-				const errorCode = data?.errorCode;
+				const errorCode = data?.code;
 				const alreadyRetried = request.headers.get("X-Retried") === "true";
 
 				// 1) Access Token 관련 인증 실패 → 세션 새로 받아서 한 번만 재시도
-				if (!alreadyRetried && errorCode === apiErrorCodes.AUTH_FAILED) {
+				if (!alreadyRetried && errorCode === apiErrorCodes.TOKEN_INVALID_ACCESS) {
 					const newSession = await getSession(); // jwt callback -> refreshAccessToken 실행
 
 					if (newSession?.accessToken) {
@@ -64,9 +66,8 @@ export const apiClient = ky.create({
 
 				// 2) Refresh Token 만료/폐기
 				if (
-					errorCode === apiErrorCodes.EXPIRED_REFRESH_TOKEN ||
-					errorCode === apiErrorCodes.INVALID_REFRESH_TOKEN ||
-					errorCode === apiErrorCodes.REVOKED_REFRESH_TOKEN
+					errorCode === apiErrorCodes.TOKEN_EXPIRED_REFRESH ||
+					errorCode === apiErrorCodes.TOKEN_INVALID_REFRESH
 				) {
 					await signOut({ callbackUrl: "/login" });
 					return;

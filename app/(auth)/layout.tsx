@@ -1,13 +1,25 @@
 import React from "react";
 
+import { redirect } from "next/navigation";
+
+import { getServerSession } from "next-auth";
+
 import LogoHeader from "@/shared/components/layout/headers/LogoHeader";
+
+import { authOptions } from "@/shared/lib/auth";
+import { routeConst } from "@/shared/lib/constants";
 
 interface AuthLayoutProps {
 	children: React.ReactNode;
 }
 
-function AuthLayout(props: AuthLayoutProps) {
+async function AuthLayout(props: AuthLayoutProps) {
 	const { children } = props;
+	const session = await getServerSession(authOptions);
+
+	if (session) {
+		redirect(routeConst.DEFAULT_AUTH_REDIRECT_PATH);
+	}
 
 	return (
 		<>

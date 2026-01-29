@@ -8,7 +8,7 @@ import {
 	type CreatePostParams,
 	type CreatePostResponse,
 } from "@/features/post/api/createPost";
-import { deletePost, DeletePostError, type DeletePostParams } from "@/features/post/api/deletePost";
+import { deletePost, DeletePostError } from "@/features/post/api/deletePost";
 import { postQueries, postQueryKeys } from "@/features/post/api/postQueries";
 import {
 	updatePost,
@@ -61,7 +61,7 @@ function usePost(params: UsePostParams) {
 	>({
 		mutationFn: (payload) => {
 			if (!canUsePost || !postId) {
-				throw new UpdatePostError(400, apiErrorCodes.INVALID_INPUT);
+				throw new UpdatePostError(400, apiErrorCodes.PARAMETER_INVALID);
 			}
 			return updatePost({ groupId, postId, ...payload });
 		},
@@ -79,7 +79,7 @@ function usePost(params: UsePostParams) {
 	>({
 		mutationFn: (status) => {
 			if (!canUsePost || !postId) {
-				throw new UpdatePostStatusError(400, apiErrorCodes.INVALID_INPUT);
+				throw new UpdatePostStatusError(400, apiErrorCodes.PARAMETER_INVALID);
 			}
 			return updatePostStatus({ groupId, postId, status });
 		},
@@ -107,7 +107,7 @@ function usePost(params: UsePostParams) {
 	const deleteMutation = useMutation<void, DeletePostError, void>({
 		mutationFn: () => {
 			if (!canUsePost || !postId) {
-				throw new DeletePostError(400, apiErrorCodes.INVALID_INPUT);
+				throw new DeletePostError(400, apiErrorCodes.PARAMETER_INVALID);
 			}
 			return deletePost({ groupId, postId });
 		},

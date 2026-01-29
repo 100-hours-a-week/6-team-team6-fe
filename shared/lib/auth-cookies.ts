@@ -36,9 +36,7 @@ function parseSetCookieLine(cookieString: string): ParsedCookie | null {
 
 	const name = nameValue.slice(0, separatorIndex);
 	const value = nameValue.slice(separatorIndex + 1);
-	const maxAgeSegment = segments.find((segment) =>
-		segment.toLowerCase().startsWith("max-age="),
-	);
+	const maxAgeSegment = segments.find((segment) => segment.toLowerCase().startsWith("max-age="));
 	const maxAgeValue = maxAgeSegment?.split("=")[1];
 	const maxAge = maxAgeValue ? Number(maxAgeValue) : undefined;
 

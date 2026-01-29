@@ -6,6 +6,7 @@ import { createMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 const CreatePostResponseSchema = z.object({
@@ -25,13 +26,13 @@ type CreatePostParams = {
 
 class CreatePostError extends Error {
 	status: number;
-	errorCode?: string;
+	code?: string;
 
-	constructor(status: number, errorCode?: string) {
-		super(errorCode ?? "UNKNOWN_ERROR");
+	constructor(status: number, code?: string) {
+		super(code ?? "UNKNOWN_ERROR");
 		this.name = "CreatePostError";
 		this.status = status;
-		this.errorCode = errorCode;
+		this.code = code;
 	}
 }
 
@@ -40,7 +41,7 @@ async function createPost(params: CreatePostParams): Promise<CreatePostResponse>
 
 	if (USE_POST_MOCKS) {
 		if (!groupId) {
-			throw new CreatePostError(404, "GROUP_NOT_FOUND");
+			throw new CreatePostError(404, apiErrorCodes.GROUP_NOT_FOUND);
 		}
 		const created = createMockPost({
 			title,
@@ -57,10 +58,7 @@ async function createPost(params: CreatePostParams): Promise<CreatePostResponse>
 	formData.append("content", content);
 	formData.append("rentalFee", String(rentalFee));
 	formData.append("feeUnit", feeUnit);
-	formData.append(
-		"imageUrls",
-		JSON.stringify(newImages.map((file) => file.name)),
-	);
+	formData.append("imageUrls", JSON.stringify(newImages.map((file) => file.name)));
 	newImages.forEach((file) => {
 		formData.append("newImages", file);
 	});

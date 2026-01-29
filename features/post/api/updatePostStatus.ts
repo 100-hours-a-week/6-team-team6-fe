@@ -5,6 +5,7 @@ import { z } from "zod";
 import { updateMockPostStatus, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
@@ -24,13 +25,13 @@ type UpdatePostStatusResponse = z.infer<typeof UpdatePostStatusResponseSchema>;
 
 class UpdatePostStatusError extends Error {
 	status: number;
-	errorCode?: string;
+	code?: string;
 
-	constructor(status: number, errorCode?: string) {
-		super(errorCode ?? "UNKNOWN_ERROR");
+	constructor(status: number, code?: string) {
+		super(code ?? "UNKNOWN_ERROR");
 		this.name = "UpdatePostStatusError";
 		this.status = status;
-		this.errorCode = errorCode;
+		this.code = code;
 	}
 }
 
@@ -39,15 +40,15 @@ async function updatePostStatus(params: UpdatePostStatusParams): Promise<UpdateP
 
 	if (USE_POST_MOCKS) {
 		if (!groupId) {
-			throw new UpdatePostStatusError(404, "GROUP_NOT_FOUND");
+			throw new UpdatePostStatusError(404, apiErrorCodes.GROUP_NOT_FOUND);
 		}
 		const postIdNumber = Number(postId);
 		if (Number.isNaN(postIdNumber)) {
-			throw new UpdatePostStatusError(404, "POST_NOT_FOUND");
+			throw new UpdatePostStatusError(404, apiErrorCodes.POST_NOT_FOUND);
 		}
 		const updated = updateMockPostStatus(postIdNumber, status);
 		if (!updated) {
-			throw new UpdatePostStatusError(404, "POST_NOT_FOUND");
+			throw new UpdatePostStatusError(404, apiErrorCodes.POST_NOT_FOUND);
 		}
 		return UpdatePostStatusResponseSchema.parse(updated);
 	}

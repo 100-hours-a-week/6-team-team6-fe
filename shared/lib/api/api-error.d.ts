@@ -6,16 +6,18 @@ declare global {
 			type Code = ApiErrorCode;
 
 			interface Response {
-				errorCode: Code;
+				code: Code;
 			}
 
 			interface Login extends Response {
-				errorCode: Code.LOGIN_FAILED;
+				code: ApiErrorCode.AUTH_INVALID_CREDENTIALS;
 			}
 
 			interface Signup extends Response {
-				// TODO: fix typo - EXSTING_ID
-				errorCode: Code.INVALID_LOGIN_ID_INPUT | Code.INVALID_PASSWORD_INPUT | Code.EXSTING_ID;
+				code:
+					| ApiErrorCode.USER_INVALID_LOGIN_ID
+					| ApiErrorCode.USER_DUPLICATE_LOGIN_ID
+					| ApiErrorCode.PARAMETER_INVALID;
 			}
 		}
 	}

@@ -4,12 +4,26 @@ import { signOut, useSession } from "next-auth/react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
 import { Button } from "@/shared/components/ui/button";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+
+import { apiClient } from "@/shared/lib/api/api-client";
 
 export function MyPage() {
 	const { data: session, status } = useSession();
 	const isLoading = status === "loading";
 	const userId = session?.user?.id;
-	const userIdLabel = isLoading ? "불러오는 중..." : (userId ?? "로그인이 필요합니다");
+
+	const handleLogout = async () => {
+		try {
+			await apiClient.post("auth/logout");
+		} finally {
+			await signOut({ callbackUrl: "/login" });
+		}
+	};
+
+	if (isLoading) {
+		return <Skeleton />;
+	}
 
 	return (
 		<div className="flex flex-1 flex-col gap-y-4 items-center h-full">
@@ -20,13 +34,10 @@ export function MyPage() {
 			<div className="flex flex-col gap-y-2 justify-start">
 				<span className="text-sm text-muted-foreground">아이디</span>
 
-				<p className="text-xl font-medium text-foreground">{userIdLabel}</p>
+				<p className="text-xl font-medium text-foreground">{userId}</p>
 			</div>
 			<div>
-				<Button
-					onClick={() => signOut({ callbackUrl: "/login" })}
-					disabled={status !== "authenticated"}
-				>
+				<Button onClick={handleLogout} disabled={status !== "authenticated"}>
 					로그아웃
 				</Button>
 			</div>
