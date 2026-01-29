@@ -8,6 +8,7 @@ import {
 } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 type GetGroupPostsParams = {
@@ -17,13 +18,13 @@ type GetGroupPostsParams = {
 
 class GroupPostsError extends Error {
 	status: number;
-	errorCode?: string;
+	code?: string;
 
-	constructor(status: number, errorCode?: string) {
-		super(errorCode ?? "UNKNOWN_ERROR");
+	constructor(status: number, code?: string) {
+		super(code ?? "UNKNOWN_ERROR");
 		this.name = "GroupPostsError";
 		this.status = status;
-		this.errorCode = errorCode;
+		this.code = code;
 	}
 }
 
@@ -31,7 +32,7 @@ async function getGroupPosts(params: GetGroupPostsParams): Promise<PostSummaries
 	const { groupId, cursor } = params;
 	if (USE_POST_MOCKS) {
 		if (!groupId) {
-			throw new GroupPostsError(404, "GROUP_NOT_FOUND");
+			throw new GroupPostsError(404, apiErrorCodes.GROUP_NOT_FOUND);
 		}
 		const mockResult = getMockPostSummariesPage(cursor);
 		return PostSummariesResponseDtoSchema.parse(mockResult);

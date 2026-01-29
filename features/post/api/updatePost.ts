@@ -6,6 +6,7 @@ import { updateMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 const UpdatePostResponseSchema = z.object({
@@ -32,13 +33,13 @@ type UpdatePostParams = {
 
 class UpdatePostError extends Error {
 	status: number;
-	errorCode?: string;
+	code?: string;
 
-	constructor(status: number, errorCode?: string) {
-		super(errorCode ?? "UNKNOWN_ERROR");
+	constructor(status: number, code?: string) {
+		super(code ?? "UNKNOWN_ERROR");
 		this.name = "UpdatePostError";
 		this.status = status;
-		this.errorCode = errorCode;
+		this.code = code;
 	}
 }
 
@@ -47,11 +48,11 @@ async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse>
 
 	if (USE_POST_MOCKS) {
 		if (!groupId) {
-			throw new UpdatePostError(404, "GROUP_NOT_FOUND");
+			throw new UpdatePostError(404, apiErrorCodes.GROUP_NOT_FOUND);
 		}
 		const postIdNumber = Number(postId);
 		if (Number.isNaN(postIdNumber)) {
-			throw new UpdatePostError(404, "POST_NOT_FOUND");
+			throw new UpdatePostError(404, apiErrorCodes.POST_NOT_FOUND);
 		}
 		const updated = updateMockPost({
 			postId: postIdNumber,
@@ -63,7 +64,7 @@ async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse>
 			newImages,
 		});
 		if (!updated) {
-			throw new UpdatePostError(404, "POST_NOT_FOUND");
+			throw new UpdatePostError(404, apiErrorCodes.POST_NOT_FOUND);
 		}
 		return UpdatePostResponseSchema.parse(updated);
 	}

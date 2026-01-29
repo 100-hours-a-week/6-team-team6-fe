@@ -69,10 +69,11 @@ export function PostDetailPage() {
 	const { mutate: updateStatus, isPending: isUpdatingStatus } = updateStatusMutation;
 	const { mutate: deletePost, isPending: isDeleting } = deleteMutation;
 
+	const errorCode = error?.code;
 	const shouldNotFound =
 		Number.isNaN(postIdNumber) ||
-		error?.errorCode === apiErrorCodes.GROUP_NOT_FOUND ||
-		error?.errorCode === apiErrorCodes.POST_NOT_FOUND;
+		errorCode === apiErrorCodes.GROUP_NOT_FOUND ||
+		errorCode === apiErrorCodes.POST_NOT_FOUND;
 
 	if (shouldNotFound) {
 		notFound();
@@ -89,8 +90,7 @@ export function PostDetailPage() {
 			updateStatus(value as RentalStatus, {
 				onSuccess: () => toast.success("대여 상태가 변경되었습니다."),
 				onError: (statusError) => {
-					const message =
-						getApiErrorMessage(statusError?.errorCode) ?? "대여 상태 변경에 실패했습니다.";
+					const message = getApiErrorMessage(statusError?.code ?? "대여 상태 변경에 실패했습니다.");
 					toast.error(message);
 				},
 			});
@@ -110,7 +110,7 @@ export function PostDetailPage() {
 				router.replace(`/groups/${normalizedGroupId}/posts`);
 			},
 			onError: (deleteError) => {
-				const message = getApiErrorMessage(deleteError?.errorCode) ?? "게시글 삭제에 실패했습니다.";
+				const message = getApiErrorMessage(deleteError?.code ?? "게시글 삭제에 실패했습니다.");
 				toast.error(message);
 			},
 			onSettled: () => setIsDeleteDialogOpen(false),

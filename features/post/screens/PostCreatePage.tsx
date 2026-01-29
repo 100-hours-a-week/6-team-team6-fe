@@ -45,12 +45,12 @@ export function PostCreatePage() {
 						router.replace(`/groups/${normalizedGroupId}/posts/${data.postId}`);
 					},
 					onError: (createError) => {
-						if (createError?.errorCode === apiErrorCodes.GROUP_NOT_FOUND) {
+						const errorCode = createError?.code;
+						if (errorCode === apiErrorCodes.GROUP_NOT_FOUND) {
 							notFound();
 							return;
 						}
-						const message =
-							getApiErrorMessage(createError?.errorCode) ?? "게시글 등록에 실패했습니다.";
+						const message = getApiErrorMessage(errorCode) ?? "게시글 등록에 실패했습니다.";
 						toast.error(message);
 					},
 				},

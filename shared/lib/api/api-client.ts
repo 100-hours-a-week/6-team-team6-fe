@@ -46,11 +46,11 @@ export const apiClient = ky.create({
 					return;
 				}
 
-				const errorCode = data?.errorCode;
+				const errorCode = data?.code;
 				const alreadyRetried = request.headers.get("X-Retried") === "true";
 
 				// 1) Access Token 관련 인증 실패 → 세션 새로 받아서 한 번만 재시도
-				if (!alreadyRetried && errorCode === apiErrorCodes.AUTH_FAILED) {
+				if (!alreadyRetried && errorCode === apiErrorCodes.TOKEN_INVALID_ACCESS) {
 					const newSession = await getSession(); // jwt callback -> refreshAccessToken 실행
 
 					if (newSession?.accessToken) {
@@ -66,9 +66,8 @@ export const apiClient = ky.create({
 
 				// 2) Refresh Token 만료/폐기
 				if (
-					errorCode === apiErrorCodes.EXPIRED_REFRESH_TOKEN ||
-					errorCode === apiErrorCodes.INVALID_REFRESH_TOKEN ||
-					errorCode === apiErrorCodes.REVOKED_REFRESH_TOKEN
+					errorCode === apiErrorCodes.TOKEN_EXPIRED_REFRESH ||
+					errorCode === apiErrorCodes.TOKEN_INVALID_REFRESH
 				) {
 					await signOut({ callbackUrl: "/login" });
 					return;

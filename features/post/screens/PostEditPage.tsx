@@ -29,9 +29,9 @@ export function PostEditPage(props: PostEditPageProps) {
 	const { data: post, isLoading, isError, error } = detailQuery;
 	const { mutate: updatePost, isPending } = updateMutation;
 
+	const errorCode = error?.code;
 	const shouldNotFound =
-		error?.errorCode === apiErrorCodes.GROUP_NOT_FOUND ||
-		error?.errorCode === apiErrorCodes.POST_NOT_FOUND;
+		errorCode === apiErrorCodes.GROUP_NOT_FOUND || errorCode === apiErrorCodes.POST_NOT_FOUND;
 
 	if (shouldNotFound) {
 		notFound();
@@ -81,8 +81,7 @@ export function PostEditPage(props: PostEditPageProps) {
 						router.replace(`/groups/${groupId}/posts/${postId}`);
 					},
 					onError: (updateError) => {
-						const message =
-							getApiErrorMessage(updateError?.errorCode) ?? "게시글 수정에 실패했습니다.";
+						const message = getApiErrorMessage(updateError?.code ?? "게시글 수정에 실패했습니다.");
 						toast.error(message);
 					},
 				},

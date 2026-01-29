@@ -28,8 +28,8 @@ export const authOptions: NextAuthOptions = {
 				const data = await res.json();
 
 				if (!res.ok) {
-					// 400, 401 에러 코드 처리 (INVALID_LOGIN_ID_INPUT, LOGIN_FAILED 등)
-					throw new Error(data.errorCode || "UNKNOWN_ERROR");
+					// 400, 401 에러 코드 처리 (USER02, AUTH01 등)
+					throw new Error(data.code ?? "UNKNOWN_ERROR");
 				}
 
 				const { xsrfToken } = await persistAuthCookies(res);
@@ -123,7 +123,7 @@ async function refreshAccessToken(token: JWT) {
 			xsrfToken: newXsrfToken || token.xsrfToken,
 		};
 	} catch (error) {
-		// 401(INVALID_REFRESH_TOKEN 등) 혹은 403(CSRF 관련) 발생 시
+		// 401(TOKEN02 등) 혹은 403(CSRF 관련) 발생 시
 		return {
 			...token,
 			error: "RefreshAccessTokenError",

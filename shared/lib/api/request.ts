@@ -1,35 +1,37 @@
 import type { ZodType } from "zod";
 
 type ApiErrorBody = {
+	code?: string;
 	errorCode?: string;
 };
 
-type ApiError = new (status: number, errorCode?: string) => Error;
+type ApiError = new (status: number, code?: string) => Error;
 
 class ApiRequestError extends Error {
 	status: number;
-	errorCode?: string;
+	code?: string;
 
-	constructor(status: number, errorCode?: string) {
-		super(errorCode ?? "UNKNOWN_ERROR");
+	constructor(status: number, code?: string) {
+		super(code ?? "UNKNOWN_ERROR");
 		this.name = "ApiRequestError";
 		this.status = status;
-		this.errorCode = errorCode;
+		this.code = code;
 	}
 }
 
 const parseErrorCode = (data: unknown) => {
-	if (typeof data === "object" && data !== null && "errorCode" in data) {
-		return (data as ApiErrorBody).errorCode;
+	if (typeof data === "object" && data !== null) {
+		const body = data as ApiErrorBody;
+		return body.code ?? body.errorCode;
 	}
 	return undefined;
 };
 
-const getApiError = (status: number, errorCode: string | undefined, error?: ApiError): Error => {
+const getApiError = (status: number, code: string | undefined, error?: ApiError): Error => {
 	if (error) {
-		return new error(status, errorCode);
+		return new error(status, code);
 	}
-	return new ApiRequestError(status, errorCode);
+	return new ApiRequestError(status, code);
 };
 
 const safeJson = async (response: Response): Promise<unknown> => {
