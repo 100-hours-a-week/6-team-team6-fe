@@ -17,6 +17,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Form } from "@/shared/components/ui/form";
 import { Spinner } from "@/shared/components/ui/spinner";
 
+import { routeConst } from "@/shared/lib/constants";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { authErrorMessages } from "@/shared/lib/error-messages";
 
@@ -25,8 +26,6 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 interface LoginFormProps {
 	onSubmit?: (values: LoginFormValues) => void | Promise<void>;
 }
-
-const DEFAULT_REDIRECT_PATH = "/groups/1/posts";
 
 function LoginForm({ onSubmit }: LoginFormProps) {
 	const router = useRouter();
@@ -59,7 +58,7 @@ function LoginForm({ onSubmit }: LoginFormProps) {
 				redirect: false,
 				loginId: values.loginId,
 				password: values.password,
-				callbackUrl: DEFAULT_REDIRECT_PATH,
+				callbackUrl: routeConst.DEFAULT_AUTH_REDIRECT_PATH,
 			});
 
 			if (!result || result.error) {
@@ -73,7 +72,7 @@ function LoginForm({ onSubmit }: LoginFormProps) {
 			}
 
 			if (result.ok) {
-				router.push(result.url ?? DEFAULT_REDIRECT_PATH);
+				router.replace(result.url ?? routeConst.DEFAULT_AUTH_REDIRECT_PATH);
 			} else {
 				setSubmitError(authErrorMessages.loginUnknown);
 			}
