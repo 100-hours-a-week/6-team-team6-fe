@@ -58,10 +58,10 @@ jobs:
 
       - name: Deploy (Blue-Green)
         run: |
-          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} << 'DEPLOY_SCRIPT'
+          ssh -i ~/.ssh/deploy_key ubuntu@${{ secrets.EC2_HOST }} << DEPLOY_SCRIPT
             set -e
             
-            echo " [PROD] Deployment started: $(date)"
+            echo " [PROD] Deployment started: \$(date)"
             
             # 압축 해제 (임시 디렉토리)
             mkdir -p /home/ubuntu/deploy/frontend
@@ -70,9 +70,10 @@ jobs:
             rm /home/ubuntu/deploy/build.tar.gz
             
             # 기존 deploy.sh 실행 (무중단 배포)
+            export NEXTAUTH_SECRET="${{ secrets.PROD_NEXTAUTH_SECRET }}"
             bash /home/ubuntu/scripts/deploy.sh frontend
             
-            echo " [PROD] Deployment completed: $(date)"
+            echo " [PROD] Deployment completed: \$(date)"
           DEPLOY_SCRIPT
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
