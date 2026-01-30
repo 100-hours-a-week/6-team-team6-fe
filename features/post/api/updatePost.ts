@@ -2,11 +2,9 @@
 
 import { z } from "zod";
 
-import { updateMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 const UpdatePostResponseSchema = z.object({
@@ -46,42 +44,23 @@ class UpdatePostError extends Error {
 async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse> {
 	const { groupId, postId, title, content, rentalFee, feeUnit, imageUrls, newImages } = params;
 
-	if (USE_POST_MOCKS) {
-		if (!groupId) {
-			throw new UpdatePostError(404, apiErrorCodes.GROUP_NOT_FOUND);
-		}
-		const postIdNumber = Number(postId);
-		if (Number.isNaN(postIdNumber)) {
-			throw new UpdatePostError(404, apiErrorCodes.POST_NOT_FOUND);
-		}
-		const updated = updateMockPost({
-			postId: postIdNumber,
-			title,
-			content,
-			rentalFee,
-			feeUnit,
-			imageUrls,
-			newImages,
-		});
-		if (!updated) {
-			throw new UpdatePostError(404, apiErrorCodes.POST_NOT_FOUND);
-		}
-		return UpdatePostResponseSchema.parse(updated);
-	}
-
-	const formData = new FormData();
-	formData.append("title", title);
-	formData.append("content", content);
-	formData.append("rentalFee", String(rentalFee));
-	formData.append("feeUnit", feeUnit);
-	formData.append("imageUrls", JSON.stringify(imageUrls));
-	newImages.forEach((file) => {
-		formData.append("newImages", file);
-	});
+	// const normalizedImageUrls = [
+	// 	...imageUrls,
+	// 	...newImages.map((file) => ({ postImageId: null, imageUrl: file.name })),
+	// ];
+	const payload = {
+		title,
+		content,
+		rentalFee,
+		feeUnit,
+		imageUrls: ["/dummy-post-image.png"],
+		// imageUrls: normalizedImageUrls,
+		// TODO: fix this
+	};
 
 	return await request(
 		apiClient.put(`groups/${groupId}/posts/${postId}`, {
-			body: formData,
+			json: payload,
 		}),
 		UpdatePostResponseSchema,
 		UpdatePostError,

@@ -14,6 +14,7 @@ import { request } from "@/shared/lib/api/request";
 type GetGroupPostsParams = {
 	groupId: string;
 	cursor?: string;
+	query?: string;
 };
 
 class GroupPostsError extends Error {
@@ -29,7 +30,7 @@ class GroupPostsError extends Error {
 }
 
 async function getGroupPosts(params: GetGroupPostsParams): Promise<PostSummariesResponseDto> {
-	const { groupId, cursor } = params;
+	const { groupId, cursor, query } = params;
 	if (USE_POST_MOCKS) {
 		if (!groupId) {
 			throw new GroupPostsError(404, apiErrorCodes.GROUP_NOT_FOUND);
@@ -38,18 +39,25 @@ async function getGroupPosts(params: GetGroupPostsParams): Promise<PostSummaries
 		return PostSummariesResponseDtoSchema.parse(mockResult);
 	}
 
-	const searchParams = cursor ? { cursor } : undefined;
+	const searchParams = {
+		...(cursor ? { cursor } : {}),
+		...(query ? { query } : {}),
+	};
+	const resolvedSearchParams =
+		Object.keys(searchParams).length > 0 ? searchParams : undefined;
+
+	const requestOptions = resolvedSearchParams ? { searchParams: resolvedSearchParams } : undefined;
 
 	const parsed = await request(
-		apiClient.get(`groups/${groupId}/posts`, { searchParams }),
+		apiClient.get(`groups/${groupId}/posts`, requestOptions),
 		PostSummariesResponseApiSchema,
 		GroupPostsError,
 	);
 
 	return PostSummariesResponseDtoSchema.parse({
-		summaries: parsed.postSummaries,
+		summaries: parsed.summaries,
 		nextCursor: parsed.nextCursor,
-		hasNextPage: parsed.hasNext,
+		hasNextPage: parsed.hasNextPage,
 	});
 }
 

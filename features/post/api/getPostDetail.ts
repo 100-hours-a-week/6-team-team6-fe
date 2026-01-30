@@ -52,9 +52,7 @@ async function getPostDetail(params: GetPostDetailParams): Promise<PostDetailDto
 
 	return PostDetailDtoSchema.parse({
 		...rest,
-		imageUrls: {
-			imageInfos: imageUrls,
-		},
+		imageUrls,
 	});
 }
 

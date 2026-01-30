@@ -11,8 +11,10 @@ import {
 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 
-import { DUMMY_POST_SUMMARIES } from "@/features/post/constants";
-import type { PostSummaryDto } from "@/features/post/schemas";
+import { type InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
+
+import { getGroupPosts, type GroupPostsError } from "@/features/post/api/getGroupPosts";
+import type { PostSummariesResponseDto, PostSummaryDto } from "@/features/post/schemas";
 
 const RECENT_SEARCH_STORAGE_KEY = "billage.recent-searches";
 const MAX_RECENT_SEARCHES = 10;
@@ -25,12 +27,19 @@ export interface GroupSearchState {
 	isSearchEnabled: boolean;
 	shouldShowRecentKeywords: boolean;
 	shouldShowResults: boolean;
+	isLoading: boolean;
+	isError: boolean;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	onLoadMore: () => void;
 	onKeywordChange: (event: ChangeEvent<HTMLInputElement>) => void;
 	onSubmit: (event: FormEvent<HTMLFormElement>) => void;
 	onSearch: (value?: string) => void;
 }
 
-export function useGroupSearch(): GroupSearchState {
+const MIN_SEARCH_KEYWORD_LENGTH = 2;
+
+export function useGroupSearch(groupId: string): GroupSearchState {
 	const router = useRouter();
 	const pathname = usePathname();
 	const searchParams = useSearchParams();
@@ -104,7 +113,7 @@ export function useGroupSearch(): GroupSearchState {
 	const handleSearch = useCallback(
 		(value?: string) => {
 			const nextValue = (value ?? keyword).trim();
-			if (!nextValue) {
+			if (!nextValue || nextValue.length < MIN_SEARCH_KEYWORD_LENGTH) {
 				return;
 			}
 			setKeyword(nextValue);
@@ -137,19 +146,36 @@ export function useGroupSearch(): GroupSearchState {
 	);
 
 	const trimmedKeyword = keyword.trim();
-	const normalizedKeyword = submittedKeyword.trim().toLowerCase();
-	const isSearchEnabled = trimmedKeyword.length > 0;
+	const normalizedKeyword = submittedKeyword.trim();
+	const isSearchEnabled = trimmedKeyword.length >= MIN_SEARCH_KEYWORD_LENGTH;
 	const shouldShowRecentKeywords = trimmedKeyword.length === 0;
-	const shouldShowResults = normalizedKeyword.length > 0;
+	const shouldShowResults = normalizedKeyword.length >= MIN_SEARCH_KEYWORD_LENGTH;
+
+	const searchQuery = useInfiniteQuery<
+		PostSummariesResponseDto,
+		GroupPostsError,
+		InfiniteData<PostSummariesResponseDto, string | undefined>,
+		["posts", "group", string, "search", string],
+		string | undefined
+	>({
+		queryKey: ["posts", "group", groupId, "search", normalizedKeyword],
+		queryFn: ({ pageParam }) =>
+			getGroupPosts({ groupId, query: normalizedKeyword, cursor: pageParam }),
+		initialPageParam: undefined,
+		getNextPageParam: (lastPage) => (lastPage.hasNextPage ? lastPage.nextCursor : undefined),
+		enabled: Boolean(groupId) && normalizedKeyword.length >= MIN_SEARCH_KEYWORD_LENGTH,
+	});
 
 	const searchResults = useMemo(() => {
-		if (!normalizedKeyword) {
-			return [];
+		return searchQuery.data?.pages.flatMap((page) => page.summaries) ?? [];
+	}, [searchQuery.data]);
+
+	const loadMore = useCallback(() => {
+		if (!searchQuery.hasNextPage || searchQuery.isFetchingNextPage) {
+			return;
 		}
-		return DUMMY_POST_SUMMARIES.filter((post) =>
-			post.postTitle.toLowerCase().includes(normalizedKeyword),
-		);
-	}, [normalizedKeyword]);
+		searchQuery.fetchNextPage();
+	}, [searchQuery]);
 
 	return {
 		keyword,
@@ -159,6 +185,11 @@ export function useGroupSearch(): GroupSearchState {
 		isSearchEnabled,
 		shouldShowRecentKeywords,
 		shouldShowResults,
+		isLoading: searchQuery.isLoading,
+		isError: searchQuery.isError,
+		hasNextPage: searchQuery.hasNextPage ?? false,
+		isFetchingNextPage: searchQuery.isFetchingNextPage,
+		onLoadMore: loadMore,
 		onKeywordChange: handleKeywordChange,
 		onSubmit: handleSubmit,
 		onSearch: handleSearch,

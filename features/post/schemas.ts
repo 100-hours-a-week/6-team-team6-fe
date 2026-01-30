@@ -24,9 +24,9 @@ const PostSummariesResponseDtoSchema = z.object({
 });
 
 const PostSummariesResponseApiSchema = z.object({
-	postSummaries: PostSummariesSchema,
+	summaries: PostSummariesSchema,
 	nextCursor: z.string().nullable(),
-	hasNext: z.boolean(),
+	hasNextPage: z.boolean(),
 });
 
 const PostImageInfoDtoSchema = z.object({
@@ -46,7 +46,8 @@ const PostDetailBaseSchema = z.object({
 	updatedAt: z.string().min(1),
 	isSeller: z.boolean(),
 	chatroomId: z.number(),
-	activeChatroomCount: z.number().min(0),
+	// TODO: fix this
+	activeChatroomCount: z.number().min(-1),
 });
 
 const PostDetailDtoSchema = PostDetailBaseSchema.extend({
@@ -56,7 +57,9 @@ const PostDetailDtoSchema = PostDetailBaseSchema.extend({
 });
 
 const PostDetailResponseApiSchema = PostDetailBaseSchema.extend({
-	imageUrls: z.array(PostImageInfoDtoSchema),
+	imageUrls: z.object({
+		imageInfos: z.array(PostImageInfoDtoSchema),
+	}),
 });
 
 const emojiRegex = /[\p{Extended_Pictographic}]/u;
@@ -80,9 +83,7 @@ const rentalFeeSchema = z
 	.max(100000000, postValidationMessages.rentalFeeMax);
 // .nullable();
 
-const postImageUrlSchema = z
-	.string()
-	.min(1, postValidationMessages.imageUrlInvalid);
+const postImageUrlSchema = z.string().min(1, postValidationMessages.imageUrlInvalid);
 
 const PostCreateSchema = z.object({
 	title: titleSchema,
@@ -101,9 +102,7 @@ const PostUpdateSchema = z.object({
 	title: titleSchema,
 	content: contentSchema,
 	imageUrls: z.object({
-		imageInfos: z
-			.array(PostUpdateImageInfoSchema)
-			.min(1, postValidationMessages.imagesRequired),
+		imageInfos: z.array(PostUpdateImageInfoSchema).min(1, postValidationMessages.imagesRequired),
 	}),
 	rentalFee: rentalFeeSchema,
 	feeUnit: feeUnitSchema,

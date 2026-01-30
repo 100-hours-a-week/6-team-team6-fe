@@ -1,4 +1,4 @@
-import type { ZodType } from "zod";
+import type { ZodError, ZodType } from "zod";
 
 type ApiErrorBody = {
 	code?: string;
@@ -16,6 +16,20 @@ class ApiRequestError extends Error {
 		this.name = "ApiRequestError";
 		this.status = status;
 		this.code = code;
+	}
+}
+
+class ApiSchemaError extends Error {
+	status: number;
+	issues: ZodError["issues"];
+	data: unknown;
+
+	constructor(status: number, issues: ZodError["issues"], data: unknown) {
+		super("INVALID_RESPONSE_SCHEMA");
+		this.name = "ApiSchemaError";
+		this.status = status;
+		this.issues = issues;
+		this.data = data;
 	}
 }
 
@@ -60,7 +74,14 @@ async function request<T = unknown>(
 	}
 
 	if (schema) {
-		return schema.parse(data) as T;
+		const parsed = schema.safeParse(data);
+		if (!parsed.success) {
+			if (process.env.NODE_ENV !== "production") {
+				console.error("API response schema mismatch", parsed.error.flatten(), data);
+			}
+			throw new ApiSchemaError(response.status, parsed.error.issues, data);
+		}
+		return parsed.data as T;
 	}
 
 	return data as T;
@@ -77,4 +98,4 @@ async function requestVoid(responsePromise: Promise<Response>, error?: ApiError)
 	throw getApiError(response.status, parseErrorCode(data), error);
 }
 
-export { ApiRequestError, request, requestVoid };
+export { ApiRequestError, ApiSchemaError, request, requestVoid };

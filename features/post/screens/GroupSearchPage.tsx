@@ -9,7 +9,7 @@ interface GroupSearchPageProps {
 
 export function GroupSearchPage(props: GroupSearchPageProps) {
 	const { groupId } = props;
-	const searchState = useGroupSearch();
+	const searchState = useGroupSearch(groupId);
 
 	return <GroupSearchView groupId={groupId} {...searchState} />;
 }
