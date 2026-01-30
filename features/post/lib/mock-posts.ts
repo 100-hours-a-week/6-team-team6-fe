@@ -3,7 +3,7 @@
 import { DUMMY_POST_DETAIL_BY_ID, DUMMY_POST_SUMMARIES } from "@/features/post/constants";
 import type { FeeUnit, PostDetailDto, PostSummaryDto, RentalStatus } from "@/features/post/schemas";
 
-const USE_POST_MOCKS = true;
+const USE_POST_MOCKS = false;
 const MOCK_PAGE_SIZE = 10;
 const MOCK_CURSOR_TIME = "2026-01-12T03:04:05.123456Z";
 

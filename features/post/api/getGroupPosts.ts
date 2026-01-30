@@ -47,9 +47,9 @@ async function getGroupPosts(params: GetGroupPostsParams): Promise<PostSummaries
 	);
 
 	return PostSummariesResponseDtoSchema.parse({
-		summaries: parsed.postSummaries,
+		summaries: parsed.summaries,
 		nextCursor: parsed.nextCursor,
-		hasNextPage: parsed.hasNext,
+		hasNextPage: parsed.hasNextPage,
 	});
 }
 
