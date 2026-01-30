@@ -2,10 +2,7 @@
 
 import { z } from "zod";
 
-import { updateMockPostStatus, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
-
 import { apiClient } from "@/shared/lib/api/api-client";
-import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { request } from "@/shared/lib/api/request";
 
 const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
@@ -37,21 +34,6 @@ class UpdatePostStatusError extends Error {
 
 async function updatePostStatus(params: UpdatePostStatusParams): Promise<UpdatePostStatusResponse> {
 	const { groupId, postId, status } = params;
-
-	if (USE_POST_MOCKS) {
-		if (!groupId) {
-			throw new UpdatePostStatusError(404, apiErrorCodes.GROUP_NOT_FOUND);
-		}
-		const postIdNumber = Number(postId);
-		if (Number.isNaN(postIdNumber)) {
-			throw new UpdatePostStatusError(404, apiErrorCodes.POST_NOT_FOUND);
-		}
-		const updated = updateMockPostStatus(postIdNumber, status);
-		if (!updated) {
-			throw new UpdatePostStatusError(404, apiErrorCodes.POST_NOT_FOUND);
-		}
-		return UpdatePostStatusResponseSchema.parse(updated);
-	}
 
 	return await request(
 		apiClient.patch(`groups/${groupId}/posts/${postId}`, {
