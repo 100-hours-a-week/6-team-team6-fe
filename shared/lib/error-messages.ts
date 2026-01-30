@@ -15,7 +15,7 @@ export const authErrorMessages = {
 } as const;
 
 export const postValidationMessages = {
-	titleRequired: "제목을 입력해 주세요.",
+	titleRequired: "제목을 2자 이상 입력해 주세요.",
 	titleMax: "제목은 50자 이내로 입력해 주세요.",
 	titleNoEmoji: "이모지는 사용할 수 없습니다.",
 	contentRequired: "내용을 입력해 주세요.",
