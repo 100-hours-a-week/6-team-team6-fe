@@ -50,7 +50,7 @@ jobs:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || (github.event_name == 'pull_request' && github.base_ref == 'main')
     env:
       NEXT_PUBLIC_API_URL: ${{ github.ref == 'refs/heads/main' && secrets.PROD_NEXT_PUBLIC_API_URL || secrets.DEV_NEXT_PUBLIC_API_URL }}
-
+    
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -90,18 +90,6 @@ jobs:
           if [ -d "public" ]; then
             cp -r public .next/standalone/
           fi
-          
-          # ============================================
-          # 누락될 수 있는 필수 의존성 복사
-          # Standalone이 일부 패키지를 누락하는 이슈 대응
-          # ============================================
-          DEPS_TO_COPY="styled-jsx sharp"
-          for dep in $DEPS_TO_COPY; do
-            if [ -d "node_modules/$dep" ]; then
-              echo " Copying missing dependency: $dep"
-              cp -rL node_modules/$dep .next/standalone/node_modules/
-            fi
-          done
           
           echo ""
           echo "=== Build Output Size ==="
