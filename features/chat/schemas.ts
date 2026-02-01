@@ -45,6 +45,51 @@ const ChatroomIdResponseDtoSchema = z.object({
 	chatroomId: z.number(),
 });
 
+const ChatMessageSendResponseApiSchema = z.object({
+	messageId: z.string().min(1),
+});
+
+const ChatMessageSendResponseDtoSchema = z.object({
+	messageId: z.string().min(1),
+});
+
+const ChatroomPostIdResponseApiSchema = z.object({
+	postId: z.number(),
+});
+
+const ChatroomPostIdResponseDtoSchema = z.object({
+	postId: z.number(),
+});
+
+const feeUnitSchema = z.enum(["HOUR", "DAY"]);
+const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
+
+const ChatroomPostInfoApiSchema = z.object({
+	partnerId: z.number(),
+	partnerNickname: z.string().min(1),
+	groupId: z.number(),
+	groupName: z.string().min(1),
+	postId: z.number(),
+	postTitle: z.string().min(1),
+	postFirstImageUrl: z.string().min(1),
+	rentalFee: z.number().min(0),
+	feeUnit: feeUnitSchema,
+	rentalStatus: rentalStatusSchema,
+});
+
+const ChatroomPostInfoDtoSchema = z.object({
+	partnerId: z.number(),
+	partnerNickname: z.string().min(1),
+	groupId: z.number(),
+	groupName: z.string().min(1),
+	postId: z.number(),
+	postTitle: z.string().min(1),
+	postFirstImageUrl: z.string().min(1),
+	rentalFee: z.number().min(0),
+	feeUnit: feeUnitSchema,
+	rentalStatus: rentalStatusSchema,
+});
+
 const ChatRoomsResponseApiSchema = z.union([
 	z.object({
 		chatroomSummaries: ChatRoomSummariesApiSchema,
@@ -67,11 +112,27 @@ type ChatRoomSummaryDto = z.infer<typeof ChatRoomSummaryDtoSchema>;
 
 type ChatRoomsResponseDto = z.infer<typeof ChatRoomsResponseDtoSchema>;
 type ChatroomIdResponseDto = z.infer<typeof ChatroomIdResponseDtoSchema>;
+type ChatMessageSendResponseDto = z.infer<typeof ChatMessageSendResponseDtoSchema>;
+type ChatroomPostIdResponseDto = z.infer<typeof ChatroomPostIdResponseDtoSchema>;
+type ChatroomPostInfoDto = z.infer<typeof ChatroomPostInfoDtoSchema>;
 
-export type { ChatroomIdResponseDto,ChatRoomsResponseDto, ChatRoomSummaryDto };
+export type {
+	ChatMessageSendResponseDto,
+	ChatroomIdResponseDto,
+	ChatroomPostIdResponseDto,
+	ChatroomPostInfoDto,
+	ChatRoomsResponseDto,
+	ChatRoomSummaryDto,
+};
 export {
+	ChatMessageSendResponseApiSchema,
+	ChatMessageSendResponseDtoSchema,
 	ChatroomIdResponseApiSchema,
 	ChatroomIdResponseDtoSchema,
+	ChatroomPostIdResponseApiSchema,
+	ChatroomPostIdResponseDtoSchema,
+	ChatroomPostInfoApiSchema,
+	ChatroomPostInfoDtoSchema,
 	ChatRoomsResponseApiSchema,
 	ChatRoomsResponseDtoSchema,
 	ChatRoomSummaryApiSchema,

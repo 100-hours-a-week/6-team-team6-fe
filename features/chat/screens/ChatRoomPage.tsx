@@ -172,6 +172,8 @@ function ChatInput(props: ChatInputProps) {
 export function ChatRoomPage() {
 	const {
 		postInfo,
+		isPostInfoLoading,
+		isPostInfoError,
 		messages,
 		hasMoreMessage,
 		isLoadingPreviousMessage,
@@ -181,7 +183,18 @@ export function ChatRoomPage() {
 
 	return (
 		<div className="flex flex-col h-[calc(100dvh-var(--h-header))]">
-			<ChatPostInfo postInfo={postInfo} />
+			{isPostInfoLoading ? (
+				<div className="flex items-center justify-center gap-2 px-4 py-6 text-muted-foreground">
+					<Spinner />
+					{/* <Typography type="body-sm">채팅 정보를 불러오는 중</Typography> */}
+				</div>
+			) : isPostInfoError || !postInfo ? (
+				<div className="flex items-center justify-center px-4 py-6 text-muted-foreground">
+					<Typography type="body-sm">채팅 정보를 불러오지 못했습니다.</Typography>
+				</div>
+			) : (
+				<ChatPostInfo postInfo={postInfo} />
+			)}
 			<Separator />
 			<ChatMessageList
 				messageList={messages}

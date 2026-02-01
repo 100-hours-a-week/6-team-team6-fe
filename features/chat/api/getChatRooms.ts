@@ -11,6 +11,8 @@ import { request } from "@/shared/lib/api/request";
 
 type GetChatRoomsParams = {
 	cursor?: string;
+	postId?: number;
+	listType?: "all" | "item";
 };
 
 class ChatRoomsError extends Error {
@@ -26,11 +28,15 @@ class ChatRoomsError extends Error {
 }
 
 async function getChatRooms(params: GetChatRoomsParams): Promise<ChatRoomsResponseDto> {
-	const { cursor } = params;
+	const { cursor, postId, listType = "all" } = params;
 	const searchParams = cursor ? { cursor } : undefined;
+	const endpoint =
+		listType === "item" && typeof postId === "number"
+			? `users/me/posts/${postId}/chatrooms`
+			: "users/me/chatrooms";
 
 	const parsed = await request(
-		apiClient.get("users/me/chatrooms", { searchParams }),
+		apiClient.get(endpoint, { searchParams }),
 		ChatRoomsResponseApiSchema,
 		ChatRoomsError,
 	);
