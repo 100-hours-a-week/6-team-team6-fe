@@ -98,4 +98,16 @@ async function requestVoid(responsePromise: Promise<Response>, error?: ApiError)
 	throw getApiError(response.status, parseErrorCode(data), error);
 }
 
-export { ApiRequestError, ApiSchemaError, request, requestVoid };
+async function requestText(responsePromise: Promise<Response>, error?: ApiError): Promise<string> {
+	const response = await responsePromise;
+
+	if (!response.ok) {
+		const data = await safeJson(response);
+		throw getApiError(response.status, parseErrorCode(data), error);
+	}
+
+	const text = await response.text();
+	return text.trim();
+}
+
+export { ApiRequestError, ApiSchemaError, request, requestText, requestVoid };

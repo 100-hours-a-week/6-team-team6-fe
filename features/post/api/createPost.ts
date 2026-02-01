@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { UploadPostImageError, uploadPostImages } from "@/features/post/api/uploadPostImage";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
@@ -37,13 +38,23 @@ class CreatePostError extends Error {
 async function createPost(params: CreatePostParams): Promise<CreatePostResponse> {
 	const { groupId, title, content, rentalFee, feeUnit, newImages } = params;
 
+	let imageUrls: string[] = [];
+
+	try {
+		imageUrls = await uploadPostImages(newImages);
+	} catch (error) {
+		if (error instanceof UploadPostImageError) {
+			throw new CreatePostError(error.status, error.code);
+		}
+		throw error;
+	}
+
 	const payload = {
 		title,
 		content,
 		rentalFee,
 		feeUnit,
-		// TODO: fix to real image urls
-		imageUrls: ["/dummy-post-image.png"],
+		imageUrls,
 	};
 
 	return await request(

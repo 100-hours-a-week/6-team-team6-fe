@@ -2,6 +2,7 @@
 
 import { z } from "zod";
 
+import { UploadPostImageError, uploadPostImages } from "@/features/post/api/uploadPostImage";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
@@ -44,18 +45,27 @@ class UpdatePostError extends Error {
 async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse> {
 	const { groupId, postId, title, content, rentalFee, feeUnit, imageUrls, newImages } = params;
 
-	// const normalizedImageUrls = [
-	// 	...imageUrls,
-	// 	...newImages.map((file) => ({ postImageId: null, imageUrl: file.name })),
-	// ];
+	let uploadedImageUrls: string[] = [];
+
+	try {
+		uploadedImageUrls = await uploadPostImages(newImages);
+	} catch (error) {
+		if (error instanceof UploadPostImageError) {
+			throw new UpdatePostError(error.status, error.code);
+		}
+		throw error;
+	}
+
+	const nextImageUrls: UpdatePostImageInfo[] = [
+		...imageUrls,
+		...uploadedImageUrls.map((imageUrl) => ({ postImageId: null, imageUrl })),
+	];
 	const payload = {
 		title,
 		content,
 		rentalFee,
 		feeUnit,
-		imageUrls: ["/dummy-post-image.png"],
-		// imageUrls: normalizedImageUrls,
-		// TODO: fix this
+		imageUrls: nextImageUrls,
 	};
 
 	return await request(
