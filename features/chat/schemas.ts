@@ -37,6 +37,14 @@ const CursorDtoSchema = z.object({
 	hasNext: z.boolean(),
 });
 
+const ChatroomIdResponseApiSchema = z.object({
+	chatroomId: z.number(),
+});
+
+const ChatroomIdResponseDtoSchema = z.object({
+	chatroomId: z.number(),
+});
+
 const ChatRoomsResponseApiSchema = z.union([
 	z.object({
 		chatroomSummaries: ChatRoomSummariesApiSchema,
@@ -58,9 +66,12 @@ const ChatRoomsResponseDtoSchema = z.object({
 type ChatRoomSummaryDto = z.infer<typeof ChatRoomSummaryDtoSchema>;
 
 type ChatRoomsResponseDto = z.infer<typeof ChatRoomsResponseDtoSchema>;
+type ChatroomIdResponseDto = z.infer<typeof ChatroomIdResponseDtoSchema>;
 
-export type { ChatRoomsResponseDto, ChatRoomSummaryDto };
+export type { ChatroomIdResponseDto,ChatRoomsResponseDto, ChatRoomSummaryDto };
 export {
+	ChatroomIdResponseApiSchema,
+	ChatroomIdResponseDtoSchema,
 	ChatRoomsResponseApiSchema,
 	ChatRoomsResponseDtoSchema,
 	ChatRoomSummaryApiSchema,
