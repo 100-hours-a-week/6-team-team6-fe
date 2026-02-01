@@ -9,10 +9,11 @@ import type { ChatRoomsResponseDto } from "@/features/chat/schemas";
 
 type UseChatRoomsParams = {
 	postId: number | null;
+	listType: "all" | "item";
 };
 
-export function useChatRooms({ postId }: UseChatRoomsParams) {
-	const queryKey = chatQueryKeys.list();
+export function useChatRooms({ postId, listType }: UseChatRoomsParams) {
+	const queryKey = chatQueryKeys.list({ type: listType, postId });
 
 	const query = useInfiniteQuery<
 		ChatRoomsResponseDto,
@@ -22,7 +23,8 @@ export function useChatRooms({ postId }: UseChatRoomsParams) {
 		string | undefined
 	>({
 		queryKey,
-		queryFn: ({ pageParam }) => getChatRooms({ cursor: pageParam }),
+		queryFn: ({ pageParam }) =>
+			getChatRooms({ cursor: pageParam, postId: postId ?? undefined, listType }),
 		initialPageParam: undefined,
 		getNextPageParam: (lastPage) =>
 			lastPage.hasNextPage ? (lastPage.nextCursor ?? undefined) : undefined,

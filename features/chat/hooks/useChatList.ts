@@ -6,6 +6,7 @@ import { useChatListSSE } from "@/features/chat/hooks/useChatListSSE";
 import { useChatRooms } from "@/features/chat/hooks/useChatRooms";
 export function useChatList() {
 	const searchParams = useSearchParams();
+	const typeParam = searchParams.get("type");
 	const postId = useMemo(() => {
 		const postIdParam = searchParams.get("postId");
 		if (!postIdParam) {
@@ -15,8 +16,11 @@ export function useChatList() {
 		return Number.isNaN(parsed) ? null : parsed;
 	}, [searchParams]);
 
+	const isItemList = typeParam === "item" && postId !== null;
+	const listType = isItemList ? "item" : "all";
+
 	const { rooms, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-		useChatRooms({ postId });
+		useChatRooms({ postId: isItemList ? postId : null, listType });
 
 	const fetchNextPageRef = useRef(fetchNextPage);
 	const hasNextPageRef = useRef(hasNextPage);
