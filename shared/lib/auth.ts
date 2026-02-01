@@ -91,7 +91,7 @@ export const authOptions: NextAuthOptions = {
 			try {
 				await ky.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/logout`, {
 					headers: buildXsrfHeaders(effectiveXsrfToken),
-					hooks: getRefreshTokenCookieHooks(refreshToken),
+					hooks: getRefreshTokenCookieHooks(refreshToken, xsrfToken),
 				});
 			} catch (error) {
 				console.error("Backend logout failed:", error);
@@ -110,7 +110,7 @@ async function refreshAccessToken(token: JWT) {
 		const response = await ky.post(`${process.env.NEXT_PUBLIC_API_URL}/auth/tokens`, {
 			headers: buildXsrfHeaders(token.xsrfToken ?? xsrfToken),
 			// 서버 사이드 요청 시 쿠키를 직접 주입해야 할 경우
-			hooks: getRefreshTokenCookieHooks(refreshToken),
+			hooks: getRefreshTokenCookieHooks(refreshToken, xsrfToken),
 		});
 
 		const data = await response.json<{ accessToken: string }>();
@@ -153,12 +153,19 @@ function buildXsrfHeaders(xsrfToken?: string) {
 	return xsrfToken ? { "X-XSRF-TOKEN": xsrfToken } : {};
 }
 
-function getRefreshTokenCookieHooks(refreshToken?: string) {
+function getRefreshTokenCookieHooks(refreshToken?: string, xsrfToken?: string) {
 	return {
 		beforeRequest: [
 			(request: Request) => {
+				const cookieParts: string[] = [];
 				if (refreshToken) {
-					request.headers.set("Cookie", `refreshToken=${refreshToken}`);
+					cookieParts.push(`refreshToken=${refreshToken}`);
+				}
+				if (xsrfToken) {
+					cookieParts.push(`XSRF-TOKEN=${xsrfToken}`);
+				}
+				if (cookieParts.length > 0) {
+					request.headers.set("Cookie", cookieParts.join("; "));
 				}
 			},
 		],

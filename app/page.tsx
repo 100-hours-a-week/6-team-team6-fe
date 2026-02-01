@@ -8,5 +8,5 @@ import { routeConst } from "@/shared/lib/constants";
 export default async function Page() {
 	const session = await getServerSession(authOptions);
 
-	redirect(session ? routeConst.DEFAULT_AUTH_REDIRECT_PATH : "/login");
+	redirect(session && !session.error ? routeConst.DEFAULT_AUTH_REDIRECT_PATH : "/login");
 }

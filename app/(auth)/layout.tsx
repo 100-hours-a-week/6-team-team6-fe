@@ -17,7 +17,7 @@ async function AuthLayout(props: AuthLayoutProps) {
 	const { children } = props;
 	const session = await getServerSession(authOptions);
 
-	if (session) {
+	if (session && !session.error) {
 		redirect(routeConst.DEFAULT_AUTH_REDIRECT_PATH);
 	}
 
