@@ -4,14 +4,7 @@ import { useSearchParams } from "next/navigation";
 
 import { useChatListSSE } from "@/features/chat/hooks/useChatListSSE";
 import { useChatRooms } from "@/features/chat/hooks/useChatRooms";
-import type { ChatRoomSource } from "@/features/chat/lib/types";
-
-type UseChatListParams = {
-	sourceRooms: ChatRoomSource[];
-	pageSize?: number;
-};
-
-export function useChatList({ sourceRooms, pageSize }: UseChatListParams) {
+export function useChatList() {
 	const searchParams = useSearchParams();
 	const postId = useMemo(() => {
 		const postIdParam = searchParams.get("postId");
@@ -23,7 +16,7 @@ export function useChatList({ sourceRooms, pageSize }: UseChatListParams) {
 	}, [searchParams]);
 
 	const { rooms, fetchNextPage, hasNextPage, isFetchingNextPage, isLoading, isError } =
-		useChatRooms({ postId, sourceRooms, pageSize });
+		useChatRooms({ postId });
 
 	const fetchNextPageRef = useRef(fetchNextPage);
 	const hasNextPageRef = useRef(hasNextPage);

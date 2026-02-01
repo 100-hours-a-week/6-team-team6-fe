@@ -16,6 +16,8 @@ export type RoomSummary = ChatSummary & ChatPartner;
 
 export type ChatRoomSource = RoomSummary & {
 	postId: number;
+	groupId?: number;
+	groupName?: string;
 };
 
 export type ChatMessage = {

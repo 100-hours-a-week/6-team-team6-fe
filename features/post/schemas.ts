@@ -45,9 +45,8 @@ const PostDetailBaseSchema = z.object({
 	rentalStatus: rentalStatusSchema,
 	updatedAt: z.string().min(1),
 	isSeller: z.boolean(),
-	chatroomId: z.number(),
-	// TODO: fix this
-	activeChatroomCount: z.number().min(-1),
+	chatroomId: z.number().nullable(),
+	activeChatroomCount: z.number().nullable(),
 });
 
 const PostDetailDtoSchema = PostDetailBaseSchema.extend({
