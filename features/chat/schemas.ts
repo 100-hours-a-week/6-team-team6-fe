@@ -90,6 +90,41 @@ const ChatroomPostInfoDtoSchema = z.object({
 	rentalStatus: rentalStatusSchema,
 });
 
+const ChatMessageApiSchema = z.object({
+	messageId: z.string().min(1),
+	who: z.enum(["me", "partner"]),
+	message: z.string().min(1),
+	createdAt: z.string().min(1),
+});
+
+const ChatMessageDtoSchema = z.object({
+	messageId: z.string().min(1),
+	who: z.enum(["me", "partner"]),
+	message: z.string().min(1),
+	createdAt: z.string().min(1),
+});
+
+const ChatMessagesResponseApiSchema = z.union([
+	z.object({
+		chatroomId: z.number(),
+		messageItems: z.array(ChatMessageApiSchema),
+		cursorDto: CursorDtoSchema,
+	}),
+	z.object({
+		chatroomId: z.number(),
+		chatMessages: z.array(ChatMessageApiSchema),
+		nextCursor: z.string().nullable(),
+		hasNext: z.boolean(),
+	}),
+]);
+
+const ChatMessagesResponseDtoSchema = z.object({
+	chatroomId: z.number(),
+	messages: z.array(ChatMessageDtoSchema),
+	nextCursor: z.string().nullable(),
+	hasNextPage: z.boolean(),
+});
+
 const ChatRoomsResponseApiSchema = z.union([
 	z.object({
 		chatroomSummaries: ChatRoomSummariesApiSchema,
@@ -115,9 +150,13 @@ type ChatroomIdResponseDto = z.infer<typeof ChatroomIdResponseDtoSchema>;
 type ChatMessageSendResponseDto = z.infer<typeof ChatMessageSendResponseDtoSchema>;
 type ChatroomPostIdResponseDto = z.infer<typeof ChatroomPostIdResponseDtoSchema>;
 type ChatroomPostInfoDto = z.infer<typeof ChatroomPostInfoDtoSchema>;
+type ChatMessageDto = z.infer<typeof ChatMessageDtoSchema>;
+type ChatMessagesResponseDto = z.infer<typeof ChatMessagesResponseDtoSchema>;
 
 export type {
+	ChatMessageDto,
 	ChatMessageSendResponseDto,
+	ChatMessagesResponseDto,
 	ChatroomIdResponseDto,
 	ChatroomPostIdResponseDto,
 	ChatroomPostInfoDto,
@@ -125,8 +164,12 @@ export type {
 	ChatRoomSummaryDto,
 };
 export {
+	ChatMessageApiSchema,
+	ChatMessageDtoSchema,
 	ChatMessageSendResponseApiSchema,
 	ChatMessageSendResponseDtoSchema,
+	ChatMessagesResponseApiSchema,
+	ChatMessagesResponseDtoSchema,
 	ChatroomIdResponseApiSchema,
 	ChatroomIdResponseDtoSchema,
 	ChatroomPostIdResponseApiSchema,

@@ -1,23 +1,25 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { useParams, useSearchParams } from "next/navigation";
 
-import { useQuery } from "@tanstack/react-query";
+import { type InfiniteData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { chatQueryKeys } from "@/features/chat/api/chatQueries";
+import type { GetChatMessagesError } from "@/features/chat/api/getChatMessages";
+import { getChatMessages } from "@/features/chat/api/getChatMessages";
 import type { GetChatroomPostIdError } from "@/features/chat/api/getChatroomPostId";
 import { getChatroomPostId } from "@/features/chat/api/getChatroomPostId";
 import type { GetChatroomPostInfoError } from "@/features/chat/api/getChatroomPostInfo";
 import { getChatroomPostInfo } from "@/features/chat/api/getChatroomPostInfo";
-import { INITIAL_MESSAGES, OLDER_MESSAGES } from "@/features/chat/lib/dummy";
 import type { ChatMessage, ChatMessages, ChatPostInfoData } from "@/features/chat/lib/types";
-
-const LOAD_MORE_DELAY_MS = 300;
+import type { ChatMessagesResponseDto } from "@/features/chat/schemas";
 
 export type UseChatRoomResult = {
 	postInfo: ChatPostInfoData | null;
 	isPostInfoLoading: boolean;
 	isPostInfoError: boolean;
+	isMessagesLoading: boolean;
+	isMessagesError: boolean;
 	messages: ChatMessages;
 	hasMoreMessage: boolean;
 	isLoadingPreviousMessage: boolean;
@@ -63,49 +65,62 @@ export function useChatRoom(): UseChatRoomResult {
 		enabled: chatroomId !== null && resolvedPostId !== null,
 	});
 
-	const [messages, setMessages] = useState<ChatMessages>(INITIAL_MESSAGES);
-	const [hasMoreMessage, setHasMoreMessage] = useState(true);
-	const [isLoadingPreviousMessage, setIsLoadingPreviousMessage] = useState(false);
-	const loadMoreTimerRef = useRef<number | null>(null);
+	const messagesQuery = useInfiniteQuery<
+		ChatMessagesResponseDto,
+		GetChatMessagesError,
+		InfiniteData<ChatMessagesResponseDto, string | undefined>,
+		ReturnType<typeof chatQueryKeys.chatroomMessages>,
+		string | undefined
+	>({
+		queryKey: chatQueryKeys.chatroomMessages(chatroomId, resolvedPostId),
+		queryFn: ({ pageParam }) =>
+			getChatMessages({
+				postId: resolvedPostId as number,
+				chatroomId: chatroomId as number,
+				cursor: pageParam,
+			}),
+		initialPageParam: undefined,
+		getNextPageParam: (lastPage) =>
+			lastPage.hasNextPage ? (lastPage.nextCursor ?? undefined) : undefined,
+		enabled: chatroomId !== null && resolvedPostId !== null,
+	});
 
-	useEffect(() => {
-		return () => {
-			if (loadMoreTimerRef.current !== null) {
-				window.clearTimeout(loadMoreTimerRef.current);
-			}
-		};
-	}, []);
+	const [optimisticMessages, setOptimisticMessages] = useState<ChatMessages>([]);
+
+	const messages = useMemo(() => {
+		const fetched = messagesQuery.data?.pages.flatMap((page) => page.messages) ?? [];
+		if (optimisticMessages.length === 0) {
+			return fetched;
+		}
+		return [...optimisticMessages, ...fetched];
+	}, [messagesQuery.data, optimisticMessages]);
 
 	const loadMoreMessages = useCallback(() => {
-		if (!hasMoreMessage || isLoadingPreviousMessage) {
+		if (!messagesQuery.hasNextPage || messagesQuery.isFetchingNextPage) {
 			return;
 		}
-		setIsLoadingPreviousMessage(true);
-
-		loadMoreTimerRef.current = window.setTimeout(() => {
-			setMessages((prev) => [...prev, ...OLDER_MESSAGES]);
-			setHasMoreMessage(false);
-			setIsLoadingPreviousMessage(false);
-			loadMoreTimerRef.current = null;
-		}, LOAD_MORE_DELAY_MS);
-	}, [hasMoreMessage, isLoadingPreviousMessage]);
+		void messagesQuery.fetchNextPage();
+	}, [messagesQuery]);
 
 	const submitMessage = useCallback((text: string) => {
 		const nextMessage: ChatMessage = {
+			messageId: `local-${Date.now()}`,
 			who: "me",
 			message: text,
 			createdAt: new Date().toISOString(),
 		};
-		setMessages((prev) => [nextMessage, ...prev]);
+		setOptimisticMessages((prev) => [nextMessage, ...prev]);
 	}, []);
 
 	return {
 		postInfo: postInfoQuery.data ?? null,
 		isPostInfoLoading: postInfoQuery.isLoading || postIdQuery.isLoading,
 		isPostInfoError: postInfoQuery.isError || postIdQuery.isError,
+		isMessagesLoading: messagesQuery.isLoading,
+		isMessagesError: messagesQuery.isError,
 		messages,
-		hasMoreMessage,
-		isLoadingPreviousMessage,
+		hasMoreMessage: messagesQuery.hasNextPage ?? false,
+		isLoadingPreviousMessage: messagesQuery.isFetchingNextPage,
 		loadMoreMessages,
 		submitMessage,
 	};

@@ -6,4 +6,6 @@ export const chatQueryKeys = {
 	chatroomPostId: (chatroomId: number | null) => ["chatrooms", "postId", chatroomId] as const,
 	chatroomPostInfo: (chatroomId: number | null, postId: number | null) =>
 		["chatrooms", "postInfo", chatroomId, postId] as const,
+	chatroomMessages: (chatroomId: number | null, postId: number | null) =>
+		["chatrooms", "messages", chatroomId, postId] as const,
 };
