@@ -103,15 +103,15 @@ function ChatMessageList({
 						<Spinner className="text-muted-foreground" />
 					</div>
 				)}
-				{!hasMoreMessage && (
+				{/* {!hasMoreMessage && (
 					<Typography type="caption" className="text-center text-muted-foreground">
 						이전 메시지가 없습니다.
-					</Typography>
-				)}
+					</Typography> */}
+				{/* )} */}
 				{messageEntries.map(({ message, isMe, timeLabel }, index) => {
 					return (
 						<div
-							key={`${message.createdAt}-${index}`}
+							key={`${message.messageId ?? message.createdAt}-${index}`}
 							className={`flex ${isMe ? "justify-end" : "justify-start"}`}
 						>
 							<div
@@ -172,6 +172,10 @@ function ChatInput(props: ChatInputProps) {
 export function ChatRoomPage() {
 	const {
 		postInfo,
+		isPostInfoLoading,
+		isPostInfoError,
+		isMessagesLoading,
+		isMessagesError,
 		messages,
 		hasMoreMessage,
 		isLoadingPreviousMessage,
@@ -181,14 +185,36 @@ export function ChatRoomPage() {
 
 	return (
 		<div className="flex flex-col h-[calc(100dvh-var(--h-header))]">
-			<ChatPostInfo postInfo={postInfo} />
+			{isPostInfoLoading ? (
+				<div className="flex items-center justify-center gap-2 px-4 py-6 text-muted-foreground">
+					<Spinner />
+					{/* <Typography type="body-sm">채팅 정보를 불러오는 중</Typography> */}
+				</div>
+			) : isPostInfoError || !postInfo ? (
+				<div className="flex items-center justify-center px-4 py-6 text-muted-foreground">
+					<Typography type="body-sm">채팅 정보를 불러오지 못했습니다.</Typography>
+				</div>
+			) : (
+				<ChatPostInfo postInfo={postInfo} />
+			)}
 			<Separator />
-			<ChatMessageList
-				messageList={messages}
-				hasMoreMessage={hasMoreMessage}
-				onLoadMore={loadMoreMessages}
-				isLoadingPreviousMessage={isLoadingPreviousMessage}
-			/>
+			{isMessagesLoading && messages.length === 0 ? (
+				<div className="flex flex-1 items-center justify-center gap-2 px-4 py-6 text-muted-foreground">
+					<Spinner />
+					<Typography type="body-sm">메시지를 불러오는 중</Typography>
+				</div>
+			) : isMessagesError ? (
+				<div className="flex flex-1 items-center justify-center px-4 py-6 text-muted-foreground">
+					<Typography type="body-sm">메시지를 불러오지 못했습니다.</Typography>
+				</div>
+			) : (
+				<ChatMessageList
+					messageList={messages}
+					hasMoreMessage={hasMoreMessage}
+					onLoadMore={loadMoreMessages}
+					isLoadingPreviousMessage={isLoadingPreviousMessage}
+				/>
+			)}
 			<ChatInput onSubmit={submitMessage} />
 		</div>
 	);

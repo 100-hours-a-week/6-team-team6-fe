@@ -20,6 +20,7 @@ function DefaultHeader() {
 					alt="Logo"
 					width={uiConst.WIDTH.HEADER_LOGO}
 					height={uiConst.HEIGHT.HEADER_LOGO}
+					loading="eager"
 				/>
 			}
 			right={

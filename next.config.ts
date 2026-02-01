@@ -10,6 +10,15 @@ const nextConfig: NextConfig = {
 			},
 		];
 	},
+	images: {
+		remotePatterns: [
+			{
+				protocol: "https",
+				hostname: `${process.env.NEXT_PUBLIC_IMAGE_HOSTNAME}`,
+				pathname: "/**",
+			},
+		],
+	},
 };
 
 export default nextConfig;

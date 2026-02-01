@@ -246,6 +246,7 @@ export function PostDetailPage() {
 			<PostDetailNavigation
 				isSeller={post.isSeller}
 				activeChatroomCount={post.activeChatroomCount}
+				chatroomId={post.chatroomId}
 				postId={postIdNumber}
 			/>
 		</>

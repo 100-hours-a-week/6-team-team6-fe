@@ -12,7 +12,6 @@ import { useChatList } from "@/features/chat/hooks/useChatList";
 import {
 	type ChatRoomListLabels,
 	type ChatRoomListViewState,
-	type ChatRoomSource,
 	type RoomSummary,
 } from "@/features/chat/lib/types";
 import { getChatRoomListViewState } from "@/features/chat/lib/utils";
@@ -87,16 +86,14 @@ function ChatRoomListContent(props: ChatRoomListContentProps) {
 }
 
 interface ChatRoomListProps {
-	sourceRooms: ChatRoomSource[];
 	labels: ChatRoomListLabels;
 }
 
 export function ChatRoomList(props: ChatRoomListProps) {
-	const { sourceRooms, labels } = props;
+	const { labels } = props;
 
-	const { rooms, setLoaderRef, hasNextPage, isFetchingNextPage, isLoading, isError } = useChatList({
-		sourceRooms,
-	});
+	const { rooms, setLoaderRef, hasNextPage, isFetchingNextPage, isLoading, isError } =
+		useChatList();
 
 	const state = getChatRoomListViewState({ isLoading, isError, rooms });
 
