@@ -125,6 +125,15 @@ const ChatMessagesResponseDtoSchema = z.object({
 	hasNextPage: z.boolean(),
 });
 
+// TODO fix field name
+const UnreadChatCountResponseApiSchema = z.object({
+	unreadChatMesageCount: z.number().min(0),
+});
+
+const UnreadChatCountResponseDtoSchema = z.object({
+	unreadChatMesageCount: z.number().min(0),
+});
+
 const ChatRoomsResponseApiSchema = z.union([
 	z.object({
 		chatroomSummaries: ChatRoomSummariesApiSchema,
@@ -152,6 +161,7 @@ type ChatroomPostIdResponseDto = z.infer<typeof ChatroomPostIdResponseDtoSchema>
 type ChatroomPostInfoDto = z.infer<typeof ChatroomPostInfoDtoSchema>;
 type ChatMessageDto = z.infer<typeof ChatMessageDtoSchema>;
 type ChatMessagesResponseDto = z.infer<typeof ChatMessagesResponseDtoSchema>;
+type UnreadChatCountResponseDto = z.infer<typeof UnreadChatCountResponseDtoSchema>;
 
 export type {
 	ChatMessageDto,
@@ -162,6 +172,7 @@ export type {
 	ChatroomPostInfoDto,
 	ChatRoomsResponseDto,
 	ChatRoomSummaryDto,
+	UnreadChatCountResponseDto,
 };
 export {
 	ChatMessageApiSchema,
@@ -180,4 +191,6 @@ export {
 	ChatRoomsResponseDtoSchema,
 	ChatRoomSummaryApiSchema,
 	ChatRoomSummaryDtoSchema,
+	UnreadChatCountResponseApiSchema,
+	UnreadChatCountResponseDtoSchema,
 };
