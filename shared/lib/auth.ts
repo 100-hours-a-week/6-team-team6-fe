@@ -30,6 +30,10 @@ export const authOptions: NextAuthOptions = {
 				const data = await res.json();
 
 				if (!res.ok) {
+					// TODO: remove this
+					console.log("--- !RES.OK --- ");
+					console.log(res);
+					console.log(data);
 					// 400, 401 에러 코드 처리 (USER02, AUTH01 등)
 					throw new Error(data.code ?? "UNKNOWN_ERROR");
 				}
