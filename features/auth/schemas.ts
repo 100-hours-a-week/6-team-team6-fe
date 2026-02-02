@@ -38,4 +38,18 @@ const signupSchema = z
 		path: ["confirmPassword"],
 	});
 
-export { loginIdSchema, loginSchema, passwordSchema, signupSchema };
+const myProfileResponseSchema = z.object({
+	loginId: z.string().min(1),
+	avatarImageUrl: z.string().min(1),
+});
+
+type MyProfileResponseDto = z.infer<typeof myProfileResponseSchema>;
+
+export {
+	loginIdSchema,
+	loginSchema,
+	myProfileResponseSchema,
+	passwordSchema,
+	signupSchema,
+};
+export type { MyProfileResponseDto };

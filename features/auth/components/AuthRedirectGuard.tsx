@@ -10,13 +10,13 @@ import { routeConst } from "@/shared/lib/constants";
 
 function AuthRedirectGuard() {
 	const router = useRouter();
-	const { status } = useSession();
+	const { status, data: session } = useSession();
 
 	useEffect(() => {
-		if (status === "authenticated") {
+		if (status === "authenticated" && !session?.error) {
 			router.replace(routeConst.DEFAULT_AUTH_REDIRECT_PATH);
 		}
-	}, [router, status]);
+	}, [router, session?.error, status]);
 
 	return null;
 }

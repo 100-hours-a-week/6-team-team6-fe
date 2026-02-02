@@ -53,6 +53,11 @@ export const apiClient = ky.create({
 				if (!alreadyRetried && errorCode === apiErrorCodes.TOKEN_INVALID_ACCESS) {
 					const newSession = await getSession(); // jwt callback -> refreshAccessToken 실행
 
+					if (newSession?.error === "RefreshAccessTokenError") {
+						await signOut({ callbackUrl: "/login" });
+						return;
+					}
+
 					if (newSession?.accessToken) {
 						request.headers.set("Authorization", `Bearer ${newSession.accessToken}`);
 						request.headers.set("X-Retried", "true");
@@ -61,6 +66,7 @@ export const apiClient = ky.create({
 						return apiClient(request, options);
 					}
 
+					await signOut({ callbackUrl: "/login" });
 					return;
 				}
 

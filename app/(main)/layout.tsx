@@ -11,7 +11,7 @@ interface MainLayoutProps {
 export default async function MainLayout({ children }: MainLayoutProps) {
 	const session = await getServerSession(authOptions);
 
-	if (!session) {
+	if (!session || session.error) {
 		redirect("/login");
 	}
 
