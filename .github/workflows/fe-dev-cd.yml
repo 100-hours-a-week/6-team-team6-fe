@@ -9,7 +9,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push' }}
 
     steps:
       - name: Checkout
@@ -74,12 +74,14 @@ jobs:
             rm -rf /home/ubuntu/deploy/frontend_temp
             rm /home/ubuntu/deploy/build.tar.gz
             
+
             # PM2 실행
             cd \$DEPLOY_PATH
             pnpm install --prod --ignore-scripts
             pm2 delete \$APP_NAME 2>/dev/null || true
             NEXTAUTH_SECRET="${{ secrets.DEV_NEXTAUTH_SECRET }}" \
-            NEXT_PUBLIC_IMAGE_HOSTNAME="${{ secrets.NEXT_PUBLIC_IMAGE_HOSTNAME }}" \
+            NEXTAUTH_URL="${{ secrets.DEV_NEXTAUTH_URL }}" \
+            AUTH_TRUST_HOST=true \
             PORT=3000 HOSTNAME=0.0.0.0 pm2 start server.js --name \$APP_NAME
             pm2 save
             
