@@ -141,7 +141,24 @@ function mergeMessages(
 		merged.push(message);
 	}
 
-	return merged;
+	return merged.sort((left, right) => {
+		const leftTime = Date.parse(left.createdAt);
+		const rightTime = Date.parse(right.createdAt);
+
+		if (Number.isNaN(leftTime) || Number.isNaN(rightTime)) {
+			const leftId = left.messageId ?? "";
+			const rightId = right.messageId ?? "";
+			return rightId.localeCompare(leftId);
+		}
+
+		if (rightTime !== leftTime) {
+			return rightTime - leftTime;
+		}
+
+		const leftId = left.messageId ?? "";
+		const rightId = right.messageId ?? "";
+		return rightId.localeCompare(leftId);
+	});
 }
 
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {
