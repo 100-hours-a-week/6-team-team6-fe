@@ -14,10 +14,6 @@ function PostItem(props: PostItemProps) {
 	const firstImageUrl = postFirstImageUrl || "/dummy-post-image.png";
 	const rentalFeeLabel = formatRentalFeeLabel(rentalFee, feeUnit);
 
-	console.log(`firstImageUrl`);
-	console.log(firstImageUrl);
-	console.log(`process.env.NEXT_PUBLIC_IMAGE_HOSTNAME`);
-	console.log(process.env.NEXT_PUBLIC_IMAGE_HOSTNAME);
 	return (
 		<div className="flex gap-x-4">
 			<div>
