@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useChatInput } from "@/features/chat/hooks/useChatInput";
 import { useChatMessageList } from "@/features/chat/hooks/useChatMessageList";
 import { useChatRoom } from "@/features/chat/hooks/useChatRoom";
+import { useChatRoomStomp } from "@/features/chat/hooks/useChatRoomStomp";
 import type { ChatMessages, ChatPostInfoData } from "@/features/chat/lib/types";
 
 import NavigationLayout from "@/shared/components/layout/bottomNavigations/NavigationLayout";
@@ -148,7 +149,14 @@ interface ChatInputProps {
 
 function ChatInput(props: ChatInputProps) {
 	const { onSubmit } = props;
-	const { value, handleChange, handleKeyDown, handleSubmit } = useChatInput({ onSubmit });
+	const {
+		value,
+		handleChange,
+		handleKeyDown,
+		handleSubmit,
+		handleCompositionStart,
+		handleCompositionEnd,
+	} = useChatInput({ onSubmit });
 
 	return (
 		<NavigationLayout>
@@ -157,6 +165,8 @@ function ChatInput(props: ChatInputProps) {
 					value={value}
 					onChange={handleChange}
 					onKeyDown={handleKeyDown}
+					onCompositionStart={handleCompositionStart}
+					onCompositionEnd={handleCompositionEnd}
 					placeholder="메시지를 입력하세요"
 					rows={1}
 					className="h-10 min-h-10 resize-none overflow-y-auto no-scrollbar"
@@ -182,6 +192,10 @@ export function ChatRoomPage() {
 		loadMoreMessages,
 		submitMessage,
 	} = useChatRoom();
+	const { mergedMessages, submitMessageByStomp } = useChatRoomStomp({
+		messages,
+		submitMessage,
+	});
 
 	return (
 		<div className="flex flex-col h-[calc(100dvh-var(--h-header))]">
@@ -198,7 +212,7 @@ export function ChatRoomPage() {
 				<ChatPostInfo postInfo={postInfo} />
 			)}
 			<Separator />
-			{isMessagesLoading && messages.length === 0 ? (
+			{isMessagesLoading && mergedMessages.length === 0 ? (
 				<div className="flex flex-1 items-center justify-center gap-2 px-4 py-6 text-muted-foreground">
 					<Spinner />
 					<Typography type="body-sm">메시지를 불러오는 중</Typography>
@@ -209,13 +223,13 @@ export function ChatRoomPage() {
 				</div>
 			) : (
 				<ChatMessageList
-					messageList={messages}
+					messageList={mergedMessages}
 					hasMoreMessage={hasMoreMessage}
 					onLoadMore={loadMoreMessages}
 					isLoadingPreviousMessage={isLoadingPreviousMessage}
 				/>
 			)}
-			<ChatInput onSubmit={submitMessage} />
+			<ChatInput onSubmit={submitMessageByStomp} />
 		</div>
 	);
 }
