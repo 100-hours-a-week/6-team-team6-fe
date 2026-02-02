@@ -78,6 +78,13 @@ function parseChatJoinPayload(payload: unknown): ChatJoinPayload | null {
 	}
 
 	const data = payload as Record<string, unknown>;
+	if (
+		typeof data.messageContent === "string" ||
+		typeof data.messageId === "string" ||
+		typeof data.createdAt === "string"
+	) {
+		return null;
+	}
 	const chatroomId = parseNumberValue(data.chatroomId);
 	const userId = parseNumberValue(data.userId);
 	const membershipId = parseNumberValue(data.membershipId);
@@ -244,22 +251,22 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		const handleIncomingMessage = (frame: IMessage) => {
 			const payload = parseStompBody(frame);
 
-			const joinPayload = parseChatJoinPayload(payload);
-			if (joinPayload && joinPayload.chatroomId === chatroomId) {
-				const isMyJoinPayload =
-					(joinPayload.userId !== null && myUserId !== null && joinPayload.userId === myUserId) ||
-					(joinPayload.userId === null && isAwaitingJoinAckRef.current);
-
-				if (isMyJoinPayload) {
-					myMembershipIdRef.current = joinPayload.membershipId;
-					isAwaitingJoinAckRef.current = false;
-					flushPendingMessages();
-				}
-				return;
-			}
-
 			const messagePayload = parseChatMessagePayload(payload);
 			if (!messagePayload || messagePayload.chatroomId !== chatroomId) {
+				const joinPayload = parseChatJoinPayload(payload);
+				if (joinPayload && joinPayload.chatroomId === chatroomId) {
+					const isMyJoinPayload =
+						(joinPayload.userId !== null &&
+							myUserId !== null &&
+							joinPayload.userId === myUserId) ||
+						(joinPayload.userId === null && isAwaitingJoinAckRef.current);
+
+					if (isMyJoinPayload) {
+						myMembershipIdRef.current = joinPayload.membershipId;
+						isAwaitingJoinAckRef.current = false;
+						flushPendingMessages();
+					}
+				}
 				return;
 			}
 
