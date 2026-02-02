@@ -273,9 +273,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 				const joinPayload = parseChatJoinPayload(payload);
 				if (joinPayload && joinPayload.chatroomId === chatroomId) {
 					const isMyJoinPayload =
-						(joinPayload.userId !== null &&
-							myUserId !== null &&
-							joinPayload.userId === myUserId) ||
+						(joinPayload.userId !== null && myUserId !== null && joinPayload.userId === myUserId) ||
 						(joinPayload.userId === null && isAwaitingJoinAckRef.current);
 
 					if (isMyJoinPayload) {
@@ -324,7 +322,6 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		client.onConnect = () => {
 			isStompConnectedRef.current = true;
 
-			console.log("onConnected");
 			subscriptionRef.current = client.subscribe(
 				STOMP_DESTINATION.subscribe(chatroomId),
 				handleIncomingMessage,

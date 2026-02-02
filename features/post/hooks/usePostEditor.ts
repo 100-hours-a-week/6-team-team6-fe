@@ -2,8 +2,17 @@
 
 import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+
+import {
+	createPostDraft,
+	CreatePostDraftError,
+	type PostDraftResponse,
+} from "@/features/post/api/createPostDraft";
 import { type FeeUnit, PostEditorSchema, type PostEditorValues } from "@/features/post/schemas";
 
+import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { postValidationMessages } from "@/shared/lib/error-messages";
 
 export type { FeeUnit };
@@ -19,6 +28,41 @@ const mockExistingImages: ExistingImage[] = [
 	{ id: "mock-2", url: "/default-profile.png" },
 	{ id: "mock-3", url: "/dummy-post-image.png" },
 ];
+
+const AI_DRAFT_ERROR_MESSAGE = "AI 자동 작성에 실패했습니다.";
+const IMAGE_FETCH_ERROR_CODE = "IMAGE_FETCH_FAILED";
+
+const getFileNameFromUrl = (url: string, fallback: string) => {
+	try {
+		const parsed = new URL(url, window.location.origin);
+		const lastSegment = parsed.pathname.split("/").filter(Boolean).pop();
+		return lastSegment ?? fallback;
+	} catch {
+		return fallback;
+	}
+};
+
+const withExtension = (fileName: string, mimeType: string) => {
+	if (fileName.includes(".")) {
+		return fileName;
+	}
+	const extension = mimeType.split("/")[1];
+	if (!extension) {
+		return fileName;
+	}
+	return `${fileName}.${extension}`;
+};
+
+const createFileFromUrl = async (url: string, fallbackName: string) => {
+	const response = await fetch(url);
+	if (!response.ok) {
+		throw new Error(IMAGE_FETCH_ERROR_CODE);
+	}
+	const blob = await response.blob();
+	const mimeType = blob.type || "application/octet-stream";
+	const fileName = withExtension(getFileNameFromUrl(url, fallbackName), mimeType);
+	return new File([blob], fileName, { type: mimeType });
+};
 
 export interface AddedImage {
 	file: File;
@@ -70,6 +114,7 @@ interface UsePostEditorResult {
 	images: PostEditorImageState;
 	errors: PostEditorErrors;
 	isSubmitting: boolean;
+	isGenerating: boolean;
 	onChangeField: <Key extends keyof PostEditorValues>(
 		key: Key,
 		value: PostEditorValues[Key],
@@ -77,6 +122,7 @@ interface UsePostEditorResult {
 	onAddImages: (fileList: FileList | null) => Promise<void>;
 	onRemoveExistingImage: (imageId: string) => void;
 	onRemoveAddedImage: (index: number) => void;
+	onAutoWrite: () => Promise<void>;
 	onSubmitForm: (event: FormEvent<HTMLFormElement>) => Promise<void>;
 }
 
@@ -112,6 +158,13 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 	const addedPreviewUrlsRef = useRef<Set<string>>(new Set());
 
 	const [errors, setErrors] = useState<PostEditorErrors>({});
+	const { mutateAsync: requestPostDraft, isPending: isGenerating } = useMutation<
+		PostDraftResponse,
+		CreatePostDraftError,
+		File[]
+	>({
+		mutationFn: (files) => createPostDraft({ images: files }),
+	});
 
 	const hasAnyImages = useCallback(
 		(state: PostEditorImageState) => state.existing.length + state.added.length > 0,
@@ -154,6 +207,20 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		setErrors(nextErrors);
 		return result.ok && !nextErrors.images;
 	}, [hasAnyImages, images, validateWithZod, values]);
+
+	const collectDraftImages = useCallback(async () => {
+		const addedFiles = images.added.map((item) => item.file);
+		if (!isEdit || images.existing.length === 0) {
+			return addedFiles;
+		}
+
+		const existingFiles = await Promise.all(
+			images.existing.map((image, index) =>
+				createFileFromUrl(image.url, `existing-image-${image.id ?? index}`),
+			),
+		);
+		return [...existingFiles, ...addedFiles];
+	}, [images.added, images.existing, isEdit]);
 
 	const onChangeField = useCallback(
 		<Key extends keyof PostEditorValues>(key: Key, value: PostEditorValues[Key]) => {
@@ -217,6 +284,60 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		});
 	}, []);
 
+	const onAutoWrite = useCallback(async () => {
+		if (isSubmitting || isGenerating) {
+			return;
+		}
+
+		if (!hasAnyImages(images)) {
+			setErrors((prev) => ({
+				...prev,
+				images: postValidationMessages.imagesRequired,
+			}));
+			return;
+		}
+
+		try {
+			const files = await collectDraftImages();
+			const draft = await requestPostDraft(files);
+
+			setValues({
+				title: draft.title,
+				content: draft.content,
+				rentalFee: draft.rentalFee,
+				feeUnit: draft.feeUnit,
+			});
+
+			setErrors((prev) => ({
+				...prev,
+				title: undefined,
+				content: undefined,
+				rentalFee: undefined,
+				feeUnit: undefined,
+				images: hasAnyImages(images) ? undefined : prev.images,
+			}));
+		} catch (error) {
+			if (error instanceof CreatePostDraftError) {
+				const message = getApiErrorMessage(error.code) ?? AI_DRAFT_ERROR_MESSAGE;
+				toast.error(message);
+				return;
+			}
+
+			const message =
+				error instanceof Error && error.message === IMAGE_FETCH_ERROR_CODE
+					? "이미지를 불러오지 못했습니다. 다시 시도해 주세요."
+					: AI_DRAFT_ERROR_MESSAGE;
+			toast.error(message);
+		}
+	}, [
+		collectDraftImages,
+		hasAnyImages,
+		images,
+		isGenerating,
+		isSubmitting,
+		requestPostDraft,
+	]);
+
 	const onSubmitForm = useCallback(
 		async (event: FormEvent<HTMLFormElement>) => {
 			event.preventDefault();
@@ -271,6 +392,8 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		onAddImages,
 		onRemoveExistingImage,
 		onRemoveAddedImage,
+		onAutoWrite,
 		onSubmitForm,
+		isGenerating,
 	};
 }

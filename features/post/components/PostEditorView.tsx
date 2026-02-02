@@ -19,6 +19,7 @@ import { IconButton } from "@/shared/components/ui/icon-button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { SelectField, type SelectOption } from "@/shared/components/ui/select-field";
+import { Spinner } from "@/shared/components/ui/spinner";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Typography } from "@/shared/components/ui/typography";
 
@@ -33,6 +34,7 @@ interface PostEditorViewProps {
 	images: PostEditorImageState;
 	errors: PostEditorErrors;
 	isSubmitting: boolean;
+	isGenerating: boolean;
 	onChangeField: <Key extends keyof PostEditorValues>(
 		key: Key,
 		value: PostEditorValues[Key],
@@ -40,6 +42,7 @@ interface PostEditorViewProps {
 	onAddImages: (fileList: FileList | null) => void | Promise<void>;
 	onRemoveExistingImage: (imageId: string) => void;
 	onRemoveAddedImage: (index: number) => void;
+	onAutoWrite: () => void | Promise<void>;
 	onSubmitForm: (event: FormEvent<HTMLFormElement>) => void | Promise<void>;
 	onCancel?: () => void;
 }
@@ -51,10 +54,12 @@ export function PostEditorView(props: PostEditorViewProps) {
 		images,
 		errors,
 		isSubmitting,
+		isGenerating,
 		onChangeField,
 		onAddImages,
 		onRemoveExistingImage,
 		onRemoveAddedImage,
+		onAutoWrite,
 		onSubmitForm,
 		onCancel,
 	} = props;
@@ -139,7 +144,10 @@ export function PostEditorView(props: PostEditorViewProps) {
 
 				<HorizontalPaddingBox>
 					<div>
-						<Button type="button">AI 자동 작성</Button>
+						<Button type="button" disabled={isSubmitting || isGenerating} onClick={onAutoWrite}>
+							{isGenerating && <Spinner className="text-white" />}
+							{isGenerating ? "AI 작성 중..." : "AI 자동 작성"}
+						</Button>
 					</div>
 				</HorizontalPaddingBox>
 
