@@ -34,6 +34,8 @@ export const authOptions: NextAuthOptions = {
 					console.log("--- !RES.OK --- ");
 					console.log(res);
 					console.log(data);
+					console.log("JSON.stringify(process.env.NEXT_PUBLIC_API_URL)");
+					console.log(JSON.stringify(process.env.NEXT_PUBLIC_API_URL));
 					// 400, 401 에러 코드 처리 (USER02, AUTH01 등)
 					throw new Error(data.code ?? "UNKNOWN_ERROR");
 				}
