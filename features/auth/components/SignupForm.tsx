@@ -72,6 +72,8 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
 			toast.success("회원가입이 완료되었습니다.");
 			router.push("/login");
 		} catch (error) {
+			console.log("===회원가입 error===");
+			console.error(error);
 			if (error instanceof ApiRequestError) {
 				if (
 					error.status === StatusCodes.CONFLICT &&
