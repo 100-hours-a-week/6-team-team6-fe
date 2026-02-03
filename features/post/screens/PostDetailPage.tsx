@@ -203,7 +203,7 @@ export function PostDetailPage() {
 							<CarouselContent>
 								{post.imageUrls.imageInfos.map((image, index) => (
 									<CarouselItem key={image.postImageId} className="pl-0">
-										<div className="relative w-full aspect-[1/1]">
+										<div className="relative w-full aspect-square">
 											<Image
 												fill
 												src={image.imageUrl}
