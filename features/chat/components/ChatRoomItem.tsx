@@ -40,7 +40,7 @@ export function ChatRoomItem(props: ChatRoomItemProps) {
 							</Typography>
 							{room.unreadCount > 0 ? (
 								<Badge variant="product" className="h-5 min-w-5 justify-center px-1">
-									{room.unreadCount}
+									{room.unreadCount > 99 ? "99+" : room.unreadCount}
 								</Badge>
 							) : null}
 						</div>

@@ -203,13 +203,15 @@ export function PostDetailPage() {
 							<CarouselContent>
 								{post.imageUrls.imageInfos.map((image, index) => (
 									<CarouselItem key={image.postImageId} className="pl-0">
-										<Image
-											width={100}
-											height={100}
-											src={image.imageUrl}
-											alt={`Post image ${index + 1}`}
-											className="w-full h-full object-cover"
-										/>
+										<div className="relative w-full aspect-[1/1]">
+											<Image
+												fill
+												src={image.imageUrl}
+												alt={`Post image ${index + 1}`}
+												sizes="100vw"
+												className="object-cover"
+											/>
+										</div>
 									</CarouselItem>
 								))}
 							</CarouselContent>
@@ -239,7 +241,9 @@ export function PostDetailPage() {
 							<div>{displayDate}</div>
 						</div>
 						<Separator className="my-6" />
-						<Typography type="body">{post.content}</Typography>
+						<Typography type="body" className="whitespace-pre-wrap">
+							{post.content}
+						</Typography>
 					</HorizontalPaddingBox>
 				</section>
 			</div>

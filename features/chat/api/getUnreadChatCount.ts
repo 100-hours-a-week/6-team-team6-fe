@@ -34,7 +34,7 @@ async function getUnreadChatCount(
 
 	return UnreadChatCountResponseDtoSchema.parse({
 		// TODO: fix field name
-		unreadChatMessageCount: parsed.unreadChatMesageCount,
+		unreadChatMesageCount: parsed.unreadChatMesageCount,
 	});
 }
 

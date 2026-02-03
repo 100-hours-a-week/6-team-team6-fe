@@ -9,13 +9,13 @@ const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
 
 const UpdatePostStatusResponseSchema = z.object({
 	postId: z.number(),
-	status: rentalStatusSchema,
+	rentalStatus: rentalStatusSchema,
 });
 
 type UpdatePostStatusParams = {
 	groupId: string;
 	postId: string;
-	status: z.infer<typeof rentalStatusSchema>;
+	rentalStatus: z.infer<typeof rentalStatusSchema>;
 };
 
 type UpdatePostStatusResponse = z.infer<typeof UpdatePostStatusResponseSchema>;
@@ -33,11 +33,11 @@ class UpdatePostStatusError extends Error {
 }
 
 async function updatePostStatus(params: UpdatePostStatusParams): Promise<UpdatePostStatusResponse> {
-	const { groupId, postId, status } = params;
+	const { groupId, postId, rentalStatus } = params;
 
 	return await request(
 		apiClient.patch(`groups/${groupId}/posts/${postId}`, {
-			json: { status },
+			json: { status: rentalStatus },
 		}),
 		UpdatePostStatusResponseSchema,
 		UpdatePostStatusError,
