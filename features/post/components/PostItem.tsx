@@ -15,7 +15,7 @@ function PostItem(props: PostItemProps) {
 	const rentalFeeLabel = formatRentalFeeLabel(rentalFee, feeUnit);
 
 	return (
-		<div className="flex gap-x-4 bg-amber-200">
+		<div className="flex gap-x-4">
 			<div className="">
 				<Image
 					src={firstImageUrl}
