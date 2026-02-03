@@ -1,6 +1,6 @@
 "use client";
 
-import { type FormEvent } from "react";
+import { type FormEvent, useState } from "react";
 
 import Image from "next/image";
 
@@ -29,6 +29,23 @@ const rentalUnitOptions: SelectOption[] = [
 	{ value: "DAY", label: "일" },
 ];
 const MAX_POST_IMAGES = 5;
+
+type RentalFeeParseResult =
+	| { kind: "empty" }
+	| { kind: "invalid" }
+	| { kind: "valid"; value: number; text: string };
+
+const parseRentalFeeInput = (input: string): RentalFeeParseResult => {
+	const trimmed = input.trim();
+	if (trimmed === "") {
+		return { kind: "empty" };
+	}
+	if (!/^\d+$/.test(trimmed)) {
+		return { kind: "invalid" };
+	}
+	const value = Number(trimmed);
+	return { kind: "valid", value, text: String(value) };
+};
 
 interface PostEditorViewProps {
 	mode: "create" | "edit";
@@ -69,6 +86,11 @@ export function PostEditorView(props: PostEditorViewProps) {
 	const totalImageCount = images.existing.length + images.added.length;
 	const remainingImageSlots = Math.max(0, MAX_POST_IMAGES - totalImageCount);
 	const isAtImageLimit = remainingImageSlots === 0;
+	const [rentalFeeInput, setRentalFeeInput] = useState("");
+	const [isRentalFeeDirty, setIsRentalFeeDirty] = useState(false);
+	const rentalFeeText =
+		values.rentalFee === 0 || Number.isNaN(values.rentalFee) ? "" : String(values.rentalFee);
+	const rentalFeeDisplay = isRentalFeeDirty ? rentalFeeInput : rentalFeeText;
 
 	return (
 		<>
@@ -221,13 +243,51 @@ export function PostEditorView(props: PostEditorViewProps) {
 						<div className="flex items-center gap-2">
 							<Input
 								id="post-rentalFee"
-								type="number"
+								type="text"
 								inputMode="numeric"
+								pattern="\\d*"
 								min={0}
-								value={Number.isNaN(values.rentalFee) ? "" : values.rentalFee}
+								value={rentalFeeDisplay}
+								placeholder="0"
+								onKeyDown={(event) => {
+									if (event.key === ".") {
+										event.preventDefault();
+									}
+								}}
+								onFocus={() => {
+									setIsRentalFeeDirty(true);
+									setRentalFeeInput(rentalFeeText);
+								}}
+								onBlur={() => {
+									const result = parseRentalFeeInput(rentalFeeInput);
+									if (result.kind === "empty") {
+										setRentalFeeInput("");
+										setIsRentalFeeDirty(false);
+										onChangeField("rentalFee", 0);
+										return;
+									}
+									if (result.kind === "invalid") {
+										setIsRentalFeeDirty(false);
+										return;
+									}
+									setRentalFeeInput(result.text);
+									setIsRentalFeeDirty(false);
+									onChangeField("rentalFee", result.value);
+								}}
 								onChange={(event) => {
-									const nextValue = Number(event.target.value);
-									onChangeField("rentalFee", Number.isNaN(nextValue) ? 0 : nextValue);
+									const nextInput = event.target.value;
+									const result = parseRentalFeeInput(nextInput);
+									setIsRentalFeeDirty(true);
+									if (result.kind === "empty") {
+										setRentalFeeInput("");
+										onChangeField("rentalFee", 0);
+										return;
+									}
+									if (result.kind === "invalid") {
+										return;
+									}
+									setRentalFeeInput(result.text);
+									onChangeField("rentalFee", result.value);
 								}}
 								aria-invalid={!!errors.rentalFee}
 								disabled={isSubmitting}
