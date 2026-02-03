@@ -16,8 +16,15 @@ function PostItem(props: PostItemProps) {
 
 	return (
 		<div className="flex gap-x-4">
-			<div>
-				<Image src={firstImageUrl} alt={postTitle} width={100} height={100} />
+			<div className="">
+				<Image
+					src={firstImageUrl}
+					alt={postTitle}
+					width={100}
+					height={100}
+					sizes="100px"
+					className="object-cover aspect-square"
+				/>
 			</div>
 			<div className="flex flex-col min-w-0 flex-1">
 				<div>
