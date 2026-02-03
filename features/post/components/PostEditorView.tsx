@@ -5,6 +5,7 @@ import { type FormEvent } from "react";
 import Image from "next/image";
 
 import { Plus, X } from "lucide-react";
+import { toast } from "sonner";
 
 import PostEditorNavigation from "@/features/post/components/PostEditorNavigation";
 import type {
@@ -27,6 +28,7 @@ const rentalUnitOptions: SelectOption[] = [
 	{ value: "HOUR", label: "시간" },
 	{ value: "DAY", label: "일" },
 ];
+const MAX_POST_IMAGES = 5;
 
 interface PostEditorViewProps {
 	mode: "create" | "edit";
@@ -64,6 +66,10 @@ export function PostEditorView(props: PostEditorViewProps) {
 		onCancel,
 	} = props;
 
+	const totalImageCount = images.existing.length + images.added.length;
+	const remainingImageSlots = Math.max(0, MAX_POST_IMAGES - totalImageCount);
+	const isAtImageLimit = remainingImageSlots === 0;
+
 	return (
 		<>
 			<form className="flex flex-col gap-6" onSubmit={onSubmitForm}>
@@ -73,9 +79,28 @@ export function PostEditorView(props: PostEditorViewProps) {
 						type="file"
 						accept="image/*"
 						multiple
-						disabled={isSubmitting}
+						disabled={isSubmitting || isAtImageLimit}
 						className="sr-only"
-						onChange={(event) => onAddImages(event.target.files)}
+						onChange={(event) => {
+							const { files } = event.currentTarget;
+							if (!files || files.length === 0) {
+								return;
+							}
+
+							if (remainingImageSlots === 0) {
+								event.currentTarget.value = "";
+								return;
+							}
+
+							if (files.length > remainingImageSlots) {
+								toast.error(`이미지는 최대 ${MAX_POST_IMAGES}장까지 업로드할 수 있어요.`);
+								event.currentTarget.value = "";
+								return;
+							}
+
+							onAddImages(files);
+							event.currentTarget.value = "";
+						}}
 					/>
 					<div className="flex flex-col gap-2 mt-2">
 						<ul className="flex gap-2 overflow-scroll no-scrollbar mx-(--p-layout-horizontal)">
@@ -83,7 +108,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 								<Label
 									htmlFor="post-images"
 									className={`w-19 h-19 flex items-center justify-center rounded-md border border-dashed text-muted-foreground transition ${
-										isSubmitting
+										isSubmitting || isAtImageLimit
 											? "pointer-events-none opacity-50"
 											: "cursor-pointer hover:text-foreground hover:border-foreground/60"
 									}`}
