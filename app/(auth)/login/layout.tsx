@@ -21,7 +21,16 @@ async function AuthLayout(props: AuthLayoutProps) {
 		redirect(routeConst.DEFAULT_AUTH_REDIRECT_PATH);
 	}
 
-	return <>{children}</>;
+	return (
+		<>
+			<LogoHeader />
+			<div className="flex flex-1">
+				<section className="flex flex-1 flex-col h-full gap-6 px-5 py-6 my-auto">
+					{children}
+				</section>
+			</div>
+		</>
+	);
 }
 
 export default AuthLayout;

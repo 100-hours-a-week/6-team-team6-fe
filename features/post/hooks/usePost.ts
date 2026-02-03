@@ -74,14 +74,14 @@ function usePost(params: UsePostParams) {
 	const updateStatusMutation = useMutation<
 		UpdatePostStatusResponse,
 		UpdatePostStatusError,
-		UpdatePostStatusParams["status"],
+		UpdatePostStatusParams["rentalStatus"],
 		{ previous?: PostDetailDto }
 	>({
-		mutationFn: (status) => {
+		mutationFn: (rentalStatus) => {
 			if (!canUsePost || !postId) {
 				throw new UpdatePostStatusError(400, apiErrorCodes.PARAMETER_INVALID);
 			}
-			return updatePostStatus({ groupId, postId, status });
+			return updatePostStatus({ groupId, postId, rentalStatus });
 		},
 		onMutate: async (status) => {
 			await queryClient.cancelQueries({ queryKey: detailQueryKey });
