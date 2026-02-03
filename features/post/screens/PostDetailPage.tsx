@@ -239,7 +239,9 @@ export function PostDetailPage() {
 							<div>{displayDate}</div>
 						</div>
 						<Separator className="my-6" />
-						<Typography type="body">{post.content}</Typography>
+						<Typography type="body" className="whitespace-pre-wrap">
+							{post.content}
+						</Typography>
 					</HorizontalPaddingBox>
 				</section>
 			</div>
