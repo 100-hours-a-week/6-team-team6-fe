@@ -4,8 +4,6 @@ import { redirect } from "next/navigation";
 
 import { getServerSession } from "next-auth";
 
-import LogoHeader from "@/shared/components/layout/headers/LogoHeader";
-
 import { authOptions } from "@/shared/lib/auth";
 import { routeConst } from "@/shared/lib/constants";
 
