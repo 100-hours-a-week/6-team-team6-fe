@@ -42,8 +42,6 @@ const parseErrorCode = (data: unknown) => {
 };
 
 const getApiError = (status: number, code: string | undefined, error?: ApiError): Error => {
-	console.log("===GET API ERROR===");
-	console.log(status, code, error);
 	if (error) {
 		return new error(status, code);
 	}
@@ -72,8 +70,6 @@ async function request<T = unknown>(
 	const data = await safeJson(response);
 
 	if (!response.ok) {
-		console.log(`===request error - response===`);
-		console.log(response);
 		throw getApiError(response.status, parseErrorCode(data), error);
 	}
 
