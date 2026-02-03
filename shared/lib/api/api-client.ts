@@ -41,9 +41,7 @@ export const apiClient = ky.create({
 
 				try {
 					data = await response.clone().json();
-				} catch (error) {
-					console.error("---After Reponse error---");
-					console.error(error);
+				} catch {
 					// JSON 형식이 아니면 처리 불가 → 그냥 상위에서 에러 처리하게 둠
 					return;
 				}
@@ -83,10 +81,7 @@ export const apiClient = ky.create({
 
 				try {
 					return await response.clone().json();
-				} catch (error) {
-					// JSON이 아니면 Response 객체 그대로 반환
-					console.error("---After Reponse clone---");
-					console.error(error);
+				} catch {
 					return response;
 				}
 			},
