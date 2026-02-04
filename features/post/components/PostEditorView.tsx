@@ -30,21 +30,20 @@ const rentalUnitOptions: SelectOption[] = [
 ];
 const MAX_POST_IMAGES = 5;
 
-type RentalFeeParseResult =
-	| { kind: "empty" }
-	| { kind: "invalid" }
-	| { kind: "valid"; value: number; text: string };
+type RentalFeeParseResult = { kind: "empty" } | { kind: "valid"; value: number; text: string };
+
+const sanitizeRentalFeeInput = (input: string) => input.replace(/[^\d]/g, "");
 
 const parseRentalFeeInput = (input: string): RentalFeeParseResult => {
-	const trimmed = input.trim();
-	if (trimmed === "") {
+	const digitsOnly = sanitizeRentalFeeInput(input);
+	if (digitsOnly === "") {
 		return { kind: "empty" };
 	}
-	if (!/^\d+$/.test(trimmed)) {
-		return { kind: "invalid" };
+	const value = Number(digitsOnly);
+	if (!Number.isFinite(value)) {
+		return { kind: "empty" };
 	}
-	const value = Number(trimmed);
-	return { kind: "valid", value, text: String(value) };
+	return { kind: "valid", value, text: digitsOnly };
 };
 
 interface PostEditorViewProps {
@@ -245,8 +244,6 @@ export function PostEditorView(props: PostEditorViewProps) {
 								id="post-rentalFee"
 								type="text"
 								inputMode="numeric"
-								pattern="\\d*"
-								min={0}
 								value={rentalFeeDisplay}
 								placeholder="0"
 								onKeyDown={(event) => {
@@ -258,19 +255,15 @@ export function PostEditorView(props: PostEditorViewProps) {
 									setIsRentalFeeDirty(true);
 									setRentalFeeInput(rentalFeeText);
 								}}
-								onBlur={() => {
-									const result = parseRentalFeeInput(rentalFeeInput);
+								onBlur={(event) => {
+									const result = parseRentalFeeInput(event.currentTarget.value);
 									if (result.kind === "empty") {
 										setRentalFeeInput("");
 										setIsRentalFeeDirty(false);
 										onChangeField("rentalFee", 0);
 										return;
 									}
-									if (result.kind === "invalid") {
-										setIsRentalFeeDirty(false);
-										return;
-									}
-									setRentalFeeInput(result.text);
+									setRentalFeeInput(String(result.value));
 									setIsRentalFeeDirty(false);
 									onChangeField("rentalFee", result.value);
 								}}
@@ -281,9 +274,6 @@ export function PostEditorView(props: PostEditorViewProps) {
 									if (result.kind === "empty") {
 										setRentalFeeInput("");
 										onChangeField("rentalFee", 0);
-										return;
-									}
-									if (result.kind === "invalid") {
 										return;
 									}
 									setRentalFeeInput(result.text);
