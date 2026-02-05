@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 import type { RoomSummary } from "@/features/chat/lib/types";
@@ -44,6 +45,15 @@ export function ChatRoomItem(props: ChatRoomItemProps) {
 								</Badge>
 							) : null}
 						</div>
+					</div>
+					<div className="w-11 h-11 ">
+						<Image
+							alt={"chat room item image"}
+							className="rounded-md"
+							src={room.postFirstImageUrl}
+							width={100}
+							height={100}
+						/>
 					</div>
 				</div>
 			</div>
