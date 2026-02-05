@@ -21,8 +21,30 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-	title: "BILLAGE",
-	description: "그룹을 위한 대여 서비스, 빌리지",
+	title: "그룹을 위한 대여 서비스, 빌리지",
+	description: "빌리고, 나누고, 연결되는 공간. 우리 팀을 위한 대여 플랫폼 빌리지.",
+	openGraph: {
+		url: "https://www.billages.com/",
+		type: "website",
+		title: "그룹을 위한 대여 서비스, 빌리지",
+		description: "빌리고, 나누고, 연결되는 공간. 우리 팀을 위한 대여 플랫폼 빌리지.",
+		images: [
+			{
+				url: "https://www.billages.com/description.png",
+				alt: "빌리지 소개 이미지",
+			},
+		],
+	},
+	twitter: {
+		card: "summary_large_image",
+		title: "그룹을 위한 대여 서비스, 빌리지",
+		description: "빌리고, 나누고, 연결되는 공간. 우리 팀을 위한 대여 플랫폼 빌리지.",
+		images: ["https://www.billages.com/description.png"],
+	},
+	other: {
+		"twitter:domain": "www.billages.com",
+		"twitter:url": "https://www.billages.com/",
+	},
 };
 
 export const viewport = {
