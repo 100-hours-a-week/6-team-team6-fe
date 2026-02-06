@@ -53,6 +53,7 @@ interface PostEditorViewProps {
 	errors: PostEditorErrors;
 	isSubmitting: boolean;
 	isGenerating: boolean;
+	isAddingImages: boolean;
 	onChangeField: <Key extends keyof PostEditorValues>(
 		key: Key,
 		value: PostEditorValues[Key],
@@ -73,6 +74,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 		errors,
 		isSubmitting,
 		isGenerating,
+		isAddingImages,
 		onChangeField,
 		onAddImages,
 		onRemoveExistingImage,
@@ -85,6 +87,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 	const totalImageCount = images.existing.length + images.added.length;
 	const remainingImageSlots = Math.max(0, MAX_POST_IMAGES - totalImageCount);
 	const isAtImageLimit = remainingImageSlots === 0;
+	const isBusy = isSubmitting || isAddingImages;
 	const [rentalFeeInput, setRentalFeeInput] = useState("");
 	const [isRentalFeeDirty, setIsRentalFeeDirty] = useState(false);
 	const rentalFeeText =
@@ -100,7 +103,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 						type="file"
 						accept="image/*"
 						multiple
-						disabled={isSubmitting || isAtImageLimit}
+						disabled={isBusy || isAtImageLimit}
 						className="sr-only"
 						onChange={(event) => {
 							const { files } = event.currentTarget;
@@ -129,7 +132,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 								<Label
 									htmlFor="post-images"
 									className={`w-19 h-19 flex items-center justify-center rounded-md border border-dashed text-muted-foreground transition ${
-										isSubmitting || isAtImageLimit
+										isBusy || isAtImageLimit
 											? "pointer-events-none opacity-50"
 											: "cursor-pointer hover:text-foreground hover:border-foreground/60"
 									}`}
@@ -146,11 +149,17 @@ export function PostEditorView(props: PostEditorViewProps) {
 												<div className="absolute top-0 right-0 z-1">
 													<IconButton
 														onClick={() => onRemoveExistingImage(image.id)}
-														disabled={isSubmitting}
+														disabled={isBusy}
 														icon={<X />}
 													/>
 												</div>
-												<Image alt="" src={image.url} width={100} height={100} />
+												<Image
+													className="object-cover"
+													alt=""
+													src={image.url}
+													width={100}
+													height={100}
+												/>
 											</div>
 										</li>
 									);
@@ -162,7 +171,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 											<div className="absolute top-0 right-0 z-1 ">
 												<IconButton
 													onClick={() => onRemoveAddedImage(index)}
-													disabled={isSubmitting}
+													disabled={isBusy}
 													icon={<X />}
 												/>
 											</div>
@@ -186,11 +195,19 @@ export function PostEditorView(props: PostEditorViewProps) {
 							</Typography>
 						</HorizontalPaddingBox>
 					)}
+					{isAddingImages && (
+						<HorizontalPaddingBox>
+							<div className="flex items-center gap-2 text-muted-foreground">
+								<Spinner />
+								<Typography type="caption">이미지 등록중</Typography>
+							</div>
+						</HorizontalPaddingBox>
+					)}
 				</div>
 
 				<HorizontalPaddingBox>
 					<div>
-						<Button type="button" disabled={isSubmitting || isGenerating} onClick={onAutoWrite}>
+						<Button type="button" disabled={isBusy || isGenerating} onClick={onAutoWrite}>
 							{isGenerating && <Spinner className="text-white" />}
 							{isGenerating ? "AI 작성 중..." : "AI 자동 작성"}
 						</Button>
@@ -207,7 +224,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 							value={values.title}
 							onChange={(event) => onChangeField("title", event.target.value)}
 							aria-invalid={!!errors.title}
-							disabled={isSubmitting}
+							disabled={isBusy}
 						/>
 						{errors.title && (
 							<Typography type="caption" className="text-destructive">
@@ -225,7 +242,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 							value={values.content}
 							onChange={(event) => onChangeField("content", event.target.value)}
 							aria-invalid={!!errors.content}
-							disabled={isSubmitting}
+							disabled={isBusy}
 							className="resize-none"
 						/>
 						{errors.content && (
@@ -280,14 +297,14 @@ export function PostEditorView(props: PostEditorViewProps) {
 									onChangeField("rentalFee", result.value);
 								}}
 								aria-invalid={!!errors.rentalFee}
-								disabled={isSubmitting}
+								disabled={isBusy}
 							/>
 							<SelectField
 								value={values.feeUnit}
 								onValueChange={(value) =>
 									onChangeField("feeUnit", value as PostEditorValues["feeUnit"])
 								}
-								disabled={isSubmitting}
+								disabled={isBusy}
 								options={rentalUnitOptions}
 								ariaLabel="대여 단위"
 								size="sm"
@@ -313,13 +330,13 @@ export function PostEditorView(props: PostEditorViewProps) {
 							variant="outline"
 							size="lg"
 							onClick={onCancel}
-							disabled={isSubmitting}
+							disabled={isBusy}
 						>
 							취소
 						</Button>
 					)}
 				</div>
-				<PostEditorNavigation mode={mode} onClick={() => {}} />
+				<PostEditorNavigation mode={mode} disabled={isBusy} onClick={() => {}} />
 			</form>
 		</>
 	);
