@@ -10,6 +10,17 @@ import {
 	CreatePostDraftError,
 	type PostDraftResponse,
 } from "@/features/post/api/createPostDraft";
+import { compressPostImage } from "@/features/post/lib/compressPostImages";
+import {
+	AI_DRAFT_ERROR_MESSAGE,
+	createFileFromUrl,
+	type ExistingImage,
+	IMAGE_COMPRESS_WARNING_MESSAGE,
+	IMAGE_FETCH_ERROR_CODE,
+	IMAGE_UPLOAD_PARTIAL_SIZE_EXCEEDED_MESSAGE,
+	MAX_UPLOAD_IMAGE_SIZE_BYTES,
+	mockExistingImages,
+} from "@/features/post/lib/postEditorUtils";
 import { type FeeUnit, PostEditorSchema, type PostEditorValues } from "@/features/post/schemas";
 
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
@@ -18,51 +29,7 @@ import { postValidationMessages } from "@/shared/lib/error-messages";
 export type { FeeUnit };
 export type { PostEditorValues };
 
-export interface ExistingImage {
-	id: string;
-	url: string;
-}
-
-const mockExistingImages: ExistingImage[] = [
-	{ id: "mock-1", url: "/dummy-post-image.png" },
-	{ id: "mock-2", url: "/default-profile.png" },
-	{ id: "mock-3", url: "/dummy-post-image.png" },
-];
-
-const AI_DRAFT_ERROR_MESSAGE = "AI 자동 작성에 실패했습니다.";
-const IMAGE_FETCH_ERROR_CODE = "IMAGE_FETCH_FAILED";
-
-const getFileNameFromUrl = (url: string, fallback: string) => {
-	try {
-		const parsed = new URL(url, window.location.origin);
-		const lastSegment = parsed.pathname.split("/").filter(Boolean).pop();
-		return lastSegment ?? fallback;
-	} catch {
-		return fallback;
-	}
-};
-
-const withExtension = (fileName: string, mimeType: string) => {
-	if (fileName.includes(".")) {
-		return fileName;
-	}
-	const extension = mimeType.split("/")[1];
-	if (!extension) {
-		return fileName;
-	}
-	return `${fileName}.${extension}`;
-};
-
-const createFileFromUrl = async (url: string, fallbackName: string) => {
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error(IMAGE_FETCH_ERROR_CODE);
-	}
-	const blob = await response.blob();
-	const mimeType = blob.type || "application/octet-stream";
-	const fileName = withExtension(getFileNameFromUrl(url, fallbackName), mimeType);
-	return new File([blob], fileName, { type: mimeType });
-};
+export type { ExistingImage };
 
 export interface AddedImage {
 	file: File;
@@ -115,6 +82,7 @@ interface UsePostEditorResult {
 	errors: PostEditorErrors;
 	isSubmitting: boolean;
 	isGenerating: boolean;
+	isAddingImages: boolean;
 	onChangeField: <Key extends keyof PostEditorValues>(
 		key: Key,
 		value: PostEditorValues[Key],
@@ -158,6 +126,7 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 	const addedPreviewUrlsRef = useRef<Set<string>>(new Set());
 
 	const [errors, setErrors] = useState<PostEditorErrors>({});
+	const [isAddingImages, setIsAddingImages] = useState(false);
 	const { mutateAsync: requestPostDraft, isPending: isGenerating } = useMutation<
 		PostDraftResponse,
 		CreatePostDraftError,
@@ -208,6 +177,30 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		return result.ok && !nextErrors.images;
 	}, [hasAnyImages, images, validateWithZod, values]);
 
+	const compressImages = useCallback(async (files: File[]) => {
+		if (files.length === 0) {
+			return [];
+		}
+
+		const results = await Promise.all(
+			files.map(async (file) => {
+				try {
+					const compressed = await compressPostImage(file);
+					return { file: compressed, ok: true };
+				} catch (error) {
+					console.error(error);
+					return { file, ok: false };
+				}
+			}),
+		);
+
+		if (results.some((result) => !result.ok)) {
+			toast.warning(IMAGE_COMPRESS_WARNING_MESSAGE);
+		}
+
+		return results.map((result) => result.file);
+	}, []);
+
 	const collectDraftImages = useCallback(async () => {
 		const addedFiles = images.added.map((item) => item.file);
 		if (!isEdit || images.existing.length === 0) {
@@ -219,8 +212,9 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 				createFileFromUrl(image.url, `existing-image-${image.id ?? index}`),
 			),
 		);
-		return [...existingFiles, ...addedFiles];
-	}, [images.added, images.existing, isEdit]);
+		const compressedExistingFiles = await compressImages(existingFiles);
+		return [...compressedExistingFiles, ...addedFiles];
+	}, [compressImages, images.added, images.existing, isEdit]);
 
 	const onChangeField = useCallback(
 		<Key extends keyof PostEditorValues>(key: Key, value: PostEditorValues[Key]) => {
@@ -235,32 +229,46 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		[],
 	);
 
-	const compressImages = useCallback(async (files: File[]) => files, []);
-
 	const onAddImages = useCallback(
 		async (fileList: FileList | null) => {
-			if (!fileList || fileList.length === 0) {
+			if (isAddingImages || !fileList || fileList.length === 0) {
 				return;
 			}
 
-			const compressed = await compressImages(Array.from(fileList));
-			const nextAdded = compressed.map((file) => {
-				const previewUrl = URL.createObjectURL(file);
-				addedPreviewUrlsRef.current.add(previewUrl);
-				return { file, previewUrl };
-			});
-			setImages((prev) => ({
-				...prev,
-				added: [...prev.added, ...nextAdded],
-			}));
-			setErrors((prev) => {
-				if (!prev.images) {
-					return prev;
-				}
-				return { ...prev, images: undefined };
-			});
+			const rawFiles = Array.from(fileList);
+			const allowedFiles = rawFiles.filter((file) => file.size <= MAX_UPLOAD_IMAGE_SIZE_BYTES);
+
+			if (rawFiles.some((file) => file.size <= MAX_UPLOAD_IMAGE_SIZE_BYTES)) {
+				toast.error(IMAGE_UPLOAD_PARTIAL_SIZE_EXCEEDED_MESSAGE);
+			}
+
+			if (allowedFiles.length === 0) {
+				return;
+			}
+
+			setIsAddingImages(true);
+			try {
+				const compressed = await compressImages(allowedFiles);
+				const nextAdded = compressed.map((file) => {
+					const previewUrl = URL.createObjectURL(file);
+					addedPreviewUrlsRef.current.add(previewUrl);
+					return { file, previewUrl };
+				});
+				setImages((prev) => ({
+					...prev,
+					added: [...prev.added, ...nextAdded],
+				}));
+				setErrors((prev) => {
+					if (!prev.images) {
+						return prev;
+					}
+					return { ...prev, images: undefined };
+				});
+			} finally {
+				setIsAddingImages(false);
+			}
 		},
-		[compressImages],
+		[compressImages, isAddingImages],
 	);
 
 	const onRemoveExistingImage = useCallback((imageId: string) => {
@@ -329,14 +337,7 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 					: AI_DRAFT_ERROR_MESSAGE;
 			toast.error(message);
 		}
-	}, [
-		collectDraftImages,
-		hasAnyImages,
-		images,
-		isGenerating,
-		isSubmitting,
-		requestPostDraft,
-	]);
+	}, [collectDraftImages, hasAnyImages, images, isGenerating, isSubmitting, requestPostDraft]);
 
 	const onSubmitForm = useCallback(
 		async (event: FormEvent<HTMLFormElement>) => {
@@ -388,6 +389,7 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		images,
 		errors,
 		isSubmitting,
+		isAddingImages,
 		onChangeField,
 		onAddImages,
 		onRemoveExistingImage,

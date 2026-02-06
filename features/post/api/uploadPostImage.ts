@@ -1,7 +1,9 @@
 "use client";
 
 import { apiClient } from "@/shared/lib/api/api-client";
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { requestText } from "@/shared/lib/api/request";
+import StatusCodes from "@/shared/lib/api/status-codes";
 
 type UploadPostImageParams = {
 	file: File;
@@ -23,7 +25,18 @@ async function uploadPostImage(params: UploadPostImageParams): Promise<string> {
 	const formData = new FormData();
 	formData.append("image", params.file);
 
-	return await requestText(apiClient.post("images", { body: formData }), UploadPostImageError);
+	try {
+		return await requestText(apiClient.post("images", { body: formData }), UploadPostImageError);
+	} catch (error) {
+		if (error instanceof UploadPostImageError && !error.code) {
+			if (error.status === StatusCodes.REQUEST_ENTITY_TOO_LARGE) {
+				error.code = apiErrorCodes.IMAGE_TOO_LARGE;
+			} else if (error.status === StatusCodes.UNSUPPORTED_MEDIA_TYPE) {
+				error.code = apiErrorCodes.IMAGE_UNSUPPORTED_TYPE;
+			}
+		}
+		throw error;
+	}
 }
 
 async function uploadPostImages(files: File[]): Promise<string[]> {
@@ -35,4 +48,4 @@ async function uploadPostImages(files: File[]): Promise<string[]> {
 }
 
 export type { UploadPostImageParams };
-export { uploadPostImage, UploadPostImageError,uploadPostImages };
+export { uploadPostImage, UploadPostImageError, uploadPostImages };
