@@ -10,6 +10,7 @@ import {
 	CreatePostDraftError,
 	type PostDraftResponse,
 } from "@/features/post/api/createPostDraft";
+import { compressPostImage } from "@/features/post/lib/compressPostImages";
 import { type FeeUnit, PostEditorSchema, type PostEditorValues } from "@/features/post/schemas";
 
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
@@ -31,6 +32,7 @@ const mockExistingImages: ExistingImage[] = [
 
 const AI_DRAFT_ERROR_MESSAGE = "AI 자동 작성에 실패했습니다.";
 const IMAGE_FETCH_ERROR_CODE = "IMAGE_FETCH_FAILED";
+const IMAGE_COMPRESS_WARNING_MESSAGE = "일부 이미지를 압축하지 못했습니다. 원본으로 업로드합니다.";
 
 const getFileNameFromUrl = (url: string, fallback: string) => {
 	try {
@@ -235,7 +237,28 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 		[],
 	);
 
-	const compressImages = useCallback(async (files: File[]) => files, []);
+	const compressImages = useCallback(async (files: File[]) => {
+		if (files.length === 0) {
+			return [];
+		}
+
+		const results = await Promise.all(
+			files.map(async (file) => {
+				try {
+					const compressed = await compressPostImage(file);
+					return { file: compressed, ok: true };
+				} catch (error) {
+					return { file, ok: false };
+				}
+			}),
+		);
+
+		if (!results.some((result) => !result.ok)) {
+			toast.warning(IMAGE_COMPRESS_WARNING_MESSAGE);
+		}
+
+		return results.map((result) => result.file);
+	}, []);
 
 	const onAddImages = useCallback(
 		async (fileList: FileList | null) => {
@@ -329,14 +352,7 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 					: AI_DRAFT_ERROR_MESSAGE;
 			toast.error(message);
 		}
-	}, [
-		collectDraftImages,
-		hasAnyImages,
-		images,
-		isGenerating,
-		isSubmitting,
-		requestPostDraft,
-	]);
+	}, [collectDraftImages, hasAnyImages, images, isGenerating, isSubmitting, requestPostDraft]);
 
 	const onSubmitForm = useCallback(
 		async (event: FormEvent<HTMLFormElement>) => {
