@@ -7,7 +7,7 @@ import {
 } from "@/features/chat/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatRoomsParams = {
 	cursor?: string;
@@ -35,7 +35,7 @@ async function getChatRooms(params: GetChatRoomsParams): Promise<ChatRoomsRespon
 			? `users/me/posts/${postId}/chatrooms`
 			: "users/me/chatrooms";
 
-	const parsed = await request(
+	const parsed = await requestJson(
 		apiClient.get(endpoint, { searchParams }),
 		ChatRoomsResponseApiSchema,
 		ChatRoomsError,

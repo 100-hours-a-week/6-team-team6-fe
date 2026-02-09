@@ -16,7 +16,7 @@ import { Spinner } from "@/shared/components/ui/spinner";
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
-import { ApiRequestError, request } from "@/shared/lib/api/request";
+import { ApiRequestError, requestJson } from "@/shared/lib/api/request";
 import StatusCodes from "@/shared/lib/api/status-codes";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { authErrorMessages } from "@/shared/lib/error-messages";
@@ -59,7 +59,7 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
 				return;
 			}
 
-			await request(
+			await requestJson(
 				apiClient.post("users", {
 					json: {
 						loginId: values.loginId,

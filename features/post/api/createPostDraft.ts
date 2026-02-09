@@ -5,7 +5,7 @@ import { z } from "zod";
 import { feeUnitSchema } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 const PostDraftResponseSchema = z.object({
 	title: z.string(),
@@ -38,7 +38,7 @@ async function createPostDraft(params: CreatePostDraftParams): Promise<PostDraft
 		formData.append("image", file);
 	});
 
-	return await request(
+	return await requestJson(
 		apiClient.post("ai/post-drafts", {
 			body: formData,
 		}),

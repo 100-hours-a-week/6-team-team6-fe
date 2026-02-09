@@ -7,7 +7,7 @@ import {
 } from "@/features/chat/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type CreateChatroomParams = {
 	postId: number;
@@ -28,7 +28,7 @@ class CreateChatroomError extends Error {
 async function createChatroom(params: CreateChatroomParams): Promise<ChatroomIdResponseDto> {
 	const { postId } = params;
 
-	const parsed = await request(
+	const parsed = await requestJson(
 		apiClient.post(`posts/${postId}/chatrooms`),
 		ChatroomIdResponseApiSchema,
 		CreateChatroomError,
