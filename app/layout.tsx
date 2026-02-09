@@ -6,7 +6,7 @@ import type { Metadata } from "next";
 
 import { Toaster } from "@/shared/components/ui/sonner";
 
-import Providers from "@/shared/providers";
+import { Providers } from "@/shared/providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
