@@ -72,7 +72,9 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
 			toast.success("회원가입이 완료되었습니다.");
 			router.push("/login");
 		} catch (error) {
-			console.error(error);
+			if (process.env.NODE_ENV !== "production") {
+				console.error(error);
+			}
 			if (error instanceof ApiRequestError) {
 				if (
 					error.status === StatusCodes.CONFLICT &&

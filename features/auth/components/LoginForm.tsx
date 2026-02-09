@@ -48,6 +48,7 @@ function LoginForm({ onSubmit }: LoginFormProps) {
 	} = form;
 
 	const handleFormSubmit = async (values: LoginFormValues) => {
+		setSubmitError(null);
 		try {
 			if (onSubmit) {
 				await onSubmit(values);
