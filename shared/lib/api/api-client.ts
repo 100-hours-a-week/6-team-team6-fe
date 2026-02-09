@@ -78,12 +78,6 @@ export const apiClient = ky.create({
 					await signOut({ callbackUrl: "/login" });
 					return;
 				}
-
-				try {
-					return await response.clone().json();
-				} catch {
-					return response;
-				}
 			},
 		],
 	},
