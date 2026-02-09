@@ -9,10 +9,10 @@ import { signIn } from "next-auth/react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
+import { resolveAuthErrorMessage } from "@/features/auth/lib/auth-error-message";
 import { loginSchema } from "@/features/auth/schemas";
 
 import { routeConst } from "@/shared/lib/constants";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { authErrorMessages } from "@/shared/lib/error-messages";
 
 type LoginFormValues = z.infer<typeof loginSchema>;
@@ -52,12 +52,12 @@ function useLoginForm(onSubmit?: LoginFormSubmit) {
 			});
 
 			if (!result || result.error) {
-				const message =
-					result?.error === "CredentialsSignin"
-						? authErrorMessages.loginFailed
-						: (getApiErrorMessage(result?.error) ?? authErrorMessages.loginUnknown);
-
-				setSubmitError(message);
+				setSubmitError(
+					resolveAuthErrorMessage({
+						code: result?.error,
+						fallback: authErrorMessages.loginUnknown,
+					}),
+				);
 				return;
 			}
 

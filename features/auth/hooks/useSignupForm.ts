@@ -7,13 +7,13 @@ import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
 
+import { resolveAuthErrorMessage } from "@/features/auth/lib/auth-error-message";
 import { signupSchema } from "@/features/auth/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { ApiRequestError, requestJson } from "@/shared/lib/api/request";
 import StatusCodes from "@/shared/lib/api/status-codes";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { authErrorMessages } from "@/shared/lib/error-messages";
 
 const SignupResponseSchema = z.object({
@@ -78,10 +78,7 @@ function useSignupForm(onSubmit?: SignupFormSubmit) {
 				}
 			}
 
-			const errorCode =
-				error instanceof ApiRequestError ? (error.code ?? error.message) : undefined;
-			const message = getApiErrorMessage(errorCode) ?? authErrorMessages.signupFailed;
-			toast.error(message);
+			toast.error(resolveAuthErrorMessage({ error, fallback: authErrorMessages.signupFailed }));
 		}
 	};
 
