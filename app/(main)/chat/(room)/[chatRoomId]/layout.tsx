@@ -6,7 +6,7 @@ import {
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
 
 import { apiServer } from "@/shared/lib/api/api-server";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 interface ChatRoomLayoutProps {
 	children: React.ReactNode;
@@ -16,11 +16,11 @@ interface ChatRoomLayoutProps {
 }
 
 const fetchPartnerNickname = async (chatroomId: number) => {
-	const postIdResponse = await request(
+	const postIdResponse = await requestJson(
 		apiServer.get(`chatrooms/${chatroomId}/post`, { throwHttpErrors: false }),
 		ChatroomPostIdResponseApiSchema,
 	);
-	const postInfo = await request(
+	const postInfo = await requestJson(
 		apiServer.get(`posts/${postIdResponse.postId}/chatrooms/${chatroomId}/post`, {
 			throwHttpErrors: false,
 		}),

@@ -4,7 +4,7 @@ import type { MyProfileResponseDto } from "@/features/auth/schemas";
 import { myProfileResponseSchema } from "@/features/auth/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetMyProfileParams = void;
 
@@ -21,7 +21,7 @@ class GetMyProfileError extends Error {
 }
 
 async function getMyProfile(_params?: GetMyProfileParams): Promise<MyProfileResponseDto> {
-	return request(apiClient.get("users/me"), myProfileResponseSchema, GetMyProfileError);
+	return requestJson(apiClient.get("users/me"), myProfileResponseSchema, GetMyProfileError);
 }
 
 export type { GetMyProfileParams };

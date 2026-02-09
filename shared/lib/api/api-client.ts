@@ -1,10 +1,15 @@
 "use client";
 
 import ky from "ky";
-import { getSession, signOut } from "next-auth/react";
+import { signOut } from "next-auth/react";
 
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import StatusCodes from "@/shared/lib/api/status-codes";
+import {
+	clearSession,
+	getAccessToken,
+	refreshSession,
+} from "@/shared/lib/auth/session-store";
 
 const API_PROXY_PREFIX = "/api/proxy";
 
@@ -14,10 +19,10 @@ export const apiClient = ky.create({
 	hooks: {
 		beforeRequest: [
 			async (request) => {
-				// 1. 세션에서 accessToken 읽어서 Authorization 헤더에 추가
-				const session = await getSession();
-				if (session?.accessToken) {
-					request.headers.set("Authorization", `Bearer ${session.accessToken}`);
+				// 1. 메모리 세션에서 accessToken 읽어서 Authorization 헤더에 추가
+				const accessToken = getAccessToken();
+				if (accessToken) {
+					request.headers.set("Authorization", `Bearer ${accessToken}`);
 				}
 
 				// 2. CSRF 이중 제출: 쿠키의 XSRF-TOKEN 값을 X-XSRF-TOKEN 헤더로 복사
@@ -51,9 +56,10 @@ export const apiClient = ky.create({
 
 				// 1) Access Token 관련 인증 실패 → 세션 새로 받아서 한 번만 재시도
 				if (!alreadyRetried && errorCode === apiErrorCodes.TOKEN_INVALID_ACCESS) {
-					const newSession = await getSession(); // jwt callback -> refreshAccessToken 실행
+					const newSession = await refreshSession(); // jwt callback -> refreshAccessToken 실행
 
 					if (newSession?.error === "RefreshAccessTokenError") {
+						clearSession();
 						await signOut({ callbackUrl: "/login" });
 						return;
 					}
@@ -66,6 +72,7 @@ export const apiClient = ky.create({
 						return apiClient(request, options);
 					}
 
+					clearSession();
 					await signOut({ callbackUrl: "/login" });
 					return;
 				}
@@ -75,14 +82,9 @@ export const apiClient = ky.create({
 					errorCode === apiErrorCodes.TOKEN_EXPIRED_REFRESH ||
 					errorCode === apiErrorCodes.TOKEN_INVALID_REFRESH
 				) {
+					clearSession();
 					await signOut({ callbackUrl: "/login" });
 					return;
-				}
-
-				try {
-					return await response.clone().json();
-				} catch {
-					return response;
 				}
 			},
 		],

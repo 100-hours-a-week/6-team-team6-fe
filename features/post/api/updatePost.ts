@@ -6,7 +6,7 @@ import { UploadPostImageError, uploadPostImages } from "@/features/post/api/uplo
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 const UpdatePostResponseSchema = z.object({
 	postId: z.number(),
@@ -68,7 +68,7 @@ async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse>
 		imageUrls: nextImageUrls,
 	};
 
-	return await request(
+	return await requestJson(
 		apiClient.put(`groups/${groupId}/posts/${postId}`, {
 			json: payload,
 		}),

@@ -9,7 +9,7 @@ import {
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetGroupPostsParams = {
 	groupId: string;
@@ -48,7 +48,7 @@ async function getGroupPosts(params: GetGroupPostsParams): Promise<PostSummaries
 
 	const requestOptions = resolvedSearchParams ? { searchParams: resolvedSearchParams } : undefined;
 
-	const parsed = await request(
+	const parsed = await requestJson(
 		apiClient.get(`groups/${groupId}/posts`, requestOptions),
 		PostSummariesResponseApiSchema,
 		GroupPostsError,

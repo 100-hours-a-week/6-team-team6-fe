@@ -7,6 +7,8 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/shared/lib/auth";
 import { routeConst } from "@/shared/lib/constants";
 
+import { AuthSessionProvider } from "@/shared/providers";
+
 interface AuthLayoutProps {
 	children: React.ReactNode;
 }
@@ -19,7 +21,7 @@ async function AuthLayout(props: AuthLayoutProps) {
 		redirect(routeConst.DEFAULT_AUTH_REDIRECT_PATH);
 	}
 
-	return <>{children}</>;
+	return <AuthSessionProvider session={session}>{children}</AuthSessionProvider>;
 }
 
 export default AuthLayout;

@@ -6,7 +6,7 @@ import { UploadPostImageError, uploadPostImages } from "@/features/post/api/uplo
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 const CreatePostResponseSchema = z.object({
 	postId: z.number(),
@@ -57,7 +57,7 @@ async function createPost(params: CreatePostParams): Promise<CreatePostResponse>
 		imageUrls,
 	};
 
-	return await request(
+	return await requestJson(
 		apiClient.post(`groups/${groupId}/posts`, { json: payload }),
 		CreatePostResponseSchema,
 		CreatePostError,
