@@ -1,103 +1,34 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import { toast } from "sonner";
-import { z } from "zod";
+import type { UseFormReturn } from "react-hook-form";
 
 import { AuthFormField } from "@/features/auth/components/AuthFormField";
-import { signupSchema } from "@/features/auth/schemas";
+import useSignupForm, {
+	type SignupFormSubmit,
+	type SignupFormValues,
+} from "@/features/auth/hooks/useSignupForm";
 
 import { Button } from "@/shared/components/ui/button";
 import { Form } from "@/shared/components/ui/form";
 import { Spinner } from "@/shared/components/ui/spinner";
 
-import { apiClient } from "@/shared/lib/api/api-client";
-import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
-import { ApiRequestError, requestJson } from "@/shared/lib/api/request";
-import StatusCodes from "@/shared/lib/api/status-codes";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
-import { authErrorMessages } from "@/shared/lib/error-messages";
-
-const SignupResponseSchema = z.object({
-	userId: z.number(),
-});
-
-type SignupFormValues = z.infer<typeof signupSchema>;
-
 interface SignupFormProps {
-	onSubmit?: (values: SignupFormValues) => void | Promise<void>;
+	onSubmit?: SignupFormSubmit;
 }
 
-export function SignupForm({ onSubmit }: SignupFormProps) {
-	const router = useRouter();
+type SignupFormViewProps = {
+	form: UseFormReturn<SignupFormValues>;
+	onSubmit: SignupFormSubmit;
+	isSubmitting: boolean;
+};
 
-	const form = useForm<SignupFormValues>({
-		resolver: zodResolver(signupSchema),
-		defaultValues: {
-			loginId: "",
-			password: "",
-			confirmPassword: "",
-		},
-		mode: "onSubmit",
-		reValidateMode: "onSubmit",
-	});
-
-	const {
-		handleSubmit,
-		control,
-		setError,
-		formState: { isSubmitting },
-	} = form;
-
-	const handleFormSubmit = async (values: SignupFormValues) => {
-		try {
-			if (onSubmit) {
-				await onSubmit(values);
-				return;
-			}
-
-			await requestJson(
-				apiClient.post("users", {
-					json: {
-						loginId: values.loginId,
-						password: values.password,
-					},
-				}),
-				SignupResponseSchema,
-			);
-
-			toast.success("회원가입이 완료되었습니다.");
-			router.push("/login");
-		} catch (error) {
-			if (process.env.NODE_ENV !== "production") {
-				console.error(error);
-			}
-			if (error instanceof ApiRequestError) {
-				if (
-					error.status === StatusCodes.CONFLICT &&
-					error.code === apiErrorCodes.USER_DUPLICATE_LOGIN_ID
-				) {
-					setError("loginId", {
-						type: "server",
-						message: authErrorMessages.signupExistingId,
-					});
-					return;
-				}
-			}
-
-			const errorCode =
-				error instanceof ApiRequestError ? (error.code ?? error.message) : undefined;
-			const message = getApiErrorMessage(errorCode) ?? authErrorMessages.signupFailed;
-			toast.error(message);
-		}
-	};
+function SignupFormView(props: SignupFormViewProps) {
+	const { form, onSubmit, isSubmitting } = props;
+	const { handleSubmit, control } = form;
 
 	return (
 		<Form {...form}>
-			<form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 				<AuthFormField
 					control={control}
 					name="loginId"
@@ -130,6 +61,13 @@ export function SignupForm({ onSubmit }: SignupFormProps) {
 			</form>
 		</Form>
 	);
+}
+
+function SignupForm(props: SignupFormProps) {
+	const { onSubmit } = props;
+	const { form, isSubmitting, handleFormSubmit } = useSignupForm(onSubmit);
+
+	return <SignupFormView form={form} isSubmitting={isSubmitting} onSubmit={handleFormSubmit} />;
 }
 
 export default SignupForm;

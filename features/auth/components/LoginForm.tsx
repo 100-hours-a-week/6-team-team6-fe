@@ -1,90 +1,36 @@
 "use client";
 
-import { useState } from "react";
-
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
-import { zodResolver } from "@hookform/resolvers/zod";
-import { signIn } from "next-auth/react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
+import type { UseFormReturn } from "react-hook-form";
 
 import { AuthFormField } from "@/features/auth/components/AuthFormField";
-import { loginSchema } from "@/features/auth/schemas";
+import useLoginForm, {
+	type LoginFormSubmit,
+	type LoginFormValues,
+} from "@/features/auth/hooks/useLoginForm";
 
 import { Button } from "@/shared/components/ui/button";
 import { Form } from "@/shared/components/ui/form";
 import { Spinner } from "@/shared/components/ui/spinner";
 
-import { routeConst } from "@/shared/lib/constants";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
-import { authErrorMessages } from "@/shared/lib/error-messages";
-
-type LoginFormValues = z.infer<typeof loginSchema>;
-
 interface LoginFormProps {
-	onSubmit?: (values: LoginFormValues) => void | Promise<void>;
+	onSubmit?: LoginFormSubmit;
 }
 
-function LoginForm({ onSubmit }: LoginFormProps) {
-	const router = useRouter();
-	const [submitError, setSubmitError] = useState<string | null>(null);
+type LoginFormViewProps = {
+	form: UseFormReturn<LoginFormValues>;
+	onSubmit: LoginFormSubmit;
+	submitError: string | null;
+	isSubmitting: boolean;
+};
 
-	const form = useForm<LoginFormValues>({
-		resolver: zodResolver(loginSchema),
-		defaultValues: {
-			loginId: "",
-			password: "",
-		},
-		mode: "onSubmit",
-		reValidateMode: "onSubmit",
-	});
-
-	const {
-		handleSubmit,
-		control,
-		formState: { isSubmitting },
-	} = form;
-
-	const handleFormSubmit = async (values: LoginFormValues) => {
-		setSubmitError(null);
-		try {
-			if (onSubmit) {
-				await onSubmit(values);
-				return;
-			}
-
-			const result = await signIn("credentials", {
-				redirect: false,
-				loginId: values.loginId,
-				password: values.password,
-				callbackUrl: routeConst.DEFAULT_AUTH_REDIRECT_PATH,
-			});
-
-			if (!result || result.error) {
-				const message =
-					result?.error === "CredentialsSignin"
-						? authErrorMessages.loginFailed
-						: (getApiErrorMessage(result?.error) ?? authErrorMessages.loginUnknown);
-
-				setSubmitError(message);
-				return;
-			}
-
-			if (result.ok) {
-				router.replace(result.url ?? routeConst.DEFAULT_AUTH_REDIRECT_PATH);
-			} else {
-				setSubmitError(authErrorMessages.loginUnknown);
-			}
-		} catch (error) {
-			setSubmitError(error instanceof Error ? error.message : authErrorMessages.loginUnknown);
-		}
-	};
+function LoginFormView({ form, onSubmit, submitError, isSubmitting }: LoginFormViewProps) {
+	const { handleSubmit, control } = form;
 
 	return (
 		<Form {...form}>
-			<form onSubmit={handleSubmit(handleFormSubmit)} className="flex flex-col gap-4">
+			<form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
 				<AuthFormField
 					control={control}
 					name="loginId"
@@ -117,6 +63,20 @@ function LoginForm({ onSubmit }: LoginFormProps) {
 				</div>
 			</form>
 		</Form>
+	);
+}
+
+function LoginForm(props: LoginFormProps) {
+	const { onSubmit } = props;
+	const { form, submitError, isSubmitting, handleFormSubmit } = useLoginForm(onSubmit);
+
+	return (
+		<LoginFormView
+			form={form}
+			submitError={submitError}
+			isSubmitting={isSubmitting}
+			onSubmit={handleFormSubmit}
+		/>
 	);
 }
 
