@@ -2,6 +2,8 @@ import Link from "next/link";
 
 import { Plus } from "lucide-react";
 
+import { postRoutes } from "@/features/post/lib/postRoutes";
+
 import DefaultNavigation from "@/shared/components/layout/bottomNavigations/DefaultNavigation";
 import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
 import { IconButton } from "@/shared/components/ui/icon-button";
@@ -31,7 +33,7 @@ async function GroupLayout({ children, params }: GroupLayoutProps) {
 
 			<div className="fixed bottom-20 right-6 w-10 h-10 bg-black rounded-full flex items-center justify-center">
 				<IconButton asChild aria-label="글 작성">
-					<Link href={`/groups/${groupId}/posts/create`}>
+					<Link href={postRoutes.postCreate(groupId)}>
 						<Plus color="white" />
 					</Link>
 				</IconButton>

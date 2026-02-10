@@ -127,4 +127,5 @@ function usePost(params: UsePostParams) {
 }
 
 export type { UsePostParams };
+export type UsePostResult = ReturnType<typeof usePost>;
 export default usePost;

@@ -11,6 +11,7 @@ import {
 	createChatroom,
 	type CreateChatroomError,
 } from "@/features/chat/api/createChatroom";
+import { postRoutes } from "@/features/post/lib/postRoutes";
 
 import NavigationLayout from "@/shared/components/layout/bottomNavigations/NavigationLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -38,7 +39,7 @@ function PostDetailNavigation(props: PostDetailNavigationProps) {
 	>({
 		mutationFn: () => createChatroom({ postId }),
 		onSuccess: (data) => {
-			router.push(`/chat/${data.chatroomId}`);
+			router.push(postRoutes.chatRoom(data.chatroomId));
 		},
 		onError: (error) => {
 			const message = getApiErrorMessage(error?.code) ?? "채팅방 생성에 실패했습니다.";
@@ -58,12 +59,12 @@ function PostDetailNavigation(props: PostDetailNavigationProps) {
 			if (!hasActiveChats) {
 				return;
 			}
-			router.push(`/chat?type=item&postId=${postId}`);
+			router.push(postRoutes.chatItemList(postId));
 			return;
 		}
 
 		if (chatroomId && chatroomId > 0) {
-			router.push(`/chat/${chatroomId}`);
+			router.push(postRoutes.chatRoom(chatroomId));
 			return;
 		}
 
