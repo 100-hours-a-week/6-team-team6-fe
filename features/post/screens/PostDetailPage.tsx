@@ -1,53 +1,30 @@
 "use client";
 
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useState } from "react";
 
-import Image from "next/image";
-import Link from "next/link";
 import { notFound, useParams, useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 
+import { PostDetailAction } from "@/features/post/components/PostDetailAction";
+import { PostDetailImages } from "@/features/post/components/PostDetailImages";
+import { PostDetailMeta } from "@/features/post/components/PostDetailMeta";
 import PostDetailNavigation from "@/features/post/components/PostDetailNavigation";
+import { PostStateMessage } from "@/features/post/components/PostStateMessage";
 import usePost from "@/features/post/hooks/usePost";
+import { postRoutes } from "@/features/post/lib/postRoutes";
 import type { RentalStatus } from "@/features/post/schemas";
 
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
-import {
-	AlertDialog,
-	AlertDialogAction,
-	AlertDialogCancel,
-	AlertDialogContent,
-	AlertDialogDescription,
-	AlertDialogFooter,
-	AlertDialogHeader,
-	AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
-import { Badge } from "@/shared/components/ui/badge";
-import { Button } from "@/shared/components/ui/button";
-import { Carousel, CarouselContent, CarouselItem } from "@/shared/components/ui/carousel";
-import {
-	Drawer,
-	DrawerClose,
-	DrawerContent,
-	DrawerFooter,
-	DrawerTitle,
-} from "@/shared/components/ui/drawer";
-import { SelectField, type SelectOption } from "@/shared/components/ui/select-field";
 import { Separator } from "@/shared/components/ui/separator";
-import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
 
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
 
-const rentalStatusOptions: SelectOption[] = [
-	{ value: "AVAILABLE", label: <Typography>대여 가능</Typography> },
-	{ value: "RENTED_OUT", label: <Typography>대여중</Typography> },
-];
 const POST_DETAIL_LOADING_LABEL = "게시글을 불러오는 중";
 const POST_DETAIL_ERROR_LABEL = "게시글을 불러오지 못했습니다.";
 
@@ -107,7 +84,7 @@ export function PostDetailPage() {
 		deletePost(undefined, {
 			onSuccess: () => {
 				toast.success("게시글이 삭제되었습니다.");
-				router.replace(`/groups/${normalizedGroupId}/posts`);
+				router.replace(postRoutes.groupPosts(normalizedGroupId));
 			},
 			onError: (deleteError) => {
 				const message = getApiErrorMessage(deleteError?.code ?? "게시글 삭제에 실패했습니다.");
@@ -117,133 +94,48 @@ export function PostDetailPage() {
 		});
 	}, [deletePost, normalizedGroupId, router]);
 
-	const displayDate = useMemo(() => (post ? formatKoreanDateYMD(post.updatedAt) : ""), [post]);
-
-	const rentalFeeLabel = useMemo(
-		() => (post ? formatRentalFeeLabel(post.rentalFee, post.feeUnit) : ""),
-		[post],
-	);
-
 	if (isLoading) {
-		return (
-			<div className="h-full flex items-center justify-center gap-2 py-10 text-muted-foreground">
-				<Spinner />
-				<Typography type="body-sm">{POST_DETAIL_LOADING_LABEL}</Typography>
-			</div>
-		);
+		return <PostStateMessage label={POST_DETAIL_LOADING_LABEL} showSpinner fullHeight />;
 	}
 
 	if (isError || !post) {
-		return (
-			<div className="h-full flex items-center justify-center py-10 text-muted-foreground">
-				<Typography type="body-sm">{POST_DETAIL_ERROR_LABEL}</Typography>
-			</div>
-		);
+		return <PostStateMessage label={POST_DETAIL_ERROR_LABEL} fullHeight />;
 	}
+
+	const displayDate = formatKoreanDateYMD(post.updatedAt);
+	const rentalFeeLabel = formatRentalFeeLabel(post.rentalFee, post.feeUnit);
 
 	return (
 		<>
 			<PostDetailHeader onClickMore={() => setIsDrawerOpen(true)} isSeller={post.isSeller} />
-			<Drawer open={isDrawerOpen} onOpenChange={setIsDrawerOpen}>
-				<DrawerContent>
-					<DrawerTitle />
-					<DrawerFooter>
-						<Button asChild size="xl">
-							<Link href={`/groups/${normalizedGroupId}/posts/${normalizedPostId}/edit`}>
-								수정하기
-							</Link>
-						</Button>
-						<Button size="xl" variant="destructive" onClick={handleOpenDeleteDialog}>
-							삭제하기
-						</Button>
-						<DrawerClose asChild>
-							<Button size="xl" variant="outline" className="w-full">
-								닫기
-							</Button>
-						</DrawerClose>
-					</DrawerFooter>
-				</DrawerContent>
-			</Drawer>
-			<AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
-				<AlertDialogContent>
-					<AlertDialogHeader>
-						<AlertDialogTitle>게시글을 삭제할까요?</AlertDialogTitle>
-						<AlertDialogDescription>삭제하면 복구할 수 없어요.</AlertDialogDescription>
-					</AlertDialogHeader>
-					<AlertDialogFooter className="flex flex-row justify-end">
-						<AlertDialogCancel className="flex flex-2" disabled={isDeleting}>
-							취소
-						</AlertDialogCancel>
-						<AlertDialogAction
-							className="flex flex-2"
-							variant="destructive"
-							onClick={handleConfirmDelete}
-							disabled={isDeleting}
-						>
-							삭제
-						</AlertDialogAction>
-					</AlertDialogFooter>
-				</AlertDialogContent>
-			</AlertDialog>
+			<PostDetailAction
+				groupId={normalizedGroupId}
+				postId={normalizedPostId}
+				isDrawerOpen={isDrawerOpen}
+				onDrawerOpenChange={setIsDrawerOpen}
+				isDeleteDialogOpen={isDeleteDialogOpen}
+				onDeleteDialogOpenChange={setIsDeleteDialogOpen}
+				onRequestDelete={handleOpenDeleteDialog}
+				onConfirmDelete={handleConfirmDelete}
+				isDeleting={isDeleting}
+			/>
 			<div className="flex flex-1 pb-(--h-bottom-nav)">
 				<section className="flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar">
-					<div className="py-4">
-						<HorizontalPaddingBox className="flex gap-x-2 items-center ">
-							<Avatar className="w-12.5 h-12.5 border-0">
-								<AvatarImage src={post.sellerAvatar} />
-								<AvatarFallback></AvatarFallback>
-							</Avatar>
-							<Typography type="subtitle" className="text-center">
-								{post.sellerNickname}
-							</Typography>
-						</HorizontalPaddingBox>
-					</div>
-					<div>
-						<Carousel showDots>
-							<CarouselContent>
-								{post.imageUrls.imageInfos.map((image, index) => (
-									<CarouselItem key={image.postImageId} className="pl-0">
-										<div className="relative w-full aspect-square">
-											<Image
-												fill
-												src={image.imageUrl}
-												alt={`Post image ${index + 1}`}
-												sizes="100vw"
-												className="object-cover"
-											/>
-										</div>
-									</CarouselItem>
-								))}
-							</CarouselContent>
-						</Carousel>
-					</div>
+					<PostDetailSeller avatarUrl={post.sellerAvatar} nickname={post.sellerNickname} />
+					<PostDetailImages images={post.imageUrls.imageInfos} />
 					<HorizontalPaddingBox className="mt-3 pb-6">
-						<div className="flex flex-col gap-2">
-							<div className="flex items-center justify-between">
-								<Typography type="title">{post.title}</Typography>
-								{!post.isSeller && !isAvailable && <Badge>대여중</Badge>}
-							</div>
-							<div className="flex items-center justify-between">
-								<Typography type="title" className="text-xl">
-									{rentalFeeLabel}
-								</Typography>
-								{post.isSeller && (
-									<SelectField
-										value={rentalStatusValue}
-										options={rentalStatusOptions}
-										onValueChange={handleStatusChange}
-										ariaLabel="대여 상태"
-										size="sm"
-										disabled={isUpdatingStatus}
-									/>
-								)}
-							</div>
-							<div>{displayDate}</div>
-						</div>
+						<PostDetailMeta
+							title={post.title}
+							rentalFeeLabel={rentalFeeLabel}
+							displayDate={displayDate}
+							isSeller={post.isSeller}
+							isAvailable={isAvailable}
+							rentalStatusValue={rentalStatusValue}
+							isUpdatingStatus={isUpdatingStatus}
+							onStatusChange={handleStatusChange}
+						/>
 						<Separator className="my-6" />
-						<Typography type="body" className="whitespace-pre-wrap">
-							{post.content}
-						</Typography>
+						<PostDetailBody content={post.content} />
 					</HorizontalPaddingBox>
 				</section>
 			</div>
@@ -254,5 +146,42 @@ export function PostDetailPage() {
 				postId={postIdNumber}
 			/>
 		</>
+	);
+}
+
+interface PostDetailSellerProps {
+	avatarUrl: string;
+	nickname: string;
+}
+
+function PostDetailSeller(props: PostDetailSellerProps) {
+	const { avatarUrl, nickname } = props;
+
+	return (
+		<div className="py-4">
+			<HorizontalPaddingBox className="flex gap-x-2 items-center ">
+				<Avatar className="w-12.5 h-12.5 border-0">
+					<AvatarImage src={avatarUrl} />
+					<AvatarFallback></AvatarFallback>
+				</Avatar>
+				<Typography type="subtitle" className="text-center">
+					{nickname}
+				</Typography>
+			</HorizontalPaddingBox>
+		</div>
+	);
+}
+
+interface PostDetailBodyProps {
+	content: string;
+}
+
+function PostDetailBody(props: PostDetailBodyProps) {
+	const { content } = props;
+
+	return (
+		<Typography type="body" className="whitespace-pre-wrap">
+			{content}
+		</Typography>
 	);
 }
