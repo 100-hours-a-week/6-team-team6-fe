@@ -7,7 +7,7 @@ import {
 } from "@/features/chat/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatroomPostIdParams = {
 	chatroomId: number;
@@ -30,7 +30,7 @@ async function getChatroomPostId(
 ): Promise<ChatroomPostIdResponseDto> {
 	const { chatroomId } = params;
 
-	const parsed = await request(
+	const parsed = await requestJson(
 		apiClient.get(`chatrooms/${chatroomId}/post`),
 		ChatroomPostIdResponseApiSchema,
 		GetChatroomPostIdError,

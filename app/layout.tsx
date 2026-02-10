@@ -1,24 +1,14 @@
 import "./globals.css";
 
-import { Geist, Geist_Mono, Inter } from "next/font/google";
+import { Inter } from "next/font/google";
 
 import type { Metadata } from "next";
 
 import { Toaster } from "@/shared/components/ui/sonner";
 
-import Providers from "@/shared/providers";
+import { Providers } from "@/shared/providers";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
-
-const geistSans = Geist({
-	variable: "--font-geist-sans",
-	subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-	variable: "--font-geist-mono",
-	subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
 	title: "그룹을 위한 대여 서비스, 빌리지",
@@ -59,7 +49,7 @@ function RootLayout({
 }>) {
 	return (
 		<html lang="en" className={inter.variable}>
-			<body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+			<body className="antialiased">
 				<Providers>
 					<div className="app">
 						<main className="flex-1 flex flex-col">{children}</main>

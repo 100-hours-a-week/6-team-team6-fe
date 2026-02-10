@@ -1,8 +1,8 @@
-import React from "react";
+import type { ReactNode } from "react";
 
 type AuthPageLayoutProps = {
-	children: React.ReactNode;
-	header?: React.ReactNode;
+	children: ReactNode;
+	header?: ReactNode;
 };
 
 function AuthPageLayout(props: AuthPageLayoutProps) {

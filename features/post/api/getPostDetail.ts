@@ -6,7 +6,7 @@ import { PostDetailDtoSchema, PostDetailResponseApiSchema } from "@/features/pos
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetPostDetailParams = {
 	groupId: string;
@@ -43,7 +43,7 @@ async function getPostDetail(params: GetPostDetailParams): Promise<PostDetailDto
 		return PostDetailDtoSchema.parse(mockPost);
 	}
 
-	const data = await request(
+	const data = await requestJson(
 		apiClient.get(`groups/${groupId}/posts/${postId}`),
 		PostDetailResponseApiSchema,
 		PostDetailError,

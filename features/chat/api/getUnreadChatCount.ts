@@ -7,7 +7,7 @@ import {
 } from "@/features/chat/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetUnreadChatCountParams = void;
 
@@ -26,7 +26,7 @@ class GetUnreadChatCountError extends Error {
 async function getUnreadChatCount(
 	_params?: GetUnreadChatCountParams,
 ): Promise<UnreadChatCountResponseDto> {
-	const parsed = await request(
+	const parsed = await requestJson(
 		apiClient.get("users/me/chatrooms/unread-count"),
 		UnreadChatCountResponseApiSchema,
 		GetUnreadChatCountError,

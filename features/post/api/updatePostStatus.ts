@@ -3,7 +3,7 @@
 import { z } from "zod";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
 
@@ -35,7 +35,7 @@ class UpdatePostStatusError extends Error {
 async function updatePostStatus(params: UpdatePostStatusParams): Promise<UpdatePostStatusResponse> {
 	const { groupId, postId, rentalStatus } = params;
 
-	return await request(
+	return await requestJson(
 		apiClient.patch(`groups/${groupId}/posts/${postId}`, {
 			json: { status: rentalStatus },
 		}),

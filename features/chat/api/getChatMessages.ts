@@ -7,7 +7,7 @@ import {
 } from "@/features/chat/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { request } from "@/shared/lib/api/request";
+import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatMessagesParams = {
 	postId: number;
@@ -31,7 +31,7 @@ async function getChatMessages(params: GetChatMessagesParams): Promise<ChatMessa
 	const { postId, chatroomId, cursor } = params;
 	const searchParams = cursor ? { cursor } : undefined;
 
-	const parsed = await request(
+	const parsed = await requestJson(
 		apiClient.get(`posts/${postId}/chatrooms/${chatroomId}/messages`, { searchParams }),
 		ChatMessagesResponseApiSchema,
 		GetChatMessagesError,
