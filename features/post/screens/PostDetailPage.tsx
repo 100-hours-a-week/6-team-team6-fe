@@ -1,19 +1,16 @@
 "use client";
 
-import { useCallback, useState } from "react";
-
-import { notFound, useParams, useRouter } from "next/navigation";
-
-import { toast } from "sonner";
+import { notFound } from "next/navigation";
 
 import { PostDetailAction } from "@/features/post/components/PostDetailAction";
 import { PostDetailImages } from "@/features/post/components/PostDetailImages";
 import { PostDetailMeta } from "@/features/post/components/PostDetailMeta";
 import PostDetailNavigation from "@/features/post/components/PostDetailNavigation";
 import { PostStateMessage } from "@/features/post/components/PostStateMessage";
-import usePost from "@/features/post/hooks/usePost";
-import { postRoutes } from "@/features/post/lib/postRoutes";
-import type { RentalStatus } from "@/features/post/schemas";
+import { usePostDetailActions } from "@/features/post/hooks/usePostDetailActions";
+import { usePostDetailParams } from "@/features/post/hooks/usePostDetailParams";
+import { usePostDetailQuery } from "@/features/post/hooks/usePostDetailQuery";
+import { usePostDetailUIState } from "@/features/post/hooks/usePostDetailUIState";
 
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
@@ -22,7 +19,6 @@ import { Separator } from "@/shared/components/ui/separator";
 import { Typography } from "@/shared/components/ui/typography";
 
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
 
 const POST_DETAIL_LOADING_LABEL = "게시글을 불러오는 중";
@@ -30,69 +26,44 @@ const POST_DETAIL_ERROR_LABEL = "게시글을 불러오지 못했습니다.";
 
 // TODO: 404
 export function PostDetailPage() {
-	const { groupId, postId } = useParams<{ groupId: string; postId: string }>();
-	const router = useRouter();
-	const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-	const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-	const normalizedGroupId = groupId ?? "";
-	const normalizedPostId = postId ?? "";
-	const postIdNumber = Number(postId);
-
-	const { detailQuery, updateStatusMutation, deleteMutation } = usePost({
-		groupId: normalizedGroupId,
-		postId: normalizedPostId,
-	});
-	const { data: post, isLoading, isError, error } = detailQuery;
-	const { mutate: updateStatus, isPending: isUpdatingStatus } = updateStatusMutation;
-	const { mutate: deletePost, isPending: isDeleting } = deleteMutation;
+	const {
+		normalizedGroupId,
+		normalizedPostId,
+		postIdNumber,
+		shouldNotFound: shouldNotFoundByParams,
+	} = usePostDetailParams();
+	const { isDrawerOpen, setIsDrawerOpen, isDeleteDialogOpen, setIsDeleteDialogOpen } =
+		usePostDetailUIState();
+	const { post, isLoading, isError, error, updateStatusMutation, deleteMutation } =
+		usePostDetailQuery(normalizedGroupId, normalizedPostId);
 
 	const errorCode = error?.code;
 	const shouldNotFound =
-		Number.isNaN(postIdNumber) ||
+		shouldNotFoundByParams ||
 		errorCode === apiErrorCodes.GROUP_NOT_FOUND ||
 		errorCode === apiErrorCodes.POST_NOT_FOUND;
-
-	if (shouldNotFound) {
-		notFound();
-	}
 
 	const rentalStatusValue = post?.rentalStatus ?? "AVAILABLE";
 	const isAvailable = rentalStatusValue === "AVAILABLE";
 
-	const handleStatusChange = useCallback(
-		(value: string) => {
-			if (value === rentalStatusValue) {
-				return;
-			}
-			updateStatus(value as RentalStatus, {
-				onSuccess: () => toast.success("대여 상태가 변경되었습니다."),
-				onError: (statusError) => {
-					const message = getApiErrorMessage(statusError?.code ?? "대여 상태 변경에 실패했습니다.");
-					toast.error(message);
-				},
-			});
-		},
-		[rentalStatusValue, updateStatus],
-	);
+	const {
+		handleStatusChange,
+		handleOpenDeleteDialog,
+		handleConfirmDelete,
+		isUpdatingStatus,
+		isDeleting,
+	} = usePostDetailActions({
+		groupId: normalizedGroupId,
+		rentalStatusValue,
+		updateStatusMutation,
+		deleteMutation,
+		setIsDrawerOpen,
+		setIsDeleteDialogOpen,
+	});
 
-	const handleOpenDeleteDialog = useCallback(() => {
-		setIsDrawerOpen(false);
-		setIsDeleteDialogOpen(true);
-	}, []);
-
-	const handleConfirmDelete = useCallback(() => {
-		deletePost(undefined, {
-			onSuccess: () => {
-				toast.success("게시글이 삭제되었습니다.");
-				router.replace(postRoutes.groupPosts(normalizedGroupId));
-			},
-			onError: (deleteError) => {
-				const message = getApiErrorMessage(deleteError?.code ?? "게시글 삭제에 실패했습니다.");
-				toast.error(message);
-			},
-			onSettled: () => setIsDeleteDialogOpen(false),
-		});
-	}, [deletePost, normalizedGroupId, router]);
+	if (shouldNotFound) {
+		notFound();
+	}
 
 	if (isLoading) {
 		return <PostStateMessage label={POST_DETAIL_LOADING_LABEL} showSpinner fullHeight />;
