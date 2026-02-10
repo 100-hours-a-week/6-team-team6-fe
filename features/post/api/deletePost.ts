@@ -3,7 +3,6 @@
 import { PostApiError } from "@/features/post/api/postApiError";
 
 import { apiClient } from "@/shared/lib/api/api-client";
-import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { requestVoid } from "@/shared/lib/api/request";
 
 type DeletePostParams = {

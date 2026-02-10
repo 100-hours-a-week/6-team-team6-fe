@@ -12,6 +12,7 @@ import { usePostDetailParams } from "@/features/post/hooks/usePostDetailParams";
 import { usePostDetailQuery } from "@/features/post/hooks/usePostDetailQuery";
 import { usePostDetailUIState } from "@/features/post/hooks/usePostDetailUIState";
 
+import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
@@ -66,11 +67,21 @@ export function PostDetailPage() {
 	}
 
 	if (isLoading) {
-		return <PostStateMessage label={POST_DETAIL_LOADING_LABEL} showSpinner fullHeight />;
+		return (
+			<>
+				<DefaultHeader />
+				<PostStateMessage label={POST_DETAIL_LOADING_LABEL} showSpinner fullHeight />
+			</>
+		);
 	}
 
 	if (isError || !post) {
-		return <PostStateMessage label={POST_DETAIL_ERROR_LABEL} fullHeight />;
+		return (
+			<>
+				<DefaultHeader />
+				<PostStateMessage label={POST_DETAIL_ERROR_LABEL} fullHeight />;
+			</>
+		);
 	}
 
 	const displayDate = formatKoreanDateYMD(post.updatedAt);
