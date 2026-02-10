@@ -5,6 +5,8 @@ import { useParams } from "next/navigation";
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import { useSession } from "next-auth/react";
 
+import { usePendingStompQueue } from "@/features/chat/hooks/usePendingStompQueue";
+import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
 import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 type ChatJoinPayload = {
@@ -31,13 +33,6 @@ interface UseChatRoomStompResult {
 	submitMessageByStomp: (text: string) => void;
 	markAsReadByStomp: (readMessageId: string) => void;
 }
-
-const STOMP_DESTINATION = {
-	subscribe: (chatroomId: number) => `/topic/chatrooms/${chatroomId}`,
-	join: "/app/chat/join",
-	send: "/app/chat/send",
-	read: "/app/chat/read",
-} as const;
 
 function buildWebSocketEndpoint(apiUrl: string | undefined) {
 	if (!apiUrl) {
@@ -170,7 +165,6 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 	const [realtimeMessages, setRealtimeMessages] = useState<ChatMessages>([]);
 	const stompClientRef = useRef<Client | null>(null);
 	const subscriptionRef = useRef<StompSubscription | null>(null);
-	const pendingMessagesRef = useRef<string[]>([]);
 	const isAwaitingJoinAckRef = useRef(false);
 	const myMembershipIdRef = useRef<number | null>(null);
 	const realtimeChatroomIdRef = useRef<number | null>(null);
@@ -210,6 +204,16 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		return mergeMessages(messages, realtimeMessages);
 	}, [chatroomId, messages, realtimeChatroomId, realtimeMessages]);
 
+	const { submitMessageByStomp, markAsReadByStomp, flushPendingMessages } =
+		usePendingStompQueue({
+			authHeader,
+			chatroomId,
+			submitMessage,
+			stompClientRef,
+			isStompConnectedRef,
+			myMembershipIdRef,
+		});
+
 	useEffect(() => {
 		if (!authHeader || chatroomId === null || !wsEndpoint) {
 			return;
@@ -226,44 +230,8 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		const subscriptionId = `chatroom-sub-${chatroomId}-${Date.now()}`;
 		stompClientRef.current = client;
 		subscriptionRef.current = null;
-		pendingMessagesRef.current = [];
 		isAwaitingJoinAckRef.current = false;
 		isStompConnectedRef.current = false;
-
-		const publishChatMessage = (message: string) => {
-			if (!client.connected || myMembershipIdRef.current === null) {
-				return;
-			}
-
-			client.publish({
-				destination: STOMP_DESTINATION.send,
-				headers: {
-					Authorization: authHeader,
-					"content-type": "application/json",
-				},
-				body: JSON.stringify({
-					chatroomId,
-					message,
-					membershipId: myMembershipIdRef.current,
-				}),
-			});
-		};
-
-		const flushPendingMessages = () => {
-			if (!client.connected || myMembershipIdRef.current === null) {
-				return;
-			}
-
-			const pendingMessages = pendingMessagesRef.current;
-			if (pendingMessages.length === 0) {
-				return;
-			}
-
-			pendingMessagesRef.current = [];
-			for (const pendingMessage of pendingMessages) {
-				publishChatMessage(pendingMessage);
-			}
-		};
 
 		const handleIncomingMessage = (frame: IMessage) => {
 			const payload = parseStompBody(frame);
@@ -321,6 +289,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 
 		client.onConnect = () => {
 			isStompConnectedRef.current = true;
+			myMembershipIdRef.current = null;
 
 			subscriptionRef.current = client.subscribe(
 				STOMP_DESTINATION.subscribe(chatroomId),
@@ -346,6 +315,9 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		client.onWebSocketClose = () => {
 			isStompConnectedRef.current = false;
 		};
+		client.onStompError = () => {
+			isStompConnectedRef.current = false;
+		};
 
 		client.activate();
 
@@ -365,63 +337,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 				stompClientRef.current = null;
 			}
 		};
-	}, [authHeader, chatroomId, myUserId, wsEndpoint]);
-
-	const submitMessageByStomp = (text: string) => {
-		if (!authHeader || chatroomId === null || !isStompConnectedRef.current) {
-			return;
-		}
-
-		const client = stompClientRef.current;
-		if (!client || !client.connected) {
-			return;
-		}
-
-		if (myMembershipIdRef.current === null) {
-			pendingMessagesRef.current = [...pendingMessagesRef.current, text];
-			submitMessage(text);
-			return;
-		}
-
-		client.publish({
-			destination: STOMP_DESTINATION.send,
-			headers: {
-				Authorization: authHeader,
-				"content-type": "application/json",
-			},
-			body: JSON.stringify({
-				chatroomId,
-				message: text,
-				membershipId: myMembershipIdRef.current,
-			}),
-		});
-
-		submitMessage(text);
-	};
-
-	const markAsReadByStomp = (readMessageId: string) => {
-		if (!authHeader || chatroomId === null || !isStompConnectedRef.current) {
-			return;
-		}
-
-		const client = stompClientRef.current;
-		if (!client || !client.connected || myMembershipIdRef.current === null) {
-			return;
-		}
-
-		client.publish({
-			destination: STOMP_DESTINATION.read,
-			headers: {
-				Authorization: authHeader,
-				"content-type": "application/json",
-			},
-			body: JSON.stringify({
-				chatroomId,
-				membershipId: myMembershipIdRef.current,
-				readMessageId,
-			}),
-		});
-	};
+	}, [authHeader, chatroomId, flushPendingMessages, myUserId, wsEndpoint]);
 
 	return {
 		mergedMessages,
