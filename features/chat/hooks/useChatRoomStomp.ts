@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useRef } from "react";
 
 import { useParams } from "next/navigation";
 
@@ -6,8 +6,9 @@ import type { Client } from "@stomp/stompjs";
 import { useSession } from "next-auth/react";
 
 import { usePendingStompQueue } from "@/features/chat/hooks/usePendingStompQueue";
+import { useRealtimeMessageMerge } from "@/features/chat/hooks/useRealtimeMessageMerge";
 import { useStompConnectionLifecycle } from "@/features/chat/hooks/useStompConnectionLifecycle";
-import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
+import type { ChatMessages } from "@/features/chat/lib/types";
 
 interface UseChatRoomStompProps {
 	messages: ChatMessages;
@@ -34,57 +35,14 @@ function buildWebSocketEndpoint(apiUrl: string | undefined) {
 	}
 }
 
-function getMessageKey(message: ChatMessage) {
-	return message.messageId ?? `${message.who}:${message.createdAt}:${message.message}`;
-}
-
-function mergeMessages(
-	historyMessages: ChatMessages,
-	realtimeMessages: ChatMessages,
-): ChatMessages {
-	const merged: ChatMessages = [];
-	const seen = new Set<string>();
-
-	for (const message of [...realtimeMessages, ...historyMessages]) {
-		const key = getMessageKey(message);
-		if (seen.has(key)) {
-			continue;
-		}
-		seen.add(key);
-		merged.push(message);
-	}
-
-	return merged.sort((left, right) => {
-		const leftTime = Date.parse(left.createdAt);
-		const rightTime = Date.parse(right.createdAt);
-
-		if (Number.isNaN(leftTime) || Number.isNaN(rightTime)) {
-			const leftId = left.messageId ?? "";
-			const rightId = right.messageId ?? "";
-			return rightId.localeCompare(leftId);
-		}
-
-		if (rightTime !== leftTime) {
-			return rightTime - leftTime;
-		}
-
-		const leftId = left.messageId ?? "";
-		const rightId = right.messageId ?? "";
-		return rightId.localeCompare(leftId);
-	});
-}
-
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {
 	const { messages, submitMessage } = props;
 	const params = useParams<{ chatRoomId?: string }>();
 	const { data: session } = useSession();
 
-	const [realtimeChatroomId, setRealtimeChatroomId] = useState<number | null>(null);
-	const [realtimeMessages, setRealtimeMessages] = useState<ChatMessages>([]);
 	const stompClientRef = useRef<Client | null>(null);
 	const isAwaitingJoinAckRef = useRef(false);
 	const myMembershipIdRef = useRef<number | null>(null);
-	const realtimeChatroomIdRef = useRef<number | null>(null);
 	const isStompConnectedRef = useRef(false);
 
 	const chatroomId = useMemo(() => {
@@ -114,12 +72,11 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		return buildWebSocketEndpoint(process.env.NEXT_PUBLIC_API_URL);
 	}, []);
 
-	const mergedMessages = useMemo(() => {
-		if (chatroomId === null || realtimeChatroomId !== chatroomId) {
-			return mergeMessages(messages, []);
-		}
-		return mergeMessages(messages, realtimeMessages);
-	}, [chatroomId, messages, realtimeChatroomId, realtimeMessages]);
+	const { mergedMessages, realtimeChatroomIdRef, setRealtimeChatroomId, setRealtimeMessages } =
+		useRealtimeMessageMerge({
+			chatroomId,
+			messages,
+		});
 
 	const { submitMessageByStomp, markAsReadByStomp, flushPendingMessages } =
 		usePendingStompQueue({
