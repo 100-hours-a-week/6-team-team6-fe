@@ -7,12 +7,12 @@ import { notFound, useParams, useRouter } from "next/navigation";
 import { toast } from "sonner";
 
 import PostEditor from "@/features/post/components/PostEditor";
+import { PostStateMessage } from "@/features/post/components/PostStateMessage";
 import usePost from "@/features/post/hooks/usePost";
 import type { CreatePostPayload } from "@/features/post/hooks/usePostEditor";
+import { postRoutes } from "@/features/post/lib/postRoutes";
 
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
-import { Spinner } from "@/shared/components/ui/spinner";
-import { Typography } from "@/shared/components/ui/typography";
 
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
@@ -42,7 +42,7 @@ export function PostCreatePage() {
 				{
 					onSuccess: (data) => {
 						toast.success("게시글이 등록되었습니다.");
-						router.replace(`/groups/${normalizedGroupId}/posts/${data.postId}`);
+						router.replace(postRoutes.postDetail(normalizedGroupId, data.postId));
 					},
 					onError: (createError) => {
 						const errorCode = createError?.code;
@@ -60,12 +60,7 @@ export function PostCreatePage() {
 	);
 
 	if (!normalizedGroupId) {
-		return (
-			<div className="h-full flex items-center justify-center gap-2 py-10 text-muted-foreground">
-				<Spinner />
-				<Typography type="body-sm">그룹 정보를 불러오는 중</Typography>
-			</div>
-		);
+		return <PostStateMessage label="그룹 정보를 불러오는 중" showSpinner fullHeight />;
 	}
 
 	return (

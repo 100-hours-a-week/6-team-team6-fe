@@ -7,6 +7,7 @@ import Link from "next/link";
 import { GroupSearchHeader } from "@/features/post/components/GroupSearchHeader";
 import PostItem from "@/features/post/components/PostItem";
 import { PostItemSkeletonList } from "@/features/post/components/PostItemSkeletonList";
+import { postRoutes } from "@/features/post/lib/postRoutes";
 import type { PostSummaryDto } from "@/features/post/schemas";
 
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
@@ -222,7 +223,7 @@ function SearchResultsList(props: SearchResultsListProps) {
 			{searchResults.map((post, index) => (
 				<li key={post.postId} className="flex flex-col gap-y-6">
 					<HorizontalPaddingBox>
-						<Link href={`/groups/${groupId}/posts/${post.postId}`}>
+						<Link href={postRoutes.postDetail(groupId, post.postId)}>
 							<PostItem {...post} />
 						</Link>
 					</HorizontalPaddingBox>

@@ -1,5 +1,6 @@
 "use client";
 
+import { PostApiError } from "@/features/post/api/postApiError";
 import { deleteMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 
 import { apiClient } from "@/shared/lib/api/api-client";
@@ -11,15 +12,9 @@ type DeletePostParams = {
 	postId: string;
 };
 
-class DeletePostError extends Error {
-	status: number;
-	code?: string;
-
+class DeletePostError extends PostApiError {
 	constructor(status: number, code?: string) {
-		super(code ?? "UNKNOWN_ERROR");
-		this.name = "DeletePostError";
-		this.status = status;
-		this.code = code;
+		super("DeletePostError", status, code);
 	}
 }
 

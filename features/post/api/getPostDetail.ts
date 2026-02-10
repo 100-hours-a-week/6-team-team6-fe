@@ -1,5 +1,6 @@
 "use client";
 
+import { PostApiError } from "@/features/post/api/postApiError";
 import { getMockPostDetail, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { PostDetailDto } from "@/features/post/schemas";
 import { PostDetailDtoSchema, PostDetailResponseApiSchema } from "@/features/post/schemas";
@@ -13,15 +14,9 @@ type GetPostDetailParams = {
 	postId: string;
 };
 
-class PostDetailError extends Error {
-	status: number;
-	code?: string;
-
+class PostDetailError extends PostApiError {
 	constructor(status: number, code?: string) {
-		super(code ?? "UNKNOWN_ERROR");
-		this.name = "PostDetailError";
-		this.status = status;
-		this.code = code;
+		super("PostDetailError", status, code);
 	}
 }
 

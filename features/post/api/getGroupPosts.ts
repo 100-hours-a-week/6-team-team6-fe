@@ -1,5 +1,6 @@
 "use client";
 
+import { PostApiError } from "@/features/post/api/postApiError";
 import { getMockPostSummariesPage, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 import type { PostSummariesResponseDto } from "@/features/post/schemas";
 import {
@@ -17,15 +18,9 @@ type GetGroupPostsParams = {
 	query?: string;
 };
 
-class GroupPostsError extends Error {
-	status: number;
-	code?: string;
-
+class GroupPostsError extends PostApiError {
 	constructor(status: number, code?: string) {
-		super(code ?? "UNKNOWN_ERROR");
-		this.name = "GroupPostsError";
-		this.status = status;
-		this.code = code;
+		super("GroupPostsError", status, code);
 	}
 }
 
