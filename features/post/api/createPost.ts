@@ -2,7 +2,8 @@
 
 import { z } from "zod";
 
-import { UploadPostImageError, uploadPostImages } from "@/features/post/api/uploadPostImage";
+import { PostApiError } from "@/features/post/api/postApiError";
+import { uploadPostImagesWithErrorHandling } from "@/features/post/api/postImageUtils";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
@@ -23,31 +24,18 @@ type CreatePostParams = {
 	newImages: File[];
 };
 
-class CreatePostError extends Error {
-	status: number;
-	code?: string;
-
+class CreatePostError extends PostApiError {
 	constructor(status: number, code?: string) {
-		super(code ?? "UNKNOWN_ERROR");
-		this.name = "CreatePostError";
-		this.status = status;
-		this.code = code;
+		super("CreatePostError", status, code);
 	}
 }
 
 async function createPost(params: CreatePostParams): Promise<CreatePostResponse> {
 	const { groupId, title, content, rentalFee, feeUnit, newImages } = params;
 
-	let imageUrls: string[] = [];
-
-	try {
-		imageUrls = await uploadPostImages(newImages);
-	} catch (error) {
-		if (error instanceof UploadPostImageError) {
-			throw new CreatePostError(error.status, error.code);
-		}
-		throw error;
-	}
+	const imageUrls = await uploadPostImagesWithErrorHandling(newImages, (status, code) => {
+		return new CreatePostError(status, code);
+	});
 
 	const payload = {
 		title,

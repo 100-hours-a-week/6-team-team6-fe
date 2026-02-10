@@ -1,6 +1,5 @@
 import type { FeeUnit, PostDetailDto, PostSummaryDto, RentalStatus } from "@/features/post/schemas";
 
-export const POST_CONSTANTS = {};
 type RawPostSummary = {
 	postId: number;
 	title: string;

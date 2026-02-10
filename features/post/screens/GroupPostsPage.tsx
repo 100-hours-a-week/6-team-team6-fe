@@ -6,7 +6,9 @@ import Link from "next/link";
 
 import PostItem from "@/features/post/components/PostItem";
 import { PostItemSkeletonList } from "@/features/post/components/PostItemSkeletonList";
+import { PostStateMessage } from "@/features/post/components/PostStateMessage";
 import useGroupPosts from "@/features/post/hooks/useGroupPosts";
+import { postRoutes } from "@/features/post/lib/postRoutes";
 
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Separator } from "@/shared/components/ui/separator";
@@ -49,19 +51,11 @@ export function GroupPostsPage(props: GroupPostsPageProps) {
 	}
 
 	if (isError && posts.length === 0) {
-		return (
-			<div className="h-full flex items-center justify-center py-10 text-muted-foreground">
-				<Typography type="body-sm">{GROUP_POSTS_ERROR_LABEL}</Typography>
-			</div>
-		);
+		return <PostStateMessage label={GROUP_POSTS_ERROR_LABEL} fullHeight />;
 	}
 
 	if (posts.length === 0) {
-		return (
-			<div className="flex items-center justify-center py-10 text-muted-foreground">
-				<Typography type="body-sm">{GROUP_POSTS_EMPTY_LABEL}</Typography>
-			</div>
-		);
+		return <PostStateMessage label={GROUP_POSTS_EMPTY_LABEL} />;
 	}
 
 	return (
@@ -70,7 +64,7 @@ export function GroupPostsPage(props: GroupPostsPageProps) {
 				{posts.map((post, index) => (
 					<li key={post.postId} className="flex flex-col gap-y-6">
 						<HorizontalPaddingBox>
-							<Link href={`/groups/${groupId}/posts/${post.postId}`}>
+							<Link href={postRoutes.postDetail(groupId, post.postId)}>
 								<PostItem {...post} />
 							</Link>
 						</HorizontalPaddingBox>

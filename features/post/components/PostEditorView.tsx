@@ -13,21 +13,18 @@ import type {
 	PostEditorImageState,
 	PostEditorValues,
 } from "@/features/post/hooks/usePostEditor";
+import { rentalFeeUnitOptions } from "@/features/post/lib/postLabels";
 
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Button } from "@/shared/components/ui/button";
 import { IconButton } from "@/shared/components/ui/icon-button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
-import { SelectField, type SelectOption } from "@/shared/components/ui/select-field";
+import { SelectField } from "@/shared/components/ui/select-field";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Typography } from "@/shared/components/ui/typography";
 
-const rentalUnitOptions: SelectOption[] = [
-	{ value: "HOUR", label: "시간" },
-	{ value: "DAY", label: "일" },
-];
 const MAX_POST_IMAGES = 5;
 
 type RentalFeeParseResult = { kind: "empty" } | { kind: "valid"; value: number; text: string };
@@ -305,7 +302,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 									onChangeField("feeUnit", value as PostEditorValues["feeUnit"])
 								}
 								disabled={isBusy}
-								options={rentalUnitOptions}
+								options={rentalFeeUnitOptions}
 								ariaLabel="대여 단위"
 								size="sm"
 							/>

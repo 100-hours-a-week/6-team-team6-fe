@@ -238,7 +238,7 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 			const rawFiles = Array.from(fileList);
 			const allowedFiles = rawFiles.filter((file) => file.size <= MAX_UPLOAD_IMAGE_SIZE_BYTES);
 
-			if (rawFiles.some((file) => file.size <= MAX_UPLOAD_IMAGE_SIZE_BYTES)) {
+			if (rawFiles.some((file) => file.size >= MAX_UPLOAD_IMAGE_SIZE_BYTES)) {
 				toast.error(IMAGE_UPLOAD_PARTIAL_SIZE_EXCEEDED_MESSAGE);
 			}
 
