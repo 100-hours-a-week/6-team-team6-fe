@@ -1,32 +1,31 @@
 import { z } from "zod";
 
+const nonEmptyString = z.string().min(1);
+const nonNegativeNumber = z.number().min(0);
+
+const chatRoomSummarySharedShape = {
+	chatPartnerId: z.number(),
+	chatPartnerNickname: nonEmptyString,
+	groupId: z.number(),
+	groupName: nonEmptyString,
+	postId: z.number(),
+	postFirstImageUrl: nonEmptyString,
+	lastMessageAt: nonEmptyString,
+	lastMessage: nonEmptyString,
+	unreadCount: nonNegativeNumber,
+};
+
 const ChatRoomSummaryApiSchema = z.object({
 	chatroomId: z.number(),
-	chatPartnerId: z.number(),
-	chatPartnerAvartUrl: z.string().min(1).optional(),
-	chatPartnerAvatarUrl: z.string().min(1).optional(),
-	chatPartnerNickname: z.string().min(1),
-	groupId: z.number(),
-	groupName: z.string().min(1),
-	postId: z.number(),
-	postFirstImageUrl: z.string().min(1),
-	lastMessageAt: z.string().min(1),
-	lastMessage: z.string().min(1),
-	unreadCount: z.number().min(0),
+	chatPartnerAvartUrl: nonEmptyString.optional(),
+	chatPartnerAvatarUrl: nonEmptyString.optional(),
+	...chatRoomSummarySharedShape,
 });
 
 const ChatRoomSummaryDtoSchema = z.object({
 	chatRoomId: z.number(),
-	chatPartnerId: z.number(),
-	chatPartnerAvatarUrl: z.string().min(1),
-	chatPartnerNickname: z.string().min(1),
-	groupId: z.number(),
-	groupName: z.string().min(1),
-	postId: z.number(),
-	postFirstImageUrl: z.string().min(1),
-	lastMessageAt: z.string().min(1),
-	lastMessage: z.string().min(1),
-	unreadCount: z.number().min(0),
+	chatPartnerAvatarUrl: nonEmptyString,
+	...chatRoomSummarySharedShape,
 });
 
 const ChatRoomSummariesApiSchema = z.array(ChatRoomSummaryApiSchema);
@@ -37,72 +36,50 @@ const CursorDtoSchema = z.object({
 	hasNext: z.boolean(),
 });
 
-const ChatroomIdResponseApiSchema = z.object({
+const ChatroomIdResponseSchema = z.object({
 	chatroomId: z.number(),
 });
+const ChatroomIdResponseApiSchema = ChatroomIdResponseSchema;
+const ChatroomIdResponseDtoSchema = ChatroomIdResponseSchema;
 
-const ChatroomIdResponseDtoSchema = z.object({
-	chatroomId: z.number(),
+const ChatMessageSendResponseSchema = z.object({
+	messageId: nonEmptyString,
 });
+const ChatMessageSendResponseApiSchema = ChatMessageSendResponseSchema;
+const ChatMessageSendResponseDtoSchema = ChatMessageSendResponseSchema;
 
-const ChatMessageSendResponseApiSchema = z.object({
-	messageId: z.string().min(1),
-});
-
-const ChatMessageSendResponseDtoSchema = z.object({
-	messageId: z.string().min(1),
-});
-
-const ChatroomPostIdResponseApiSchema = z.object({
+const ChatroomPostIdResponseSchema = z.object({
 	postId: z.number(),
 });
-
-const ChatroomPostIdResponseDtoSchema = z.object({
-	postId: z.number(),
-});
+const ChatroomPostIdResponseApiSchema = ChatroomPostIdResponseSchema;
+const ChatroomPostIdResponseDtoSchema = ChatroomPostIdResponseSchema;
 
 const feeUnitSchema = z.enum(["HOUR", "DAY"]);
 const rentalStatusSchema = z.enum(["AVAILABLE", "RENTED_OUT"]);
 
-const ChatroomPostInfoApiSchema = z.object({
+const ChatroomPostInfoSchema = z.object({
 	partnerId: z.number(),
-	partnerNickname: z.string().min(1),
+	partnerNickname: z.string(),
 	groupId: z.number(),
-	groupName: z.string().min(1),
+	groupName: nonEmptyString,
 	postId: z.number(),
-	postTitle: z.string().min(1),
-	postFirstImageUrl: z.string().min(1),
-	rentalFee: z.number().min(0),
+	postTitle: nonEmptyString,
+	postFirstImageUrl: nonEmptyString,
+	rentalFee: nonNegativeNumber,
 	feeUnit: feeUnitSchema,
 	rentalStatus: rentalStatusSchema,
 });
+const ChatroomPostInfoApiSchema = ChatroomPostInfoSchema;
+const ChatroomPostInfoDtoSchema = ChatroomPostInfoSchema;
 
-const ChatroomPostInfoDtoSchema = z.object({
-	partnerId: z.number(),
-	partnerNickname: z.string().min(1),
-	groupId: z.number(),
-	groupName: z.string().min(1),
-	postId: z.number(),
-	postTitle: z.string().min(1),
-	postFirstImageUrl: z.string().min(1),
-	rentalFee: z.number().min(0),
-	feeUnit: feeUnitSchema,
-	rentalStatus: rentalStatusSchema,
-});
-
-const ChatMessageApiSchema = z.object({
-	messageId: z.string().min(1),
+const ChatMessageSchema = z.object({
+	messageId: nonEmptyString,
 	who: z.enum(["me", "partner"]),
-	message: z.string().min(1),
-	createdAt: z.string().min(1),
+	message: nonEmptyString,
+	createdAt: nonEmptyString,
 });
-
-const ChatMessageDtoSchema = z.object({
-	messageId: z.string().min(1),
-	who: z.enum(["me", "partner"]),
-	message: z.string().min(1),
-	createdAt: z.string().min(1),
-});
+const ChatMessageApiSchema = ChatMessageSchema;
+const ChatMessageDtoSchema = ChatMessageSchema;
 
 const ChatMessagesResponseApiSchema = z.union([
 	z.object({
@@ -126,13 +103,11 @@ const ChatMessagesResponseDtoSchema = z.object({
 });
 
 // TODO fix field name
-const UnreadChatCountResponseApiSchema = z.object({
-	unreadChatMesageCount: z.number().min(0),
+const UnreadChatCountResponseSchema = z.object({
+	unreadChatMesageCount: nonNegativeNumber,
 });
-
-const UnreadChatCountResponseDtoSchema = z.object({
-	unreadChatMesageCount: z.number().min(0),
-});
+const UnreadChatCountResponseApiSchema = UnreadChatCountResponseSchema;
+const UnreadChatCountResponseDtoSchema = UnreadChatCountResponseSchema;
 
 const ChatRoomsResponseApiSchema = z.union([
 	z.object({
