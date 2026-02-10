@@ -7,3 +7,10 @@ export const CHAT_LIST_LABELS: ChatRoomListLabels = {
 	fetchingNextPage: "더 가져오는 중...",
 	endOfList: "마지막입니다.",
 };
+
+export const STOMP_DESTINATION = {
+	subscribe: (chatroomId: number) => `/topic/chatrooms/${chatroomId}`,
+	join: "/app/chat/join",
+	send: "/app/chat/send",
+	read: "/app/chat/read",
+} as const;
