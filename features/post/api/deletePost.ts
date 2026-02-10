@@ -1,7 +1,6 @@
 "use client";
 
 import { PostApiError } from "@/features/post/api/postApiError";
-import { deleteMockPost, USE_POST_MOCKS } from "@/features/post/lib/mock-posts";
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
@@ -20,21 +19,6 @@ class DeletePostError extends PostApiError {
 
 async function deletePost(params: DeletePostParams): Promise<void> {
 	const { groupId, postId } = params;
-
-	if (USE_POST_MOCKS) {
-		if (!groupId) {
-			throw new DeletePostError(404, apiErrorCodes.GROUP_NOT_FOUND);
-		}
-		const postIdNumber = Number(postId);
-		if (Number.isNaN(postIdNumber)) {
-			throw new DeletePostError(404, apiErrorCodes.POST_NOT_FOUND);
-		}
-		const deleted = deleteMockPost(postIdNumber);
-		if (!deleted) {
-			throw new DeletePostError(404, apiErrorCodes.POST_NOT_FOUND);
-		}
-		return;
-	}
 
 	await requestVoid(apiClient.delete(`groups/${groupId}/posts/${postId}`), DeletePostError);
 }
