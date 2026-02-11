@@ -24,7 +24,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 					fill
 					src={images[0].imageUrl}
 					alt="Post image"
-					priority
+					fetchPriority="high"
 					sizes="100vw"
 					className="object-cover"
 				/>
@@ -42,7 +42,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 								fill
 								src={image.imageUrl}
 								alt={`Post image`}
-								priority={index === 0}
+								fetchPriority={index === 0 ? "high" : undefined}
 								sizes="100vw"
 								className="object-cover"
 							/>
