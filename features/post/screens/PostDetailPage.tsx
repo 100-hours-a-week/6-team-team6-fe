@@ -26,7 +26,7 @@ export function PostDetailPage() {
 	const { normalizedGroupId, normalizedPostId, postIdNumber } = usePostDetailParams();
 	const { isDrawerOpen, setIsDrawerOpen, isDeleteDialogOpen, setIsDeleteDialogOpen } =
 		usePostDetailUIState();
-	const { post, isLoading, isError, updateStatusMutation, deleteMutation } = usePostDetailQuery(
+	const { post, isLoading, updateStatusMutation, deleteMutation } = usePostDetailQuery(
 		normalizedGroupId,
 		normalizedPostId,
 	);
@@ -58,7 +58,7 @@ export function PostDetailPage() {
 		);
 	}
 
-	if (isError || !post) {
+	if (!post) {
 		return (
 			<>
 				<DefaultHeader />

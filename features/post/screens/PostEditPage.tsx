@@ -2,7 +2,7 @@
 
 import { useCallback, useMemo } from "react";
 
-import { notFound, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -54,16 +54,8 @@ export function PostEditPage(props: PostEditPageProps) {
 			queryClient.invalidateQueries({ queryKey: listQueryKey });
 		},
 	});
-	const { data: post, isLoading, isError, error } = detailQuery;
+	const { data: post, isLoading } = detailQuery;
 	const { mutate: mutateUpdatePost, isPending } = updateMutation;
-
-	const errorCode = error?.code;
-	const shouldNotFound =
-		errorCode === apiErrorCodes.GROUP_NOT_FOUND || errorCode === apiErrorCodes.POST_NOT_FOUND;
-
-	if (shouldNotFound) {
-		notFound();
-	}
 
 	const existingImages = useMemo<ExistingImage[]>(() => {
 		if (!post) {
@@ -122,7 +114,7 @@ export function PostEditPage(props: PostEditPageProps) {
 		return <PostStateMessage label="게시글 정보를 불러오는 중" showSpinner fullHeight />;
 	}
 
-	if (isError || !post) {
+	if (!post) {
 		return <PostStateMessage label="게시글 정보를 불러오지 못했습니다." fullHeight />;
 	}
 
