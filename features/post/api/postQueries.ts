@@ -5,15 +5,10 @@ import {
 	type GetPostDetailParams,
 	type PostDetailError,
 } from "@/features/post/api/getPostDetail";
+import { postQueryKeys } from "@/features/post/api/postQueryKeys";
 import type { PostDetailDto } from "@/features/post/schemas";
 
-const postQueryKeys = {
-	all: ["posts"] as const,
-	group: (groupId: string) => [...postQueryKeys.all, "group", groupId] as const,
-	list: (groupId: string) => [...postQueryKeys.group(groupId), "list"] as const,
-	detail: (groupId: string, postId: string) =>
-		[...postQueryKeys.group(groupId), "detail", postId] as const,
-};
+const POST_DETAIL_STALE_TIME_MS = 60_000;
 
 const postQueries = {
 	detail: (params: GetPostDetailParams & { enabled?: boolean }) => {
@@ -22,8 +17,9 @@ const postQueries = {
 			queryKey: postQueryKeys.detail(groupId, postId),
 			queryFn: () => getPostDetail({ groupId, postId }),
 			enabled: Boolean(groupId) && Boolean(postId) && enabled,
+			staleTime: POST_DETAIL_STALE_TIME_MS,
 		});
 	},
 };
 
-export { postQueries, postQueryKeys };
+export { postQueries };

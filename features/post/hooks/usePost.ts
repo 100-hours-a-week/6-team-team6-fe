@@ -9,7 +9,8 @@ import {
 	type CreatePostResponse,
 } from "@/features/post/api/createPost";
 import { deletePost, DeletePostError } from "@/features/post/api/deletePost";
-import { postQueries, postQueryKeys } from "@/features/post/api/postQueries";
+import { postQueries } from "@/features/post/api/postQueries";
+import { postQueryKeys } from "@/features/post/api/postQueryKeys";
 import {
 	updatePost,
 	UpdatePostError,

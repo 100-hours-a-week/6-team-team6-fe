@@ -6,7 +6,7 @@ import { type InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 import type { GroupPostsError } from "@/features/post/api/getGroupPosts";
 import { getGroupPosts } from "@/features/post/api/getGroupPosts";
-import { postQueryKeys } from "@/features/post/api/postQueries";
+import { postQueryKeys } from "@/features/post/api/postQueryKeys";
 import type { PostSummariesResponseDto } from "@/features/post/schemas";
 
 type UseGroupPostsParams = {
