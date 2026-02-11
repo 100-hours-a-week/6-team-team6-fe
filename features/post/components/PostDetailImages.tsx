@@ -24,6 +24,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 					fill
 					src={images[0].imageUrl}
 					alt="Post image"
+					priority
 					sizes="100vw"
 					className="object-cover"
 				/>
@@ -34,13 +35,14 @@ function PostDetailImages(props: PostDetailImagesProps) {
 	return (
 		<Carousel showDots>
 			<CarouselContent>
-				{images.map((image) => (
+				{images.map((image, index) => (
 					<CarouselItem key={image.postImageId} className="pl-0">
 						<div className="relative w-full aspect-square">
 							<Image
 								fill
 								src={image.imageUrl}
 								alt={`Post image`}
+								priority={index === 0}
 								sizes="100vw"
 								className="object-cover"
 							/>
