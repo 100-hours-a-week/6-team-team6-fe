@@ -1,7 +1,5 @@
 "use client";
 
-import { notFound } from "next/navigation";
-
 import { PostDetailAction } from "@/features/post/components/PostDetailAction";
 import { PostDetailImages } from "@/features/post/components/PostDetailImages";
 import { PostDetailMeta } from "@/features/post/components/PostDetailMeta";
@@ -24,7 +22,6 @@ import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
 const POST_DETAIL_LOADING_LABEL = "게시글을 불러오는 중";
 const POST_DETAIL_ERROR_LABEL = "게시글을 불러오지 못했습니다.";
 
-// TODO: 404
 export function PostDetailPage() {
 	const { normalizedGroupId, normalizedPostId, postIdNumber } = usePostDetailParams();
 	const { isDrawerOpen, setIsDrawerOpen, isDeleteDialogOpen, setIsDeleteDialogOpen } =
