@@ -16,10 +16,9 @@ export const apiErrorCodes = {
 	IMAGE_EMPTY: "IMAGE01",
 	IMAGE_UNSUPPORTED_TYPE: "IMAGE02",
 	IMAGE_TOO_LARGE: "IMAGE03",
-	IMAGE_INFO_NOT_FOUND: "IMAGE04",
 	CURSOR_INVALID: "CURSOR01",
 	SERVER_ERROR: "SERVER01",
 	PARAMETER_INVALID: "PARAMETER01",
 } as const;
 
-export type ApiErrorCode = typeof apiErrorCodes[keyof typeof apiErrorCodes];
+export type ApiErrorCode = (typeof apiErrorCodes)[keyof typeof apiErrorCodes];

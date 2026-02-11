@@ -19,7 +19,6 @@ export const apiErrorMessageMap: Record<ApiErrorCode, string> = {
 	[apiErrorCodes.IMAGE_EMPTY]: "이미지를 첨부해 주세요.",
 	[apiErrorCodes.IMAGE_UNSUPPORTED_TYPE]: "허용되지 않는 이미지 형식입니다.",
 	[apiErrorCodes.IMAGE_TOO_LARGE]: "이미지 용량이 5MB를 초과합니다.",
-	[apiErrorCodes.IMAGE_INFO_NOT_FOUND]: "게시글 이미지 정보를 찾을 수 없습니다.",
 	[apiErrorCodes.CURSOR_INVALID]: "잘못된 커서입니다.",
 	[apiErrorCodes.SERVER_ERROR]: "서버 오류가 발생했습니다. 다시 시도해 주세요.",
 	[apiErrorCodes.PARAMETER_INVALID]: "요청 파라미터 검증에 실패했습니다.",
