@@ -4,11 +4,18 @@ import { useCallback } from "react";
 
 import { notFound, useParams, useRouter } from "next/navigation";
 
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import {
+	createPost,
+	CreatePostError,
+	type CreatePostParams,
+	type CreatePostResponse,
+} from "@/features/post/api/createPost";
+import { postQueryKeys } from "@/features/post/api/postQueryKeys";
 import PostEditor from "@/features/post/components/PostEditor";
 import { PostStateMessage } from "@/features/post/components/PostStateMessage";
-import usePost from "@/features/post/hooks/usePost";
 import type { CreatePostPayload } from "@/features/post/hooks/usePostEditor";
 import { postRoutes } from "@/features/post/lib/postRoutes";
 
@@ -20,18 +27,32 @@ import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 export function PostCreatePage() {
 	const { groupId } = useParams<{ groupId: string }>();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const normalizedGroupId = groupId ?? "";
-	const { createMutation } = usePost({ groupId: normalizedGroupId });
-	const { mutate: createPost, isPending } = createMutation;
+	const listQueryKey = postQueryKeys.list(normalizedGroupId);
+	const { mutate: createPostMutate, isPending } = useMutation<
+		CreatePostResponse,
+		CreatePostError,
+		Omit<CreatePostParams, "groupId">
+	>({
+		mutationFn: (payload) => {
+			if (!normalizedGroupId) {
+				throw new CreatePostError(400, apiErrorCodes.PARAMETER_INVALID);
+			}
+			return createPost({ groupId: normalizedGroupId, ...payload });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: listQueryKey });
+		},
+	});
 
 	const handleSubmit = useCallback(
 		(payload: CreatePostPayload) => {
 			if (!normalizedGroupId) {
 				notFound();
-				return;
 			}
 
-			createPost(
+			createPostMutate(
 				{
 					title: payload.title,
 					content: payload.content,
@@ -56,7 +77,7 @@ export function PostCreatePage() {
 				},
 			);
 		},
-		[createPost, normalizedGroupId, router],
+		[createPostMutate, normalizedGroupId, router],
 	);
 
 	if (!normalizedGroupId) {

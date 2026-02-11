@@ -4,11 +4,19 @@ import { useCallback, useMemo } from "react";
 
 import { notFound, useRouter } from "next/navigation";
 
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import { postQueries } from "@/features/post/api/postQueries";
+import { postQueryKeys } from "@/features/post/api/postQueryKeys";
+import {
+	updatePost,
+	UpdatePostError,
+	type UpdatePostParams,
+	type UpdatePostResponse,
+} from "@/features/post/api/updatePost";
 import PostEditor from "@/features/post/components/PostEditor";
 import { PostStateMessage } from "@/features/post/components/PostStateMessage";
-import usePost from "@/features/post/hooks/usePost";
 import type { EditPostPayload, ExistingImage } from "@/features/post/hooks/usePostEditor";
 import { postRoutes } from "@/features/post/lib/postRoutes";
 
@@ -25,9 +33,29 @@ interface PostEditPageProps {
 export function PostEditPage(props: PostEditPageProps) {
 	const { groupId, postId } = props;
 	const router = useRouter();
-	const { detailQuery, updateMutation } = usePost({ groupId, postId });
+	const queryClient = useQueryClient();
+	const detailQueryKey = postQueryKeys.detail(groupId, postId);
+	const listQueryKey = postQueryKeys.list(groupId);
+	const canUsePost = Boolean(groupId) && Boolean(postId);
+	const detailQuery = useQuery(postQueries.detail({ groupId, postId, enabled: canUsePost }));
+	const updateMutation = useMutation<
+		UpdatePostResponse,
+		UpdatePostError,
+		Omit<UpdatePostParams, "groupId" | "postId">
+	>({
+		mutationFn: (payload) => {
+			if (!canUsePost) {
+				throw new UpdatePostError(400, apiErrorCodes.PARAMETER_INVALID);
+			}
+			return updatePost({ groupId, postId, ...payload });
+		},
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: detailQueryKey });
+			queryClient.invalidateQueries({ queryKey: listQueryKey });
+		},
+	});
 	const { data: post, isLoading, isError, error } = detailQuery;
-	const { mutate: updatePost, isPending } = updateMutation;
+	const { mutate: mutateUpdatePost, isPending } = updateMutation;
 
 	const errorCode = error?.code;
 	const shouldNotFound =
@@ -66,7 +94,7 @@ export function PostEditPage(props: PostEditPageProps) {
 				return [{ postImageId: Number(id), imageUrl: url }];
 			});
 
-			updatePost(
+			mutateUpdatePost(
 				{
 					title: payload.title,
 					content: payload.content,
@@ -87,7 +115,7 @@ export function PostEditPage(props: PostEditPageProps) {
 				},
 			);
 		},
-		[groupId, imageUrlMap, postId, router, updatePost],
+		[groupId, imageUrlMap, mutateUpdatePost, postId, router],
 	);
 
 	if (isLoading) {

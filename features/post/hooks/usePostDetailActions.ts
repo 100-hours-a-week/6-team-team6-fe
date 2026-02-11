@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 import { toast } from "sonner";
 
-import type { UsePostResult } from "@/features/post/hooks/usePost";
+import type { UsePostDetailQueryResult } from "@/features/post/hooks/usePostDetailQuery";
 import { postRoutes } from "@/features/post/lib/postRoutes";
 import type { RentalStatus } from "@/features/post/schemas";
 
@@ -15,8 +15,8 @@ import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 interface UsePostDetailActionsParams {
 	groupId: string;
 	rentalStatusValue: RentalStatus;
-	updateStatusMutation: UsePostResult["updateStatusMutation"];
-	deleteMutation: UsePostResult["deleteMutation"];
+	updateStatusMutation: UsePostDetailQueryResult["updateStatusMutation"];
+	deleteMutation: UsePostDetailQueryResult["deleteMutation"];
 	setIsDrawerOpen: (open: boolean) => void;
 	setIsDeleteDialogOpen: (open: boolean) => void;
 }
