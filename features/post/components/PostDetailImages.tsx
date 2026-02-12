@@ -6,7 +6,9 @@ import type { PostDetailDto } from "@/features/post/schemas";
 
 import { Carousel, CarouselContent, CarouselItem } from "@/shared/components/ui/carousel";
 
-import { LCP_IMAGE_PROPS } from "@/shared/lib/constants";
+import { LCP_IMAGE_PROPS, uiConst } from "@/shared/lib/constants";
+
+const POST_DETAIL_IMAGE_SIZES = `(max-width: ${uiConst.WIDTH.MAX_WIDTH}px) 100vw, ${uiConst.WIDTH.MAX_WIDTH}px`;
 
 type PostDetailImagesProps = {
 	images: PostDetailDto["imageUrls"]["imageInfos"];
@@ -27,7 +29,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 					src={images[0].imageUrl}
 					alt="Post image"
 					{...LCP_IMAGE_PROPS}
-					sizes="100vw"
+					sizes={POST_DETAIL_IMAGE_SIZES}
 					className="object-cover"
 				/>
 			</div>
@@ -45,7 +47,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 								src={image.imageUrl}
 								alt={`Post image`}
 								{...(index === 0 ? LCP_IMAGE_PROPS : {})}
-								sizes="100vw"
+								sizes={POST_DETAIL_IMAGE_SIZES}
 								className="object-cover"
 							/>
 						</div>
