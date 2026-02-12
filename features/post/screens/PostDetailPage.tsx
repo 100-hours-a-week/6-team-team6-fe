@@ -73,17 +73,19 @@ export function PostDetailPage() {
 	return (
 		<>
 			<PostDetailHeader onClickMore={() => setIsDrawerOpen(true)} isSeller={post.isSeller} />
-			<PostDetailAction
-				groupId={normalizedGroupId}
-				postId={normalizedPostId}
-				isDrawerOpen={isDrawerOpen}
-				onDrawerOpenChange={setIsDrawerOpen}
-				isDeleteDialogOpen={isDeleteDialogOpen}
-				onDeleteDialogOpenChange={setIsDeleteDialogOpen}
-				onRequestDelete={handleOpenDeleteDialog}
-				onConfirmDelete={handleConfirmDelete}
-				isDeleting={isDeleting}
-			/>
+			{post.isSeller ? (
+				<PostDetailAction
+					groupId={normalizedGroupId}
+					postId={normalizedPostId}
+					isDrawerOpen={isDrawerOpen}
+					onDrawerOpenChange={setIsDrawerOpen}
+					isDeleteDialogOpen={isDeleteDialogOpen}
+					onDeleteDialogOpenChange={setIsDeleteDialogOpen}
+					onRequestDelete={handleOpenDeleteDialog}
+					onConfirmDelete={handleConfirmDelete}
+					isDeleting={isDeleting}
+				/>
+			) : null}
 			<div className="flex flex-1 pb-(--h-bottom-nav)">
 				<section className="flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar">
 					<PostDetailSeller avatarUrl={post.sellerAvatar} nickname={post.sellerNickname} />
