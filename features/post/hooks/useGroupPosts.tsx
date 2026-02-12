@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo } from "react";
 
 import { type InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
@@ -14,7 +14,16 @@ type UseGroupPostsParams = {
 	enabled?: boolean;
 };
 
-function useGroupPosts(params: UseGroupPostsParams) {
+type UseGroupPostsResult = {
+	posts: PostSummariesResponseDto["summaries"];
+	isLoading: boolean;
+	isError: boolean;
+	hasNextPage: boolean;
+	isFetchingNextPage: boolean;
+	loadMore: () => void;
+};
+
+function useGroupPosts(params: UseGroupPostsParams): UseGroupPostsResult {
 	const { groupId, enabled = true } = params;
 	const queryKey = postQueryKeys.list(groupId);
 
@@ -36,20 +45,30 @@ function useGroupPosts(params: UseGroupPostsParams) {
 		() => query.data?.pages.flatMap((page) => page.summaries) ?? [],
 		[query.data],
 	);
+	const {
+		fetchNextPage,
+		hasNextPage,
+		isError,
+		isFetchingNextPage,
+		isLoading,
+	} = query;
 
-	const loadMore = () => {
-		if (!query.hasNextPage || query.isFetchingNextPage) {
+	const loadMore = useCallback(() => {
+		if (!hasNextPage || isFetchingNextPage) {
 			return;
 		}
-		query.fetchNextPage();
-	};
+		fetchNextPage();
+	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
 	return {
-		...query,
 		posts,
+		isLoading,
+		isError,
+		hasNextPage: Boolean(hasNextPage),
+		isFetchingNextPage,
 		loadMore,
 	};
 }
 
-export type { UseGroupPostsParams };
+export type { UseGroupPostsParams, UseGroupPostsResult };
 export default useGroupPosts;

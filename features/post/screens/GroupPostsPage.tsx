@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 
 import Link from "next/link";
 
@@ -9,6 +9,7 @@ import { PostItemSkeletonList } from "@/features/post/components/PostItemSkeleto
 import { PostStateMessage } from "@/features/post/components/PostStateMessage";
 import useGroupPosts from "@/features/post/hooks/useGroupPosts";
 import { postRoutes } from "@/features/post/lib/postRoutes";
+import type { PostSummaryDto } from "@/features/post/schemas";
 
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Separator } from "@/shared/components/ui/separator";
@@ -26,6 +27,31 @@ const GROUP_POSTS_EMPTY_LABEL = "등록된 게시글이 없습니다.";
 const GROUP_POSTS_LOADING_MORE_LABEL = "게시글을 더 불러오는 중";
 const GROUP_POSTS_SKELETON_COUNT = 20;
 
+interface GroupPostsListProps {
+	groupId: string;
+	posts: PostSummaryDto[];
+}
+
+const GroupPostsList = memo(function GroupPostsList(props: GroupPostsListProps) {
+	const { groupId, posts } = props;
+	const lastPostIndex = posts.length - 1;
+
+	return (
+		<ul className="flex flex-col gap-6">
+			{posts.map((post, index) => (
+				<li key={post.postId} className="flex flex-col gap-y-6">
+					<HorizontalPaddingBox>
+						<Link href={postRoutes.postDetail(groupId, post.postId)}>
+							<PostItem {...post} />
+						</Link>
+					</HorizontalPaddingBox>
+					{index !== lastPostIndex ? <Separator /> : null}
+				</li>
+			))}
+		</ul>
+	);
+});
+
 export function GroupPostsPage(props: GroupPostsPageProps) {
 	const { groupId } = props;
 	const { posts, isLoading, isError, hasNextPage, isFetchingNextPage, loadMore } = useGroupPosts({
@@ -33,11 +59,8 @@ export function GroupPostsPage(props: GroupPostsPageProps) {
 	});
 	const isLoadingInitial = isLoading && posts.length === 0;
 	const handleIntersect = useCallback(() => {
-		if (!hasNextPage || isFetchingNextPage) {
-			return;
-		}
 		loadMore();
-	}, [hasNextPage, isFetchingNextPage, loadMore]);
+	}, [loadMore]);
 
 	const { setTarget } = useIntersectionObserver({
 		onIntersect: handleIntersect,
@@ -60,18 +83,7 @@ export function GroupPostsPage(props: GroupPostsPageProps) {
 
 	return (
 		<div className="flex flex-col gap-6 py-6">
-			<ul className="flex flex-col gap-6">
-				{posts.map((post, index) => (
-					<li key={post.postId} className="flex flex-col gap-y-6">
-						<HorizontalPaddingBox>
-							<Link href={postRoutes.postDetail(groupId, post.postId)}>
-								<PostItem {...post} />
-							</Link>
-						</HorizontalPaddingBox>
-						{index !== posts.length - 1 ? <Separator /> : null}
-					</li>
-				))}
-			</ul>
+			<GroupPostsList groupId={groupId} posts={posts} />
 			{hasNextPage ? (
 				isFetchingNextPage ? (
 					<PostItemSkeletonList count={GROUP_POSTS_SKELETON_COUNT} />
