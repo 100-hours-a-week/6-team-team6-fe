@@ -10,3 +10,9 @@ export const uiConst = {
 export const routeConst = {
 	DEFAULT_AUTH_REDIRECT_PATH: "/groups/1/posts",
 };
+
+export const LCP_IMAGE_PROPS = {
+	preload: true,
+	loading: "eager" as const,
+	fetchPriority: "high" as const,
+};

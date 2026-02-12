@@ -6,7 +6,6 @@ interface UsePostDetailParamsResult {
 	normalizedGroupId: string;
 	normalizedPostId: string;
 	postIdNumber: number;
-	shouldNotFound: boolean;
 }
 
 function usePostDetailParams(): UsePostDetailParamsResult {
@@ -15,13 +14,10 @@ function usePostDetailParams(): UsePostDetailParamsResult {
 	const normalizedPostId = postId ?? "";
 	const postIdNumber = Number(postId);
 
-	const shouldNotFound = Number.isNaN(postIdNumber);
-
 	return {
 		normalizedGroupId,
 		normalizedPostId,
 		postIdNumber,
-		shouldNotFound,
 	};
 }
 

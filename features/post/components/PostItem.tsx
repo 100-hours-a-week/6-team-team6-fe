@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 import Image from "next/image";
 
 import type { PostSummaryDto } from "@/features/post/schemas";
@@ -43,4 +45,6 @@ function PostItem(props: PostItemProps) {
 	);
 }
 
-export default PostItem;
+const MemoizedPostItem = memo(PostItem);
+
+export default MemoizedPostItem;

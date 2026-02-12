@@ -169,13 +169,14 @@ export function useGroupSearch(groupId: string): GroupSearchState {
 	const searchResults = useMemo(() => {
 		return searchQuery.data?.pages.flatMap((page) => page.summaries) ?? [];
 	}, [searchQuery.data]);
+	const { fetchNextPage, hasNextPage, isError, isFetchingNextPage, isLoading } = searchQuery;
 
 	const loadMore = useCallback(() => {
-		if (!searchQuery.hasNextPage || searchQuery.isFetchingNextPage) {
+		if (!hasNextPage || isFetchingNextPage) {
 			return;
 		}
-		searchQuery.fetchNextPage();
-	}, [searchQuery]);
+		fetchNextPage();
+	}, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
 	return {
 		keyword,
@@ -185,10 +186,10 @@ export function useGroupSearch(groupId: string): GroupSearchState {
 		isSearchEnabled,
 		shouldShowRecentKeywords,
 		shouldShowResults,
-		isLoading: searchQuery.isLoading,
-		isError: searchQuery.isError,
-		hasNextPage: searchQuery.hasNextPage ?? false,
-		isFetchingNextPage: searchQuery.isFetchingNextPage,
+		isLoading,
+		isError,
+		hasNextPage: hasNextPage ?? false,
+		isFetchingNextPage,
 		onLoadMore: loadMore,
 		onKeywordChange: handleKeywordChange,
 		onSubmit: handleSubmit,

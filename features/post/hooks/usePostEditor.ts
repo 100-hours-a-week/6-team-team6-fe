@@ -19,7 +19,6 @@ import {
 	IMAGE_FETCH_ERROR_CODE,
 	IMAGE_UPLOAD_PARTIAL_SIZE_EXCEEDED_MESSAGE,
 	MAX_UPLOAD_IMAGE_SIZE_BYTES,
-	mockExistingImages,
 } from "@/features/post/lib/postEditorUtils";
 import { type FeeUnit, PostEditorSchema, type PostEditorValues } from "@/features/post/schemas";
 
@@ -102,8 +101,6 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 	const createSubmit = props.mode === "create" ? props.onSubmit : null;
 	const editSubmit = props.mode === "edit" ? props.onSubmit : null;
 	const postId = isEdit ? props.postId : undefined;
-	const useMockExistingImages =
-		process.env.NODE_ENV === "development" && isEdit && initialImages.length === 0;
 
 	const [values, setValues] = useState<PostEditorValues>(() => {
 		if (props.mode === "edit") {
@@ -119,7 +116,7 @@ export function usePostEditor(props: RentalItemPostEditorProps): UsePostEditorRe
 	});
 
 	const [images, setImages] = useState<PostEditorImageState>(() => ({
-		existing: useMockExistingImages ? mockExistingImages : initialImages,
+		existing: initialImages,
 		added: [],
 	}));
 
