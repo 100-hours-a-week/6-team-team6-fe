@@ -6,12 +6,6 @@ export interface ExistingImage {
 	url: string;
 }
 
-export const mockExistingImages: ExistingImage[] = [
-	{ id: "mock-1", url: "/dummy-post-image.png" },
-	{ id: "mock-2", url: "/default-profile.png" },
-	{ id: "mock-3", url: "/dummy-post-image.png" },
-];
-
 export const AI_DRAFT_ERROR_MESSAGE = "AI 자동 작성에 실패했습니다.";
 export const IMAGE_FETCH_ERROR_CODE = "IMAGE_FETCH_FAILED";
 export const IMAGE_COMPRESS_WARNING_MESSAGE =

@@ -6,6 +6,8 @@ import type { PostDetailDto } from "@/features/post/schemas";
 
 import { Carousel, CarouselContent, CarouselItem } from "@/shared/components/ui/carousel";
 
+import { LCP_IMAGE_PROPS } from "@/shared/lib/constants";
+
 type PostDetailImagesProps = {
 	images: PostDetailDto["imageUrls"]["imageInfos"];
 };
@@ -24,7 +26,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 					fill
 					src={images[0].imageUrl}
 					alt="Post image"
-					fetchPriority="high"
+					{...LCP_IMAGE_PROPS}
 					sizes="100vw"
 					className="object-cover"
 				/>
@@ -42,7 +44,7 @@ function PostDetailImages(props: PostDetailImagesProps) {
 								fill
 								src={image.imageUrl}
 								alt={`Post image`}
-								fetchPriority={index === 0 ? "high" : undefined}
+								{...(index === 0 ? LCP_IMAGE_PROPS : {})}
 								sizes="100vw"
 								className="object-cover"
 							/>

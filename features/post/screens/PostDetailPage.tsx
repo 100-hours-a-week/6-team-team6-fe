@@ -1,7 +1,5 @@
 "use client";
 
-import { notFound } from "next/navigation";
-
 import { PostDetailAction } from "@/features/post/components/PostDetailAction";
 import { PostDetailImages } from "@/features/post/components/PostDetailImages";
 import { PostDetailMeta } from "@/features/post/components/PostDetailMeta";
@@ -19,30 +17,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avat
 import { Separator } from "@/shared/components/ui/separator";
 import { Typography } from "@/shared/components/ui/typography";
 
-import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { formatKoreanDateYMD, formatRentalFeeLabel } from "@/shared/lib/format";
 
 const POST_DETAIL_LOADING_LABEL = "게시글을 불러오는 중";
 const POST_DETAIL_ERROR_LABEL = "게시글을 불러오지 못했습니다.";
 
-// TODO: 404
 export function PostDetailPage() {
-	const {
-		normalizedGroupId,
-		normalizedPostId,
-		postIdNumber,
-		shouldNotFound: shouldNotFoundByParams,
-	} = usePostDetailParams();
+	const { normalizedGroupId, normalizedPostId, postIdNumber } = usePostDetailParams();
 	const { isDrawerOpen, setIsDrawerOpen, isDeleteDialogOpen, setIsDeleteDialogOpen } =
 		usePostDetailUIState();
-	const { post, isLoading, isError, error, updateStatusMutation, deleteMutation } =
-		usePostDetailQuery(normalizedGroupId, normalizedPostId);
-
-	const errorCode = error?.code;
-	const shouldNotFound =
-		shouldNotFoundByParams ||
-		errorCode === apiErrorCodes.GROUP_NOT_FOUND ||
-		errorCode === apiErrorCodes.POST_NOT_FOUND;
+	const { post, isLoading, updateStatusMutation, deleteMutation } = usePostDetailQuery(
+		normalizedGroupId,
+		normalizedPostId,
+	);
 
 	const rentalStatusValue = post?.rentalStatus ?? "AVAILABLE";
 	const isAvailable = rentalStatusValue === "AVAILABLE";
@@ -62,10 +49,6 @@ export function PostDetailPage() {
 		setIsDeleteDialogOpen,
 	});
 
-	if (shouldNotFound) {
-		notFound();
-	}
-
 	if (isLoading) {
 		return (
 			<>
@@ -75,11 +58,11 @@ export function PostDetailPage() {
 		);
 	}
 
-	if (isError || !post) {
+	if (!post) {
 		return (
 			<>
 				<DefaultHeader />
-				<PostStateMessage label={POST_DETAIL_ERROR_LABEL} fullHeight />;
+				<PostStateMessage label={POST_DETAIL_ERROR_LABEL} fullHeight />
 			</>
 		);
 	}
