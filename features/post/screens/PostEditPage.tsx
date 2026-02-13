@@ -54,7 +54,7 @@ export function PostEditPage(props: PostEditPageProps) {
 			queryClient.invalidateQueries({ queryKey: listQueryKey });
 		},
 	});
-	const { data: post, isLoading } = detailQuery;
+	const { data: post, isLoading, isError } = detailQuery;
 	const { mutate: mutateUpdatePost, isPending } = updateMutation;
 
 	const existingImages = useMemo<ExistingImage[]>(() => {
@@ -114,7 +114,7 @@ export function PostEditPage(props: PostEditPageProps) {
 		return <PostStateMessage label="게시글 정보를 불러오는 중" showSpinner fullHeight />;
 	}
 
-	if (!post) {
+	if (isError || !post) {
 		return <PostStateMessage label="게시글 정보를 불러오지 못했습니다." fullHeight />;
 	}
 

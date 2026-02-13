@@ -9,7 +9,7 @@ export const uiConst = {
 };
 
 export const routeConst = {
-	DEFAULT_AUTH_REDIRECT_PATH: "/groups/1/posts",
+	DEFAULT_AUTH_REDIRECT_PATH: "/groups",
 };
 
 export const LCP_IMAGE_PROPS = {
