@@ -23,13 +23,13 @@ class CreateGroupError extends GroupApiError {
 
 async function createGroup(params: CreateGroupParams): Promise<GroupCreateResponseDto> {
 	const { groupName, groupCoverImageUrl } = params;
-	const formData = new FormData();
-
-	formData.append("groupName", groupName);
-	formData.append("groupCoverImageUrl", groupCoverImageUrl);
+	const payload = {
+		groupName,
+		groupCoverImageUrl,
+	};
 
 	const parsed = await requestJson(
-		apiClient.post("groups", { body: formData }),
+		apiClient.post("groups", { json: payload }),
 		GroupCreateResponseApiSchema,
 		CreateGroupError,
 	);

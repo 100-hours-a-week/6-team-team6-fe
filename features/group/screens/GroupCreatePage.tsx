@@ -27,7 +27,11 @@ import {
 	type GroupCreateFormValues,
 	type GroupCreateResponseDto,
 } from "@/features/group/schemas";
-import { MAX_UPLOAD_IMAGE_SIZE_BYTES } from "@/features/post/lib/postEditorUtils";
+import { compressPostImage } from "@/features/post/lib/compressPostImages";
+import {
+	IMAGE_COMPRESS_WARNING_MESSAGE,
+	MAX_UPLOAD_IMAGE_SIZE_BYTES,
+} from "@/features/post/lib/postEditorUtils";
 
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
 import { Button } from "@/shared/components/ui/button";
@@ -247,7 +251,14 @@ export function GroupCreatePage() {
 			setSelectedCoverType("custom");
 
 			try {
-				const uploadedImageUrl = await uploadGroupImageMutation.mutateAsync(file);
+				let uploadTargetFile = file;
+				try {
+					uploadTargetFile = await compressPostImage(file);
+				} catch {
+					toast.warning(IMAGE_COMPRESS_WARNING_MESSAGE);
+				}
+
+				const uploadedImageUrl = await uploadGroupImageMutation.mutateAsync(uploadTargetFile);
 				setCustomCoverImageUrl(uploadedImageUrl);
 			} catch (error) {
 				const errorCode = getApiErrorCode(error);
