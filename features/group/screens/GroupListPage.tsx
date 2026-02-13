@@ -37,6 +37,31 @@ const MY_GROUP_CARD_ROOT_CLASS = "flex flex-col gap-1.5";
 const MY_GROUP_CARD_MEDIA_CLASS =
 	"relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-border bg-muted";
 
+const isDirectPreviewUrl = (imageUrl: string) =>
+	imageUrl.startsWith("blob:") || imageUrl.startsWith("data:");
+
+const normalizeImageSrcForNextImage = (imageUrl?: string | null) => {
+	if (!imageUrl) {
+		return null;
+	}
+
+	const trimmedImageUrl = imageUrl.trim();
+	if (!trimmedImageUrl) {
+		return null;
+	}
+
+	if (
+		trimmedImageUrl.startsWith("/") ||
+		trimmedImageUrl.startsWith("http://") ||
+		trimmedImageUrl.startsWith("https://") ||
+		isDirectPreviewUrl(trimmedImageUrl)
+	) {
+		return trimmedImageUrl;
+	}
+
+	return `/${trimmedImageUrl.replace(/^\.?\//, "")}`;
+};
+
 type GroupGridItem =
 	| {
 			type: "group";
@@ -64,7 +89,8 @@ interface MyGroupCardProps {
 
 const MyGroupCard = memo(function MyGroupCard(props: MyGroupCardProps) {
 	const { group } = props;
-	const coverImageUrl = group.groupCoverImageUrl;
+	const coverImageUrl = normalizeImageSrcForNextImage(group.groupCoverImageUrl);
+	const shouldUseUnoptimizedImage = coverImageUrl ? isDirectPreviewUrl(coverImageUrl) : false;
 
 	return (
 		<Link href={groupRoutes.posts(group.groupId)} className={`group ${MY_GROUP_CARD_ROOT_CLASS}`}>
@@ -75,6 +101,7 @@ const MyGroupCard = memo(function MyGroupCard(props: MyGroupCardProps) {
 						alt={group.groupName}
 						fill
 						sizes="(max-width: 480px) 30vw, 120px"
+						unoptimized={shouldUseUnoptimizedImage}
 						className="object-cover transition-transform duration-200 group-hover:scale-105"
 					/>
 				) : (
@@ -212,7 +239,8 @@ interface MyPostCardProps {
 
 const MyPostCard = memo(function MyPostCard(props: MyPostCardProps) {
 	const { post } = props;
-	const imageUrl = post.postFirstImageUrl;
+	const imageUrl = normalizeImageSrcForNextImage(post.postFirstImageUrl);
+	const shouldUseUnoptimizedImage = imageUrl ? isDirectPreviewUrl(imageUrl) : false;
 	const postCardContent = (
 		<>
 			<div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
@@ -222,6 +250,7 @@ const MyPostCard = memo(function MyPostCard(props: MyPostCardProps) {
 						alt={post.postTitle}
 						fill
 						sizes="(max-width: 480px) 45vw, 200px"
+						unoptimized={shouldUseUnoptimizedImage}
 						className="object-cover transition-transform duration-200 group-hover:scale-105"
 					/>
 				) : (
