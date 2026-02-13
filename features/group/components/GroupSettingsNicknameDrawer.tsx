@@ -13,6 +13,7 @@ import {
 	DrawerTitle,
 } from "@/shared/components/ui/drawer";
 import { Input } from "@/shared/components/ui/input";
+import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
 
 import { cn } from "@/shared/lib/utils";
@@ -23,6 +24,7 @@ interface GroupSettingsNicknameDrawerProps {
 	nicknameInput: string;
 	nicknameError: string | null;
 	isSubmitDisabled: boolean;
+	isSubmitting: boolean;
 	onNicknameInputChange: (nextValue: string) => void;
 	onSubmit: () => void;
 }
@@ -34,6 +36,7 @@ function GroupSettingsNicknameDrawer(props: GroupSettingsNicknameDrawerProps) {
 		nicknameInput,
 		nicknameError,
 		isSubmitDisabled,
+		isSubmitting,
 		onNicknameInputChange,
 		onSubmit,
 	} = props;
@@ -42,7 +45,9 @@ function GroupSettingsNicknameDrawer(props: GroupSettingsNicknameDrawerProps) {
 		<Drawer open={open} onOpenChange={onOpenChange}>
 			<DrawerContent>
 				<DrawerHeader className="pb-2">
-					<DrawerTitle className="text-center">{GROUP_SETTINGS_LABELS.nicknameSheetTitle}</DrawerTitle>
+					<DrawerTitle className="text-center">
+						{GROUP_SETTINGS_LABELS.nicknameSheetTitle}
+					</DrawerTitle>
 				</DrawerHeader>
 				<div className="px-4 pb-1">
 					<label htmlFor="group-nickname" className="text-xs text-muted-foreground">
@@ -54,6 +59,7 @@ function GroupSettingsNicknameDrawer(props: GroupSettingsNicknameDrawerProps) {
 						onChange={(event) => onNicknameInputChange(event.target.value)}
 						maxLength={GROUP_SETTINGS_NICKNAME_MAX_LENGTH}
 						className="mt-1"
+						disabled={isSubmitting}
 					/>
 					<Typography
 						type="caption"
@@ -64,7 +70,7 @@ function GroupSettingsNicknameDrawer(props: GroupSettingsNicknameDrawerProps) {
 				</div>
 				<DrawerFooter className="pt-3">
 					<Button size="xl" onClick={onSubmit} disabled={isSubmitDisabled}>
-						변경하기
+						{isSubmitting ? <Spinner /> : "변경하기"}
 					</Button>
 					<DrawerClose asChild>
 						<Button size="xl" variant="outline">

@@ -17,25 +17,25 @@ interface GroupSettingsInviteDrawerProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
 	inviteLink: string;
+	isInviteLinkLoading: boolean;
 	onCopyInviteLink: () => Promise<void>;
 }
 
 function GroupSettingsInviteDrawer(props: GroupSettingsInviteDrawerProps) {
-	const { open, onOpenChange, inviteLink, onCopyInviteLink } = props;
+	const { open, onOpenChange, inviteLink, isInviteLinkLoading, onCopyInviteLink } = props;
 
 	return (
 		<Drawer open={open} onOpenChange={onOpenChange}>
 			<DrawerContent>
 				<DrawerHeader className="pb-2">
-					<DrawerTitle className="text-center">{GROUP_SETTINGS_LABELS.inviteSheetTitle}</DrawerTitle>
+					<DrawerTitle className="text-center">
+						{GROUP_SETTINGS_LABELS.inviteSheetTitle}
+					</DrawerTitle>
 				</DrawerHeader>
 				<div className="px-4 pb-2">
-					<Typography type="caption" className="text-muted-foreground">
-						{GROUP_SETTINGS_LABELS.inviteLimit}
-					</Typography>
 					<div className="mt-2 flex items-center gap-1 px-2 py-1.5">
-						<Typography type="caption" className="truncate-1 flex-1 text-muted-foreground">
-							{inviteLink}
+						<Typography type="caption" className="flex-1 text-muted-foreground">
+							{inviteLink || GROUP_SETTINGS_LABELS.inviteLinkLoading}
 						</Typography>
 						<Button
 							type="button"
@@ -43,6 +43,7 @@ function GroupSettingsInviteDrawer(props: GroupSettingsInviteDrawerProps) {
 							variant="ghost"
 							onClick={onCopyInviteLink}
 							aria-label="코드 복사"
+							disabled={isInviteLinkLoading}
 						>
 							<CopyIcon className="size-4" />
 						</Button>

@@ -14,11 +14,12 @@ import {
 interface GroupSettingsLeaveDrawerProps {
 	open: boolean;
 	onOpenChange: (open: boolean) => void;
+	isLeavingGroup: boolean;
 	onLeaveGroup: () => void;
 }
 
 function GroupSettingsLeaveDrawer(props: GroupSettingsLeaveDrawerProps) {
-	const { open, onOpenChange, onLeaveGroup } = props;
+	const { open, onOpenChange, isLeavingGroup, onLeaveGroup } = props;
 
 	return (
 		<Drawer open={open} onOpenChange={onOpenChange}>
@@ -30,11 +31,11 @@ function GroupSettingsLeaveDrawer(props: GroupSettingsLeaveDrawerProps) {
 					</DrawerDescription>
 				</DrawerHeader>
 				<DrawerFooter className="pt-3">
-					<Button size="xl" onClick={onLeaveGroup}>
-						나가기
+					<Button size="xl" onClick={onLeaveGroup} disabled={isLeavingGroup}>
+						{isLeavingGroup ? "나가는 중..." : "나가기"}
 					</Button>
 					<DrawerClose asChild>
-						<Button size="xl" variant="outline">
+						<Button size="xl" variant="outline" disabled={isLeavingGroup}>
 							취소
 						</Button>
 					</DrawerClose>

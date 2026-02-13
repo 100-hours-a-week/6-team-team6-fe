@@ -7,11 +7,11 @@ import {
 import { GroupSettingsInviteDrawer } from "@/features/group/components/GroupSettingsInviteDrawer";
 import { GroupSettingsLeaveDrawer } from "@/features/group/components/GroupSettingsLeaveDrawer";
 import { GroupSettingsNicknameDrawer } from "@/features/group/components/GroupSettingsNicknameDrawer";
-import type { GroupSettingsActions, GroupSettingsState } from "@/features/group/hooks/useGroupSettings";
-import {
-	GROUP_SETTINGS_LABELS,
-	GROUP_SETTINGS_MEMBER_COUNT,
-} from "@/features/group/lib/groupSettings";
+import type {
+	GroupSettingsActions,
+	GroupSettingsState,
+} from "@/features/group/hooks/useGroupSettings";
+import { GROUP_SETTINGS_LABELS } from "@/features/group/lib/groupSettings";
 
 import GroupNavigation from "@/shared/components/layout/bottomNavigations/GroupNavigation";
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
@@ -64,11 +64,8 @@ function GroupSettingsView(props: GroupSettingsViewProps) {
 							</div>
 							<div className="min-w-0 flex flex-1 flex-col items-center gap-0.5">
 								<p className="text-sm leading-5 font-semibold whitespace-normal break-all">
-									{GROUP_SETTINGS_LABELS.groupName}
+									{state.isGroupLoading ? "-" : state.groupName}
 								</p>
-								<Typography type="caption" className="mt-0.5 text-muted-foreground">
-									멤버 {GROUP_SETTINGS_MEMBER_COUNT}명
-								</Typography>
 							</div>
 						</HorizontalPaddingBox>
 						<Separator className="data-[orientation=horizontal]:h-1" />
@@ -82,7 +79,7 @@ function GroupSettingsView(props: GroupSettingsViewProps) {
 							</div>
 							<div className="min-w-0">
 								<Typography type="subtitle" className="truncate-1">
-									{state.nickname}
+									{state.isMembershipLoading ? "-" : state.nickname}
 								</Typography>
 								<Typography type="caption" className="text-muted-foreground">
 									{GROUP_SETTINGS_LABELS.memberRole}
@@ -108,6 +105,7 @@ function GroupSettingsView(props: GroupSettingsViewProps) {
 				nicknameInput={state.nicknameInput}
 				nicknameError={state.nicknameError}
 				isSubmitDisabled={state.isNicknameSubmitDisabled}
+				isSubmitting={state.isNicknameSubmitting}
 				onNicknameInputChange={actions.changeNicknameInput}
 				onSubmit={actions.submitNickname}
 			/>
@@ -116,12 +114,14 @@ function GroupSettingsView(props: GroupSettingsViewProps) {
 				open={state.isInviteDrawerOpen}
 				onOpenChange={actions.setInviteDrawerOpen}
 				inviteLink={state.inviteLink}
+				isInviteLinkLoading={state.isInviteLinkLoading}
 				onCopyInviteLink={actions.copyInviteLink}
 			/>
 
 			<GroupSettingsLeaveDrawer
 				open={state.isLeaveDrawerOpen}
 				onOpenChange={actions.setLeaveDrawerOpen}
+				isLeavingGroup={state.isLeavingGroup}
 				onLeaveGroup={actions.leaveGroup}
 			/>
 		</>

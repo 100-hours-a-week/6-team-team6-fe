@@ -21,6 +21,44 @@ const GroupCreateResponseDtoSchema = z.object({
 	groupId: z.number().int(),
 });
 
+const GroupSettingsResponseApiSchema = z.object({
+	groupId: z.number().int(),
+	groupName: z.string().min(1),
+	groupCoverImageUrl: z.string().nullable().optional(),
+});
+
+const GroupSettingsResponseDtoSchema = z.object({
+	groupId: z.number().int(),
+	groupName: z.string().min(1),
+	groupCoverImageUrl: z.string().nullable(),
+});
+
+const GroupMembershipMeResponseApiSchema = z.object({
+	membershipId: z.number().int(),
+	nickname: z.string().min(1),
+});
+
+const GroupMembershipMeResponseDtoSchema = z.object({
+	membershipId: z.number().int(),
+	nickname: z.string().min(1),
+});
+
+const GroupMembershipNicknameUpdateResponseApiSchema = z.object({
+	nickname: z.string().min(1),
+});
+
+const GroupMembershipNicknameUpdateResponseDtoSchema = z.object({
+	nickname: z.string().min(1),
+});
+
+const GroupInvitationCreateResponseApiSchema = z.object({
+	invitationToken: z.string().min(1),
+});
+
+const GroupInvitationCreateResponseDtoSchema = z.object({
+	invitationToken: z.string().min(1),
+});
+
 const GroupSummaryDtoSchema = z.object({
 	groupId: z.number(),
 	groupName: z.string().min(1),
@@ -70,6 +108,12 @@ const MyPostSummariesResponseDtoSchema = z.object({
 type GroupSummaryDto = z.infer<typeof GroupSummaryDtoSchema>;
 type GroupCreateFormValues = z.infer<typeof GroupCreateFormSchema>;
 type GroupCreateResponseDto = z.infer<typeof GroupCreateResponseDtoSchema>;
+type GroupSettingsDto = z.infer<typeof GroupSettingsResponseDtoSchema>;
+type GroupMembershipMeDto = z.infer<typeof GroupMembershipMeResponseDtoSchema>;
+type GroupMembershipNicknameUpdateDto = z.infer<
+	typeof GroupMembershipNicknameUpdateResponseDtoSchema
+>;
+type GroupInvitationCreateDto = z.infer<typeof GroupInvitationCreateResponseDtoSchema>;
 type MyGroupsResponseDto = z.infer<typeof MyGroupsResponseDtoSchema>;
 type MyPostSummaryDto = z.infer<typeof MyPostSummaryDtoSchema>;
 type MyPostSummariesResponseDto = z.infer<typeof MyPostSummariesResponseDtoSchema>;
@@ -77,6 +121,10 @@ type MyPostSummariesResponseDto = z.infer<typeof MyPostSummariesResponseDtoSchem
 export type {
 	GroupCreateFormValues,
 	GroupCreateResponseDto,
+	GroupInvitationCreateDto,
+	GroupMembershipMeDto,
+	GroupMembershipNicknameUpdateDto,
+	GroupSettingsDto,
 	GroupSummaryDto,
 	MyGroupsResponseDto,
 	MyPostSummariesResponseDto,
@@ -87,6 +135,14 @@ export {
 	GroupCreateFormSchema,
 	GroupCreateResponseApiSchema,
 	GroupCreateResponseDtoSchema,
+	GroupInvitationCreateResponseApiSchema,
+	GroupInvitationCreateResponseDtoSchema,
+	GroupMembershipMeResponseApiSchema,
+	GroupMembershipMeResponseDtoSchema,
+	GroupMembershipNicknameUpdateResponseApiSchema,
+	GroupMembershipNicknameUpdateResponseDtoSchema,
+	GroupSettingsResponseApiSchema,
+	GroupSettingsResponseDtoSchema,
 	GroupSummaryDtoSchema,
 	MyGroupsResponseApiSchema,
 	MyGroupsResponseDtoSchema,
