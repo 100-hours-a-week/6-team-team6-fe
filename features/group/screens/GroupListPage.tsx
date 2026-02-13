@@ -11,6 +11,11 @@ import { toast } from "sonner";
 
 import { useMyGroups } from "@/features/group/hooks/useMyGroups";
 import { useMyPosts } from "@/features/group/hooks/useMyPosts";
+import {
+	GROUP_GRID_CAPACITY,
+	GROUP_LIMIT,
+	GROUP_LIST_LABELS,
+} from "@/features/group/lib/constants";
 import { groupRoutes } from "@/features/group/lib/groupRoutes";
 import type { GroupSummaryDto, MyPostSummaryDto } from "@/features/group/schemas";
 
@@ -23,44 +28,11 @@ import { Typography } from "@/shared/components/ui/typography";
 
 import { useIntersectionObserver } from "@/shared/hooks/useIntersectionObserver";
 
-const GROUP_LIMIT = 30;
-const GROUP_GRID_CAPACITY = 6;
-const MY_GROUP_SECTION_LABEL = "내 그룹";
-const MY_POST_SECTION_LABEL = "내가 쓴 글";
-const GROUP_LIMIT_EXCEEDED_MESSAGE = "그룹 한도를 초과했습니다.";
-const GROUP_ERROR_MESSAGE = "내 그룹을 불러오지 못했습니다.";
-const MY_POST_ERROR_MESSAGE = "내가 쓴 글을 불러오지 못했습니다.";
-const MY_POST_EMPTY_TITLE = "대여 내역이 없어요.";
-const MY_POST_EMPTY_DESCRIPTION = "그룹원과 빌려주기를 시작해 보세요.";
-const MY_POST_LOADING_MORE_LABEL = "내가 쓴 글을 더 불러오는 중";
+import { isDirectPreviewImageSrc, normalizeImageSrcForNextImage } from "@/shared/lib/image-src";
+
 const MY_GROUP_CARD_ROOT_CLASS = "flex flex-col gap-1.5";
 const MY_GROUP_CARD_MEDIA_CLASS =
 	"relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-border bg-muted";
-
-const isDirectPreviewUrl = (imageUrl: string) =>
-	imageUrl.startsWith("blob:") || imageUrl.startsWith("data:");
-
-const normalizeImageSrcForNextImage = (imageUrl?: string | null) => {
-	if (!imageUrl) {
-		return null;
-	}
-
-	const trimmedImageUrl = imageUrl.trim();
-	if (!trimmedImageUrl) {
-		return null;
-	}
-
-	if (
-		trimmedImageUrl.startsWith("/") ||
-		trimmedImageUrl.startsWith("http://") ||
-		trimmedImageUrl.startsWith("https://") ||
-		isDirectPreviewUrl(trimmedImageUrl)
-	) {
-		return trimmedImageUrl;
-	}
-
-	return `/${trimmedImageUrl.replace(/^\.?\//, "")}`;
-};
 
 type GroupGridItem =
 	| {
@@ -90,7 +62,7 @@ interface MyGroupCardProps {
 const MyGroupCard = memo(function MyGroupCard(props: MyGroupCardProps) {
 	const { group } = props;
 	const coverImageUrl = normalizeImageSrcForNextImage(group.groupCoverImageUrl);
-	const shouldUseUnoptimizedImage = coverImageUrl ? isDirectPreviewUrl(coverImageUrl) : false;
+	const shouldUseUnoptimizedImage = coverImageUrl ? isDirectPreviewImageSrc(coverImageUrl) : false;
 
 	return (
 		<Link href={groupRoutes.posts(group.groupId)} className={`group ${MY_GROUP_CARD_ROOT_CLASS}`}>
@@ -136,7 +108,7 @@ function CreateGroupCard(props: CreateGroupCardProps) {
 				type="caption"
 				className={`text-center ${isLimitReached ? "text-muted-foreground" : "text-foreground"}`}
 			>
-				새 그룹 만들기
+				{GROUP_LIST_LABELS.createGroup}
 			</Typography>
 		</button>
 	);
@@ -167,7 +139,7 @@ function MyGroupsSection(props: MyGroupsSectionProps) {
 	if (isLoading) {
 		return (
 			<section className="flex flex-col gap-3">
-				<Typography type="subtitle">{MY_GROUP_SECTION_LABEL}</Typography>
+				<Typography type="subtitle">{GROUP_LIST_LABELS.myGroupSection}</Typography>
 				<div className="grid grid-cols-3 gap-3">
 					{Array.from({ length: GROUP_GRID_CAPACITY }).map((_, index) => (
 						<Skeleton key={index} className="aspect-square rounded-lg" />
@@ -180,9 +152,9 @@ function MyGroupsSection(props: MyGroupsSectionProps) {
 	if (isError) {
 		return (
 			<section className="flex flex-col gap-3">
-				<Typography type="subtitle">{MY_GROUP_SECTION_LABEL}</Typography>
+				<Typography type="subtitle">{GROUP_LIST_LABELS.myGroupSection}</Typography>
 				<Typography type="body-sm" className="text-muted-foreground">
-					{GROUP_ERROR_MESSAGE}
+					{GROUP_LIST_LABELS.groupError}
 				</Typography>
 			</section>
 		);
@@ -191,7 +163,7 @@ function MyGroupsSection(props: MyGroupsSectionProps) {
 	if (pages.length === 1) {
 		return (
 			<section className="flex flex-col gap-3">
-				<Typography type="subtitle">{MY_GROUP_SECTION_LABEL}</Typography>
+				<Typography type="subtitle">{GROUP_LIST_LABELS.myGroupSection}</Typography>
 				<ul className="grid grid-cols-3 gap-3">
 					{pages[0].map((item) => (
 						<li key={item.type === "group" ? `group-${item.group.groupId}` : "create-group"}>
@@ -209,7 +181,7 @@ function MyGroupsSection(props: MyGroupsSectionProps) {
 
 	return (
 		<section className="flex flex-col gap-3">
-			<Typography type="subtitle">{MY_GROUP_SECTION_LABEL}</Typography>
+			<Typography type="subtitle">{GROUP_LIST_LABELS.myGroupSection}</Typography>
 			<Carousel showDots opts={{ align: "start", containScroll: "trimSnaps" }}>
 				<CarouselContent>
 					{pages.map((page, pageIndex) => (
@@ -240,7 +212,7 @@ interface MyPostCardProps {
 const MyPostCard = memo(function MyPostCard(props: MyPostCardProps) {
 	const { post } = props;
 	const imageUrl = normalizeImageSrcForNextImage(post.postFirstImageUrl);
-	const shouldUseUnoptimizedImage = imageUrl ? isDirectPreviewUrl(imageUrl) : false;
+	const shouldUseUnoptimizedImage = imageUrl ? isDirectPreviewImageSrc(imageUrl) : false;
 	const postCardContent = (
 		<>
 			<div className="relative aspect-square overflow-hidden rounded-lg border border-border bg-muted">
@@ -299,10 +271,10 @@ function MyPostsEmpty() {
 				<FileTextIcon className="size-5" />
 			</div>
 			<Typography type="body-sm" className="text-muted-foreground">
-				{MY_POST_EMPTY_TITLE}
+				{GROUP_LIST_LABELS.myPostEmptyTitle}
 			</Typography>
 			<Typography type="caption" className="text-muted-foreground">
-				{MY_POST_EMPTY_DESCRIPTION}
+				{GROUP_LIST_LABELS.myPostEmptyDescription}
 			</Typography>
 		</div>
 	);
@@ -322,11 +294,11 @@ function MyPostsSection(props: MyPostsSectionProps) {
 
 	return (
 		<section className="flex flex-col gap-3 pb-6">
-			<Typography type="subtitle">{MY_POST_SECTION_LABEL}</Typography>
+			<Typography type="subtitle">{GROUP_LIST_LABELS.myPostSection}</Typography>
 			{isLoading && posts.length === 0 ? <MyPostsLoading /> : null}
 			{isError && posts.length === 0 ? (
 				<Typography type="body-sm" className="text-muted-foreground">
-					{MY_POST_ERROR_MESSAGE}
+					{GROUP_LIST_LABELS.myPostError}
 				</Typography>
 			) : null}
 			{!isLoading && !isError && posts.length === 0 ? <MyPostsEmpty /> : null}
@@ -343,7 +315,7 @@ function MyPostsSection(props: MyPostsSectionProps) {
 					{isFetchingNextPage ? (
 						<div className="flex items-center justify-center gap-2 text-muted-foreground">
 							<Spinner />
-							<Typography type="body-sm">{MY_POST_LOADING_MORE_LABEL}</Typography>
+							<Typography type="body-sm">{GROUP_LIST_LABELS.myPostLoadingMore}</Typography>
 						</div>
 					) : null}
 				</>
@@ -366,7 +338,7 @@ export function GroupListPage() {
 
 	const handleCreateGroup = useCallback(() => {
 		if (totalCount >= GROUP_LIMIT) {
-			toast.error(GROUP_LIMIT_EXCEEDED_MESSAGE);
+			toast.error(GROUP_LIST_LABELS.groupLimitExceeded);
 			return;
 		}
 		router.push(groupRoutes.create());

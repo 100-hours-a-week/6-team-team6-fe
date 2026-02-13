@@ -7,7 +7,7 @@ import { useRouter } from "next/navigation";
 
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { CheckIcon, ImagePlusIcon } from "lucide-react";
+import { CheckIcon, ImageIcon, ImagePlusIcon } from "lucide-react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
 
@@ -21,6 +21,12 @@ import {
 	uploadGroupImage,
 	type UploadGroupImageError,
 } from "@/features/group/api/uploadGroupImage";
+import {
+	DEFAULT_GROUP_COVER_IMAGES,
+	GROUP_CREATE_IMAGE_INPUT_ACCEPT,
+	GROUP_CREATE_LABELS,
+	GROUP_CREATE_MESSAGES,
+} from "@/features/group/lib/constants";
 import { groupRoutes } from "@/features/group/lib/groupRoutes";
 import {
 	GroupCreateFormSchema,
@@ -43,17 +49,8 @@ import { Typography } from "@/shared/components/ui/typography";
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import { getApiErrorCode } from "@/shared/lib/api/error-guards";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
+import { isDirectPreviewImageSrc, normalizeImageSrcForNextImage } from "@/shared/lib/image-src";
 import { cn } from "@/shared/lib/utils";
-
-const DEFAULT_GROUP_COVER_IMAGES = Array.from(
-	{ length: 8 },
-	(_, index) => `/group-cover-images/group-cover-${index + 1}.png`,
-);
-const IMAGE_INPUT_ACCEPT = "image/jpeg,image/png";
-const GROUP_IMAGE_INVALID_MESSAGE = "이미지는 5MB 이하의 JPG/PNG만 업로드할 수 있어요.";
-const GROUP_IMAGE_UPLOAD_FAILED_MESSAGE = "업로드에 실패했습니다. 다시 시도해주세요.";
-const GROUP_IMAGE_PERMISSION_REQUIRED_MESSAGE = "사진 접근 권한이 필요합니다.";
-const GROUP_CREATE_FAILED_MESSAGE = "그룹 생성에 실패했습니다. 다시 시도해주세요.";
 
 const isValidGroupCoverFile = (file: File) => {
 	const isSupportedFileType = file.type === "image/jpeg" || file.type === "image/png";
@@ -63,22 +60,7 @@ const isValidGroupCoverFile = (file: File) => {
 
 const resolveCreateGroupErrorMessage = (error: unknown) => {
 	const errorCode = getApiErrorCode(error);
-	return getApiErrorMessage(errorCode) ?? GROUP_CREATE_FAILED_MESSAGE;
-};
-
-const isDirectPreviewUrl = (imageUrl: string) =>
-	imageUrl.startsWith("blob:") || imageUrl.startsWith("data:");
-
-const normalizeImageSrcForNextImage = (imageUrl: string) => {
-	if (
-		imageUrl.startsWith("/") ||
-		imageUrl.startsWith("http://") ||
-		imageUrl.startsWith("https://") ||
-		isDirectPreviewUrl(imageUrl)
-	) {
-		return imageUrl;
-	}
-	return `/${imageUrl.replace(/^\.?\//, "")}`;
+	return getApiErrorMessage(errorCode) ?? GROUP_CREATE_MESSAGES.createFailed;
 };
 
 type PickerInput = HTMLInputElement & {
@@ -96,7 +78,9 @@ interface CoverOptionButtonProps {
 function CoverOptionButton(props: CoverOptionButtonProps) {
 	const { imageUrl, label, selected, onClick, disabled } = props;
 	const normalizedImageUrl = normalizeImageSrcForNextImage(imageUrl);
-	const shouldUseUnoptimizedImage = isDirectPreviewUrl(normalizedImageUrl);
+	const shouldUseUnoptimizedImage = normalizedImageUrl
+		? isDirectPreviewImageSrc(normalizedImageUrl)
+		: false;
 
 	return (
 		<button
@@ -109,14 +93,20 @@ function CoverOptionButton(props: CoverOptionButtonProps) {
 				!disabled && "cursor-pointer",
 			)}
 		>
-			<Image
-				src={normalizedImageUrl}
-				alt={label}
-				fill
-				sizes="56px"
-				unoptimized={shouldUseUnoptimizedImage}
-				className="object-cover"
-			/>
+			{normalizedImageUrl ? (
+				<Image
+					src={normalizedImageUrl}
+					alt={label}
+					fill
+					sizes="56px"
+					unoptimized={shouldUseUnoptimizedImage}
+					className="object-cover"
+				/>
+			) : (
+				<div className="flex h-full w-full items-center justify-center text-muted-foreground">
+					<ImageIcon className="size-5" />
+				</div>
+			)}
 			<span
 				className={cn(
 					"absolute left-1 top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full border bg-background",
@@ -167,6 +157,8 @@ export function GroupCreatePage() {
 	const isUploadingCustomImage = uploadGroupImageMutation.isPending;
 	const isCreatingGroup = createGroupMutation.isPending;
 	const isBusy = isUploadingCustomImage || isCreatingGroup;
+	const normalizedFallbackCoverImageUrl =
+		normalizeImageSrcForNextImage(DEFAULT_GROUP_COVER_IMAGES[0]) ?? DEFAULT_GROUP_COVER_IMAGES[0];
 	const selectedCoverImageUrl =
 		selectedCoverType === "custom" ? (customCoverImageUrl ?? "") : selectedDefaultCoverImageUrl;
 	const selectedCoverPreviewUrl = useMemo(() => {
@@ -175,13 +167,26 @@ export function GroupCreatePage() {
 				return customCoverPreviewUrl;
 			}
 			if (customCoverImageUrl) {
-				return normalizeImageSrcForNextImage(customCoverImageUrl);
+				return (
+					normalizeImageSrcForNextImage(customCoverImageUrl) ?? normalizedFallbackCoverImageUrl
+				);
 			}
-			return normalizeImageSrcForNextImage(selectedDefaultCoverImageUrl);
+			return (
+				normalizeImageSrcForNextImage(selectedDefaultCoverImageUrl) ??
+				normalizedFallbackCoverImageUrl
+			);
 		}
-		return normalizeImageSrcForNextImage(selectedDefaultCoverImageUrl);
-	}, [customCoverImageUrl, customCoverPreviewUrl, selectedCoverType, selectedDefaultCoverImageUrl]);
-	const shouldUseUnoptimizedMainPreviewImage = isDirectPreviewUrl(selectedCoverPreviewUrl);
+		return (
+			normalizeImageSrcForNextImage(selectedDefaultCoverImageUrl) ?? normalizedFallbackCoverImageUrl
+		);
+	}, [
+		customCoverImageUrl,
+		customCoverPreviewUrl,
+		normalizedFallbackCoverImageUrl,
+		selectedCoverType,
+		selectedDefaultCoverImageUrl,
+	]);
+	const shouldUseUnoptimizedMainPreviewImage = isDirectPreviewImageSrc(selectedCoverPreviewUrl);
 	const customCoverThumbnailUrl = customCoverPreviewUrl ?? customCoverImageUrl;
 	const watchedGroupName =
 		useWatch({
@@ -220,7 +225,7 @@ export function GroupCreatePage() {
 			input.click();
 		} catch (error) {
 			if (error instanceof DOMException && error.name === "NotAllowedError") {
-				toast.error(GROUP_IMAGE_PERMISSION_REQUIRED_MESSAGE);
+				toast.error(GROUP_CREATE_MESSAGES.imagePermissionRequired);
 				return;
 			}
 			input.click();
@@ -237,7 +242,7 @@ export function GroupCreatePage() {
 			}
 
 			if (!isValidGroupCoverFile(file)) {
-				toast.error(GROUP_IMAGE_INVALID_MESSAGE);
+				toast.error(GROUP_CREATE_MESSAGES.imageInvalid);
 				return;
 			}
 
@@ -266,10 +271,10 @@ export function GroupCreatePage() {
 					errorCode === apiErrorCodes.IMAGE_TOO_LARGE ||
 					errorCode === apiErrorCodes.IMAGE_UNSUPPORTED_TYPE
 				) {
-					toast.error(GROUP_IMAGE_INVALID_MESSAGE);
+					toast.error(GROUP_CREATE_MESSAGES.imageInvalid);
 					return;
 				}
-				toast.error(GROUP_IMAGE_UPLOAD_FAILED_MESSAGE);
+				toast.error(GROUP_CREATE_MESSAGES.imageUploadFailed);
 			}
 		},
 		[uploadGroupImageMutation],
@@ -295,7 +300,7 @@ export function GroupCreatePage() {
 
 	return (
 		<>
-			<TitleBackHeader title="그룹 만들기" />
+			<TitleBackHeader title={GROUP_CREATE_LABELS.title} />
 			<section className="flex flex-1 flex-col overflow-y-auto no-scrollbar">
 				<div className="flex flex-1 flex-col px-5 py-8 pb-10 ">
 					<div className="flex flex-col gap-4">
@@ -303,7 +308,7 @@ export function GroupCreatePage() {
 							<div className="relative aspect-square w-full overflow-hidden">
 								<Image
 									src={selectedCoverPreviewUrl}
-									alt="선택된 그룹 대표 이미지"
+									alt={GROUP_CREATE_LABELS.selectedCoverAlt}
 									fill
 									sizes="(max-width: 480px) 100vw"
 									unoptimized={shouldUseUnoptimizedMainPreviewImage}
@@ -318,7 +323,7 @@ export function GroupCreatePage() {
 						</div>
 
 						<div className=" py-2">
-							<Typography type="subtitle">커버 선택</Typography>
+							<Typography type="subtitle">{GROUP_CREATE_LABELS.coverSelectionTitle}</Typography>
 							<div className="mt-2 flex flex-wrap items-center gap-1 overflow-x-auto no-scrollbar pb-1">
 								<button
 									type="button"
@@ -334,7 +339,7 @@ export function GroupCreatePage() {
 									<input
 										ref={fileInputRef}
 										type="file"
-										accept={IMAGE_INPUT_ACCEPT}
+										accept={GROUP_CREATE_IMAGE_INPUT_ACCEPT}
 										disabled={isBusy}
 										className="sr-only"
 										onChange={handleUploadCustomImage}
@@ -344,7 +349,7 @@ export function GroupCreatePage() {
 								{customCoverThumbnailUrl ? (
 									<CoverOptionButton
 										imageUrl={customCoverThumbnailUrl}
-										label="업로드한 커버 이미지"
+										label={GROUP_CREATE_LABELS.uploadedCoverLabel}
 										selected={selectedCoverType === "custom"}
 										onClick={() => setSelectedCoverType("custom")}
 										disabled={isBusy}
@@ -355,7 +360,7 @@ export function GroupCreatePage() {
 									<CoverOptionButton
 										key={imageUrl}
 										imageUrl={imageUrl}
-										label={`기본 그룹 커버 이미지 ${index + 1}`}
+										label={`${GROUP_CREATE_LABELS.defaultCoverLabelPrefix} ${index + 1}`}
 										selected={
 											selectedCoverType === "default" && selectedDefaultCoverImageUrl === imageUrl
 										}
@@ -379,11 +384,11 @@ export function GroupCreatePage() {
 								render={({ field, fieldState }) => (
 									<FormItem className="gap-2">
 										<FormLabel>
-											<Typography type="subtitle">그룹 이름</Typography>
+											<Typography type="subtitle">{GROUP_CREATE_LABELS.groupNameLabel}</Typography>
 										</FormLabel>
 										<FormControl>
 											<Input
-												placeholder="이름을 입력해주세요"
+												placeholder={GROUP_CREATE_LABELS.groupNamePlaceholder}
 												autoComplete="off"
 												disabled={isBusy}
 												aria-invalid={Boolean(fieldState.error)}
@@ -409,10 +414,10 @@ export function GroupCreatePage() {
 								{isCreatingGroup ? (
 									<span className="flex items-center gap-2">
 										<Spinner className="size-5" />
-										등록 중...
+										{GROUP_CREATE_LABELS.submitting}
 									</span>
 								) : (
-									"등록하기"
+									GROUP_CREATE_LABELS.submit
 								)}
 							</Button>
 						</form>
