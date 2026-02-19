@@ -6,6 +6,7 @@ import { type InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 
 import { getMyPosts, type MyPostsError } from "@/features/group/api/getMyPosts";
 import { groupQueryKeys } from "@/features/group/api/groupQueryKeys";
+import { GROUP_QUERY_STALE_TIME_MS } from "@/features/group/lib/query";
 import type { MyPostSummariesResponseDto } from "@/features/group/schemas";
 
 function useMyPosts() {
@@ -23,6 +24,7 @@ function useMyPosts() {
 		initialPageParam: undefined,
 		getNextPageParam: (lastPage) =>
 			lastPage.hasNextPage ? (lastPage.nextCursor ?? undefined) : undefined,
+		staleTime: GROUP_QUERY_STALE_TIME_MS,
 	});
 
 	const posts = useMemo(
