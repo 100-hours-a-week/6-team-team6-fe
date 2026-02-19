@@ -327,14 +327,14 @@ function MyPostsSection(props: MyPostsSectionProps) {
 export function GroupListPage() {
 	const router = useRouter();
 	const { groups, totalCount, isLoading: isGroupsLoading, isError: isGroupsError } = useMyGroups();
-	// const {
-	// 	posts,
-	// 	isLoading: isPostsLoading,
-	// 	isError: isPostsError,
-	// 	hasNextPage,
-	// 	isFetchingNextPage,
-	// 	loadMore,
-	// } = useMyPosts();
+	const {
+		posts,
+		isLoading: isPostsLoading,
+		isError: isPostsError,
+		hasNextPage,
+		isFetchingNextPage,
+		loadMore,
+	} = useMyPosts();
 
 	const handleCreateGroup = useCallback(() => {
 		if (totalCount >= GROUP_LIMIT) {
@@ -344,15 +344,15 @@ export function GroupListPage() {
 		router.push(groupRoutes.create());
 	}, [router, totalCount]);
 
-	// const handleIntersect = useCallback(() => {
-	// 	loadMore();
-	// }, [loadMore]);
+	const handleIntersect = useCallback(() => {
+		loadMore();
+	}, [loadMore]);
 
-	// const { setTarget } = useIntersectionObserver<HTMLDivElement>({
-	// 	onIntersect: handleIntersect,
-	// 	enabled: hasNextPage,
-	// 	rootMargin: "0px 0px 160px 0px",
-	// });
+	const { setTarget } = useIntersectionObserver<HTMLDivElement>({
+		onIntersect: handleIntersect,
+		enabled: hasNextPage,
+		rootMargin: "0px 0px 160px 0px",
+	});
 
 	return (
 		<>
@@ -367,14 +367,14 @@ export function GroupListPage() {
 							isError={isGroupsError}
 							onCreateGroup={handleCreateGroup}
 						/>
-						{/* <MyPostsSection
+						<MyPostsSection
 							posts={posts}
 							isLoading={isPostsLoading}
 							isError={isPostsError}
 							hasNextPage={hasNextPage}
 							isFetchingNextPage={isFetchingNextPage}
 							setLoaderRef={setTarget}
-						/> */}
+						/>
 					</div>
 				</section>
 			</div>

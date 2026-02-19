@@ -77,26 +77,28 @@ const MyGroupsResponseDtoSchema = z.object({
 	groups: GroupSummariesSchema,
 });
 
-const MyPostSummaryBaseSchema = z.object({
+const MyPostSummaryApiSchema = z.object({
 	groupId: z.number().int().nullable().optional(),
 	postId: z.number().int(),
 	postTitle: z.string().min(1),
 	postImageId: z.number().int(),
 	postFirstImageUrl: z.string().nullable().optional(),
+	updatedAt: z.string().min(1).optional(),
 });
 
 const MyPostSummaryDtoSchema = z.object({
-	groupId: z.number().int().nullable(),
 	postId: z.number().int(),
 	postTitle: z.string().min(1),
 	postImageId: z.number().int(),
 	postFirstImageUrl: z.string().nullable(),
+	updatedAt: z.string().nullable(),
+	groupId: z.number().int().nullable(),
 });
 
 const MyPostSummariesResponseApiSchema = z.object({
-	myPostSummaries: z.array(MyPostSummaryBaseSchema),
+	summaries: z.array(MyPostSummaryApiSchema),
 	nextCursor: z.string().nullable(),
-	hasNext: z.boolean(),
+	hasNextPage: z.boolean(),
 });
 
 const MyPostSummariesResponseDtoSchema = z.object({
