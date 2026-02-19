@@ -4,7 +4,7 @@ import { Plus } from "lucide-react";
 
 import { postRoutes } from "@/features/post/lib/postRoutes";
 
-import DefaultNavigation from "@/shared/components/layout/bottomNavigations/DefaultNavigation";
+import GroupNavigation from "@/shared/components/layout/bottomNavigations/GroupNavigation";
 import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
 import { IconButton } from "@/shared/components/ui/icon-button";
 
@@ -38,7 +38,7 @@ async function GroupLayout({ children, params }: GroupLayoutProps) {
 					</Link>
 				</IconButton>
 			</div>
-			<DefaultNavigation />
+			<GroupNavigation groupId={groupId} />
 		</>
 	);
 }

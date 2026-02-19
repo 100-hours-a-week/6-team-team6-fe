@@ -1,6 +1,6 @@
 import "./globals.css";
 
-import { Inter } from "next/font/google";
+import { Noto_Sans_KR } from "next/font/google";
 
 import type { Metadata } from "next";
 
@@ -8,7 +8,10 @@ import { Toaster } from "@/shared/components/ui/sonner";
 
 import { Providers } from "@/shared/providers";
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
+const notoSansKr = Noto_Sans_KR({
+	subsets: ["latin"],
+	variable: "--font-sans",
+});
 
 export const metadata: Metadata = {
 	title: "그룹을 위한 대여 서비스, 빌리지",
@@ -48,7 +51,7 @@ function RootLayout({
 	children: React.ReactNode;
 }>) {
 	return (
-		<html lang="en" className={inter.variable}>
+		<html lang="en" className={notoSansKr.variable}>
 			<body className="antialiased">
 				<Providers>
 					<div className="app">
