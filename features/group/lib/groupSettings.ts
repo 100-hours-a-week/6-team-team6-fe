@@ -1,4 +1,5 @@
 import { DEFAULT_GROUP_COVER_IMAGES } from "@/features/group/lib/constants";
+import { groupRoutes } from "@/features/group/lib/groupRoutes";
 
 const GROUP_SETTINGS_IMAGE_POOL = DEFAULT_GROUP_COVER_IMAGES.slice(3);
 
@@ -64,7 +65,7 @@ const resolveAppOrigin = () => {
 };
 
 const createGroupInviteLink = (invitationToken: string) =>
-	`${resolveAppOrigin()}/groups/invite/${invitationToken}`;
+	`${resolveAppOrigin()}${groupRoutes.invite(invitationToken)}`;
 
 export {
 	createGroupInviteLink,

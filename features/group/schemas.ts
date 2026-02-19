@@ -59,6 +59,36 @@ const GroupInvitationCreateResponseDtoSchema = z.object({
 	invitationToken: z.string().min(1),
 });
 
+const GroupInvitationValidateResponseApiSchema = z.object({
+	groupId: z.number().int(),
+	groupName: z.string().min(1),
+	groupCoverImageUrl: z.string().nullable().optional(),
+});
+
+const GroupInvitationValidateResponseDtoSchema = z.object({
+	groupId: z.number().int(),
+	groupName: z.string().min(1),
+	groupCoverImageUrl: z.string().nullable(),
+});
+
+const GroupInvitationJoinRequestSchema = z.object({
+	nickname: z
+		.string()
+		.min(2, "닉네임은 최소 2자, 최대 20자로 입력해주세요")
+		.max(20, "닉네임은 최소 2자, 최대 20자로 입력해주세요")
+		.regex(/^\S+$/, "닉네임은 최소 2자, 최대 20자로 입력해주세요"),
+});
+
+const GroupInvitationJoinResponseApiSchema = z.object({
+	membershipId: z.number().int(),
+});
+
+const GroupInvitationJoinResponseDtoSchema = z.object({
+	membershipId: z.number().int(),
+});
+
+const GroupInvitationJoinFormSchema = GroupInvitationJoinRequestSchema;
+
 const GroupSummaryDtoSchema = z.object({
 	groupId: z.number(),
 	groupName: z.string().min(1),
@@ -116,6 +146,9 @@ type GroupMembershipNicknameUpdateDto = z.infer<
 	typeof GroupMembershipNicknameUpdateResponseDtoSchema
 >;
 type GroupInvitationCreateDto = z.infer<typeof GroupInvitationCreateResponseDtoSchema>;
+type GroupInvitationJoinDto = z.infer<typeof GroupInvitationJoinResponseDtoSchema>;
+type GroupInvitationJoinFormValues = z.infer<typeof GroupInvitationJoinFormSchema>;
+type GroupInvitationValidateDto = z.infer<typeof GroupInvitationValidateResponseDtoSchema>;
 type MyGroupsResponseDto = z.infer<typeof MyGroupsResponseDtoSchema>;
 type MyPostSummaryDto = z.infer<typeof MyPostSummaryDtoSchema>;
 type MyPostSummariesResponseDto = z.infer<typeof MyPostSummariesResponseDtoSchema>;
@@ -124,6 +157,9 @@ export type {
 	GroupCreateFormValues,
 	GroupCreateResponseDto,
 	GroupInvitationCreateDto,
+	GroupInvitationJoinDto,
+	GroupInvitationJoinFormValues,
+	GroupInvitationValidateDto,
 	GroupMembershipMeDto,
 	GroupMembershipNicknameUpdateDto,
 	GroupSettingsDto,
@@ -139,6 +175,12 @@ export {
 	GroupCreateResponseDtoSchema,
 	GroupInvitationCreateResponseApiSchema,
 	GroupInvitationCreateResponseDtoSchema,
+	GroupInvitationJoinFormSchema,
+	GroupInvitationJoinRequestSchema,
+	GroupInvitationJoinResponseApiSchema,
+	GroupInvitationJoinResponseDtoSchema,
+	GroupInvitationValidateResponseApiSchema,
+	GroupInvitationValidateResponseDtoSchema,
 	GroupMembershipMeResponseApiSchema,
 	GroupMembershipMeResponseDtoSchema,
 	GroupMembershipNicknameUpdateResponseApiSchema,

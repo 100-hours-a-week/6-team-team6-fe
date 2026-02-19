@@ -5,6 +5,7 @@ const toPathValue = (value: RouteParam) => String(value);
 export const groupRoutes = {
 	list: () => "/groups",
 	create: () => "/groups/create",
+	invite: (invitationToken: RouteParam) => `/groups/invite/${toPathValue(invitationToken)}`,
 	posts: (groupId: RouteParam) => `/groups/${toPathValue(groupId)}/posts`,
 	settings: (groupId: RouteParam) => `/groups/${toPathValue(groupId)}/settings`,
 	postDetail: (groupId: RouteParam, postId: RouteParam) =>
