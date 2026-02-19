@@ -1,6 +1,8 @@
 import { DEFAULT_GROUP_COVER_IMAGES } from "@/features/group/lib/constants";
 import { groupRoutes } from "@/features/group/lib/groupRoutes";
 
+import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
+
 const GROUP_SETTINGS_IMAGE_POOL = DEFAULT_GROUP_COVER_IMAGES.slice(3);
 
 const GROUP_SETTINGS_NICKNAME_MIN_LENGTH = 2;
@@ -38,8 +40,8 @@ const GROUP_SETTINGS_LABELS = {
 } as const;
 
 const GROUP_SETTINGS_ERROR_CODES = {
-	groupNotFound: "GROUP_NOT_FOUND",
-	notMembership: "IS_NOT_MEMBERSHIP",
+	groupNotFound: apiErrorCodes.GROUP_NOT_FOUND,
+	notMembership: apiErrorCodes.GROUP_NOT_MEMBER_OR_OWNER,
 	invalidNickname: "INVALID_NICKNAME",
 } as const;
 

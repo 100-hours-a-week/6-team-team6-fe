@@ -27,13 +27,16 @@ export default async function Page(props: PostEditPageProps) {
 	}
 
 	const queryClient = new QueryClient();
+	let isNotSeller = false;
 
 	try {
-		await queryClient.fetchQuery({
+		const postDetail = await queryClient.fetchQuery({
 			queryKey: postQueryKeys.detail(groupId, postId),
 			queryFn: () => getPostDetailServer({ groupId, postId }),
 			staleTime: POST_DETAIL_STALE_TIME_MS,
 		});
+
+		isNotSeller = !postDetail.isSeller;
 	} catch (error) {
 		if (isNotFoundError(error) || isBadRequestParameterError(error)) {
 			notFound();
@@ -44,6 +47,10 @@ export default async function Page(props: PostEditPageProps) {
 		}
 
 		console.error("[PostEdit SSR prefetch failed]", { groupId, postId, error });
+	}
+
+	if (isNotSeller) {
+		return <PostDetailForbiddenRedirect />;
 	}
 
 	return (
