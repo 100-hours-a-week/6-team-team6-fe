@@ -26,6 +26,7 @@ import {
 	GROUP_SETTINGS_NICKNAME_MAX_LENGTH,
 	GROUP_SETTINGS_NICKNAME_MIN_LENGTH,
 } from "@/features/group/lib/groupSettings";
+import { GROUP_QUERY_STALE_TIME_MS } from "@/features/group/lib/query";
 import type {
 	GroupInvitationCreateDto,
 	GroupMembershipMeDto,
@@ -112,14 +113,14 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 		queryKey: groupDetailQueryKey,
 		queryFn: () => getGroupSettings(groupId),
 		enabled: canFetch,
-		staleTime: 60_000,
+		staleTime: GROUP_QUERY_STALE_TIME_MS,
 	});
 
 	const membershipQuery = useQuery<GroupMembershipMeDto, GetMyGroupMembershipError>({
 		queryKey: membershipQueryKey,
 		queryFn: () => getMyGroupMembership(groupId),
 		enabled: canFetch,
-		staleTime: 60_000,
+		staleTime: GROUP_QUERY_STALE_TIME_MS,
 	});
 
 	const { mutateAsync: createInvitationMutateAsync, isPending: isInviteLinkLoading } = useMutation<
