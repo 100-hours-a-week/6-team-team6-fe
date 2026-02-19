@@ -1,5 +1,11 @@
 import { z } from "zod";
 
+import {
+	GROUP_INVITE_NICKNAME_LENGTH_ERROR,
+	GROUP_INVITE_NICKNAME_MAX_LENGTH,
+	GROUP_INVITE_NICKNAME_MIN_LENGTH,
+} from "@/features/group/lib/groupInvite";
+
 const GROUP_NAME_REGEX = /^[가-힣A-Za-z0-9]+$/;
 const GROUP_NAME_MIN_LENGTH = 2;
 const GROUP_NAME_MAX_LENGTH = 30;
@@ -74,9 +80,9 @@ const GroupInvitationValidateResponseDtoSchema = z.object({
 const GroupInvitationJoinRequestSchema = z.object({
 	nickname: z
 		.string()
-		.min(2, "닉네임은 최소 2자, 최대 20자로 입력해주세요")
-		.max(20, "닉네임은 최소 2자, 최대 20자로 입력해주세요")
-		.regex(/^\S+$/, "닉네임은 최소 2자, 최대 20자로 입력해주세요"),
+		.min(GROUP_INVITE_NICKNAME_MIN_LENGTH, GROUP_INVITE_NICKNAME_LENGTH_ERROR)
+		.max(GROUP_INVITE_NICKNAME_MAX_LENGTH, GROUP_INVITE_NICKNAME_LENGTH_ERROR)
+		.regex(/^\S+$/, GROUP_INVITE_NICKNAME_LENGTH_ERROR),
 });
 
 const GroupInvitationJoinResponseApiSchema = z.object({

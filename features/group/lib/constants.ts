@@ -1,11 +1,9 @@
-export const GROUP_LIMIT = 30;
 export const GROUP_GRID_CAPACITY = 6;
 
 export const GROUP_LIST_LABELS = {
 	myGroupSection: "내 그룹",
 	myPostSection: "내가 쓴 글",
 	createGroup: "새 그룹 만들기",
-	groupLimitExceeded: "그룹 한도를 초과했습니다.",
 	groupError: "내 그룹을 불러오지 못했습니다.",
 	myPostError: "내가 쓴 글을 불러오지 못했습니다.",
 	myPostEmptyTitle: "작성한 글이 없어요.\n물품을 등록하고 그룹원과 함께 나눠 보세요..",
