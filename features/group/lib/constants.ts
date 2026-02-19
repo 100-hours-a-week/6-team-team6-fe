@@ -8,8 +8,7 @@ export const GROUP_LIST_LABELS = {
 	groupLimitExceeded: "그룹 한도를 초과했습니다.",
 	groupError: "내 그룹을 불러오지 못했습니다.",
 	myPostError: "내가 쓴 글을 불러오지 못했습니다.",
-	myPostEmptyTitle: "대여 내역이 없어요.",
-	myPostEmptyDescription: "그룹원과 빌려주기를 시작해 보세요.",
+	myPostEmptyTitle: "작성한 글이 없어요.\n물품을 등록하고 그룹원과 함께 나눠 보세요..",
 	myPostLoadingMore: "내가 쓴 글을 더 불러오는 중",
 } as const;
 

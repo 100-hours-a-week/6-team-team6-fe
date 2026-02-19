@@ -266,15 +266,9 @@ function MyPostsLoading() {
 
 function MyPostsEmpty() {
 	return (
-		<div className="flex min-h-64 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-muted/40 px-4 text-center">
-			<div className="flex size-10 items-center justify-center rounded-full bg-background text-muted-foreground">
-				<FileTextIcon className="size-5" />
-			</div>
-			<Typography type="body-sm" className="text-muted-foreground">
+		<div className="flex min-h-64 flex-col items-center justify-center gap-2 rounded-lg  px-4 text-center">
+			<Typography type="body-sm" className="text-muted-foreground whitespace-pre">
 				{GROUP_LIST_LABELS.myPostEmptyTitle}
-			</Typography>
-			<Typography type="caption" className="text-muted-foreground">
-				{GROUP_LIST_LABELS.myPostEmptyDescription}
 			</Typography>
 		</div>
 	);
