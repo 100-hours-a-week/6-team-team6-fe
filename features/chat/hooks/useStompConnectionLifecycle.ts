@@ -1,8 +1,9 @@
-import { type Dispatch, type MutableRefObject, type SetStateAction,useEffect } from "react";
+import { type Dispatch, type RefObject, type SetStateAction, useEffect } from "react";
 
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 
 import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
+import { buildStompAuthHeaders, buildStompJsonHeaders } from "@/features/chat/lib/stomp";
 import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 type ChatJoinPayload = {
@@ -24,11 +25,11 @@ export type UseStompConnectionLifecycleParams = {
 	chatroomId: number | null;
 	myUserId: number | null;
 	wsEndpoint: string | null;
-	stompClientRef: MutableRefObject<Client | null>;
-	isStompConnectedRef: MutableRefObject<boolean>;
-	isAwaitingJoinAckRef: MutableRefObject<boolean>;
-	myMembershipIdRef: MutableRefObject<number | null>;
-	realtimeChatroomIdRef: MutableRefObject<number | null>;
+	stompClientRef: RefObject<Client | null>;
+	isStompConnectedRef: RefObject<boolean>;
+	isAwaitingJoinAckRef: RefObject<boolean>;
+	myMembershipIdRef: RefObject<number | null>;
+	realtimeChatroomIdRef: RefObject<number | null>;
 	setRealtimeChatroomId: Dispatch<SetStateAction<number | null>>;
 	setRealtimeMessages: Dispatch<SetStateAction<ChatMessages>>;
 	flushPendingMessages: () => void;
@@ -186,9 +187,7 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 		};
 
 		client.beforeConnect = (stompClient) => {
-			stompClient.connectHeaders = {
-				Authorization: authHeader,
-			};
+			stompClient.connectHeaders = buildStompAuthHeaders(authHeader);
 		};
 
 		client.onConnect = () => {
@@ -201,16 +200,13 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 				{
 					id: subscriptionId,
 					ack: "auto",
-					Authorization: authHeader,
+					...buildStompAuthHeaders(authHeader),
 				},
 			);
 
 			client.publish({
 				destination: STOMP_DESTINATION.join,
-				headers: {
-					Authorization: authHeader,
-					"content-type": "application/json",
-				},
+				headers: buildStompJsonHeaders(authHeader),
 				body: JSON.stringify({ chatroomId }),
 			});
 			isAwaitingJoinAckRef.current = true;
@@ -227,9 +223,7 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 
 		return () => {
 			if (subscription) {
-				subscription.unsubscribe({
-					Authorization: authHeader,
-				});
+				subscription.unsubscribe(buildStompAuthHeaders(authHeader));
 			}
 
 			isStompConnectedRef.current = false;

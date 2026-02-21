@@ -8,6 +8,7 @@ import { useSession } from "next-auth/react";
 import { usePendingStompQueue } from "@/features/chat/hooks/usePendingStompQueue";
 import { useRealtimeMessageMerge } from "@/features/chat/hooks/useRealtimeMessageMerge";
 import { useStompConnectionLifecycle } from "@/features/chat/hooks/useStompConnectionLifecycle";
+import { buildWebSocketEndpoint } from "@/features/chat/lib/stomp";
 import type { ChatMessages } from "@/features/chat/lib/types";
 
 interface UseChatRoomStompProps {
@@ -19,20 +20,6 @@ interface UseChatRoomStompResult {
 	mergedMessages: ChatMessages;
 	submitMessageByStomp: (text: string) => void;
 	markAsReadByStomp: (readMessageId: string) => void;
-}
-
-function buildWebSocketEndpoint(apiUrl: string | undefined) {
-	if (!apiUrl) {
-		return null;
-	}
-
-	try {
-		const parsed = new URL(apiUrl);
-		const protocol = parsed.protocol === "https:" ? "wss:" : "ws:";
-		return `${protocol}//${parsed.host}/ws`;
-	} catch {
-		return null;
-	}
 }
 
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {

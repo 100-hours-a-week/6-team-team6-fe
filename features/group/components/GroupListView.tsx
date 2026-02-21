@@ -5,14 +5,8 @@ import Link from "next/link";
 
 import { ImageIcon, PlusIcon } from "lucide-react";
 
-import type {
-	GroupListActions,
-	GroupListState,
-} from "@/features/group/hooks/useGroupList";
-import {
-	GROUP_GRID_CAPACITY,
-	GROUP_LIST_LABELS,
-} from "@/features/group/lib/constants";
+import type { GroupListActions, GroupListState } from "@/features/group/hooks/useGroupList";
+import { GROUP_GRID_CAPACITY, GROUP_LIST_LABELS } from "@/features/group/lib/constants";
 import { groupRoutes } from "@/features/group/lib/groupRoutes";
 import type { GroupSummaryDto, MyPostSummaryDto } from "@/features/group/schemas";
 
@@ -30,9 +24,9 @@ interface GroupListViewProps {
 	actions: GroupListActions;
 }
 
-const MY_GROUP_CARD_ROOT_CLASS = "flex flex-col gap-1.5";
+const MY_GROUP_CARD_ROOT_CLASS = "flex flex-col items-stretch gap-1.5";
 const MY_GROUP_CARD_MEDIA_CLASS =
-	"relative flex aspect-square items-center justify-center overflow-hidden rounded-lg border border-border bg-muted";
+	"relative flex w-full aspect-square items-center justify-center overflow-hidden rounded-lg border border-border bg-muted";
 
 type GroupGridItem =
 	| {
@@ -121,10 +115,7 @@ interface MyGroupsSectionProps {
 function MyGroupsSection(props: MyGroupsSectionProps) {
 	const { groups, isLoading, isError, onCreateGroup } = props;
 	const items = useMemo<GroupGridItem[]>(
-		() => [
-			...groups.map((group) => ({ type: "group", group }) as const),
-			{ type: "create" },
-		],
+		() => [...groups.map((group) => ({ type: "group", group }) as const), { type: "create" }],
 		[groups],
 	);
 	const pages = useMemo(() => chunkArray(items, GROUP_GRID_CAPACITY), [items]);
