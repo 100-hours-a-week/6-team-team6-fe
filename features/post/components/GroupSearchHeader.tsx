@@ -4,8 +4,7 @@ import { type ChangeEvent, type FormEvent } from "react";
 
 import { BackButton } from "@/shared/components/layout/headers/BackButton";
 import HeaderLayout from "@/shared/components/layout/headers/HeaderLayout";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
+import { InputField } from "@/shared/components/ui/input-field";
 
 interface GroupSearchHeaderProps {
 	keyword: string;
@@ -15,26 +14,25 @@ interface GroupSearchHeaderProps {
 }
 
 export function GroupSearchHeader(props: GroupSearchHeaderProps) {
-	const { keyword, isSearchEnabled, onKeywordChange, onSubmit } = props;
+	const { keyword, onKeywordChange, onSubmit } = props;
 
 	return (
 		<HeaderLayout
 			left={<BackButton />}
 			center={
 				<form id="search-form" className="w-full px-2" onSubmit={onSubmit}>
-					<Input
+					<InputField
+						variant="search"
+						clearable
 						value={keyword}
 						onChange={onKeywordChange}
 						placeholder="관심있는 물품을 검색하세요"
 						aria-label="검색어 입력"
+						autoFocus
 					/>
 				</form>
 			}
-			right={
-				<Button form="search-form" type="submit" variant="default" disabled={!isSearchEnabled}>
-					검색
-				</Button>
-			}
+			right={null}
 		/>
 	);
 }
