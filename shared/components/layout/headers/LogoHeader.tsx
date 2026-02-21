@@ -1,13 +1,8 @@
-import Image from "next/image";
-
 import HeaderLayout from "@/shared/components/layout/headers/HeaderLayout";
+import HeaderLogo from "@/shared/components/layout/headers/HeaderLogo";
 
 function LogoHeader() {
-	return (
-		<HeaderLayout
-			center={<Image src="/text-logo.png" alt="Logo" loading="eager" width={70} height={21} />}
-		/>
-	);
+	return <HeaderLayout center={<HeaderLogo />} />;
 }
 
 export default LogoHeader;
