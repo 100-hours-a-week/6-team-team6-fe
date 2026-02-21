@@ -36,41 +36,43 @@ function MyPageSettingsView(props: MyPageSettingsViewProps) {
 	};
 
 	return (
-		<div className="flex h-full flex-1 flex-col overflow-y-scroll pb-(--h-bottom-nav) no-scrollbar">
-			<HorizontalPaddingBox className="py-2 ">
-				<div className="flex flex-col gap-4">
-					<div className="flex items-center gap-3">
-						{isProfileLoading ? (
-							<Skeleton className="size-16 rounded-full" />
-						) : (
-							<Avatar size="xl">
-								<AvatarImage src={avatarImageUrl} />
-								<AvatarFallback></AvatarFallback>
-							</Avatar>
-						)}
-						<div className="min-w-0 flex-1">
+		<div className="min-h-0 flex flex-1 flex-col justify-between overflow-y-auto pb-(--h-bottom-nav) no-scrollbar">
+			<div>
+				<HorizontalPaddingBox className="py-2 ">
+					<div className="flex flex-col gap-4">
+						<div className="flex items-center gap-3">
 							{isProfileLoading ? (
-								<div className="flex flex-col gap-2">
-									<Skeleton className="h-5 w-36" />
-									<Skeleton className="h-4 w-24" />
-								</div>
+								<Skeleton className="size-16 rounded-full" />
 							) : (
-								<>
-									<Typography type="subtitle" className="truncate-1">
-										{loginId ?? "-"}
-									</Typography>
-								</>
+								<Avatar size="xl">
+									<AvatarImage src={avatarImageUrl} />
+									<AvatarFallback></AvatarFallback>
+								</Avatar>
 							)}
+							<div className="min-w-0 flex-1">
+								{isProfileLoading ? (
+									<div className="flex flex-col gap-2">
+										<Skeleton className="h-5 w-36" />
+										<Skeleton className="h-4 w-24" />
+									</div>
+								) : (
+									<>
+										<Typography type="subtitle" className="truncate-1">
+											{loginId ?? "-"}
+										</Typography>
+									</>
+								)}
+							</div>
 						</div>
 					</div>
-				</div>
-			</HorizontalPaddingBox>
+				</HorizontalPaddingBox>
 
-			<Separator />
+				<Separator />
 
-			<MyPageSettingsRow id="notifications" title="알림 설정" href="/mypage/notifications" />
+				<MyPageSettingsRow id="notifications" title="알림 설정" href="/mypage/notifications" />
+			</div>
 
-			<HorizontalPaddingBox className="flex">
+			<HorizontalPaddingBox className="mb-2 ">
 				<Button
 					variant="link"
 					className="font-normal"

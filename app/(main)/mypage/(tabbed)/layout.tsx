@@ -10,9 +10,9 @@ function MyPageLayout(props: MyPageLayoutProps) {
 
 	return (
 		<>
-			<TitleBackHeader title="설정" />
+			<TitleBackHeader title="마이페이지" />
 			<div className="flex flex-1">
-				<section className="flex h-full flex-1 flex-col">{children}</section>
+				<section className="flex flex-1 min-h-0 flex-col">{children}</section>
 			</div>
 			<DefaultNavigation />
 		</>
