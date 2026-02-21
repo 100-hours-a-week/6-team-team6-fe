@@ -17,7 +17,7 @@ function TitleBackHeader(props: TitleBackHeaderProps) {
 					{title}
 				</Typography>
 			}
-			right={<div className="w-8 h-8"></div>}
+			right={<div className="w-11 h-11" />}
 		/>
 	);
 }

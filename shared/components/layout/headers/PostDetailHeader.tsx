@@ -19,7 +19,16 @@ function PostDetailHeader(props: PostDetailHeaderProps) {
 			left={<BackButton />}
 			center={undefined}
 			right={
-				isSeller ? <IconButton icon={<EllipsisVerticalIcon />} onClick={onClickMore} /> : <></>
+				isSeller ? (
+					<IconButton
+						icon={<EllipsisVerticalIcon />}
+						size="icon-touch"
+						onClick={onClickMore}
+						aria-label="게시글 더보기"
+					/>
+				) : (
+					<></>
+				)
 			}
 		/>
 	);

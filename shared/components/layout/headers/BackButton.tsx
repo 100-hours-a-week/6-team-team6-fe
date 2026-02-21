@@ -21,5 +21,12 @@ export function BackButton({ fallbackHref = "/groups" }: BackButtonProps) {
 		}
 	};
 
-	return <IconButton icon={<ArrowLeftIcon />} onClick={handleClick} aria-label="뒤로가기" />;
+	return (
+		<IconButton
+			icon={<ArrowLeftIcon />}
+			size="icon-touch"
+			onClick={handleClick}
+			aria-label="뒤로가기"
+		/>
+	);
 }

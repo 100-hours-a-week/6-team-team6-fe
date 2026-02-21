@@ -19,7 +19,7 @@ function GroupHeader(props: GroupHeaderProps) {
 			left={<BackButton />}
 			center={<HeaderLogo />}
 			right={
-				<IconButton asChild>
+				<IconButton asChild size="icon-touch" aria-label="게시글 검색">
 					<Link href={`/groups/${groupId}/search`}>
 						<SearchIcon />
 					</Link>
