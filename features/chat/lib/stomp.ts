@@ -11,3 +11,16 @@ export function buildWebSocketEndpoint(apiUrl: string | undefined) {
 		return null;
 	}
 }
+
+export function buildStompAuthHeaders(authHeader: string) {
+	return {
+		Authorization: authHeader,
+	} as const;
+}
+
+export function buildStompJsonHeaders(authHeader: string) {
+	return {
+		...buildStompAuthHeaders(authHeader),
+		"content-type": "application/json",
+	} as const;
+}
