@@ -2,7 +2,6 @@ import { BackButton } from "@/shared/components/layout/headers/BackButton";
 import HeaderLayout from "@/shared/components/layout/headers/HeaderLayout";
 import { Typography } from "@/shared/components/ui/typography";
 
-// TODO: link
 interface TitleBackHeaderProps {
 	title: string;
 }
@@ -18,7 +17,7 @@ function TitleBackHeader(props: TitleBackHeaderProps) {
 					{title}
 				</Typography>
 			}
-			right={<div className="w-8 h-8"></div>}
+			right={<div className="w-11 h-11" />}
 		/>
 	);
 }

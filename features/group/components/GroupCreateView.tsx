@@ -15,7 +15,7 @@ import {
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
 import { Button } from "@/shared/components/ui/button";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/shared/components/ui/form";
-import { Input } from "@/shared/components/ui/input";
+import { InputField } from "@/shared/components/ui/input-field";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
 
@@ -181,12 +181,14 @@ function GroupCreateView(props: GroupCreateViewProps) {
 											<Typography type="subtitle">{GROUP_CREATE_LABELS.groupNameLabel}</Typography>
 										</FormLabel>
 										<FormControl>
-											<Input
+											<InputField
+												clearable
 												placeholder={GROUP_CREATE_LABELS.groupNamePlaceholder}
 												autoComplete="off"
 												disabled={isBusy}
 												aria-invalid={Boolean(fieldState.error)}
-												className="h-14 rounded-none border border-border px-3 text-xl"
+												groupClassName="h-14 rounded-none border border-border"
+												inputClassName="h-14 px-3 text-xl"
 												{...field}
 											/>
 										</FormControl>

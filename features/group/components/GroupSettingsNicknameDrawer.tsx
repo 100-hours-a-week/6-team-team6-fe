@@ -12,7 +12,7 @@ import {
 	DrawerHeader,
 	DrawerTitle,
 } from "@/shared/components/ui/drawer";
-import { Input } from "@/shared/components/ui/input";
+import { InputField } from "@/shared/components/ui/input-field";
 import { Spinner } from "@/shared/components/ui/spinner";
 import { Typography } from "@/shared/components/ui/typography";
 
@@ -53,12 +53,13 @@ function GroupSettingsNicknameDrawer(props: GroupSettingsNicknameDrawerProps) {
 					<label htmlFor="group-nickname" className="text-xs text-muted-foreground">
 						{GROUP_SETTINGS_LABELS.nicknameInputLabel}
 					</label>
-					<Input
+					<InputField
 						id="group-nickname"
 						value={nicknameInput}
 						onChange={(event) => onNicknameInputChange(event.target.value)}
+						clearable
 						maxLength={GROUP_SETTINGS_NICKNAME_MAX_LENGTH}
-						className="mt-1"
+						groupClassName="mt-1"
 						disabled={isSubmitting}
 					/>
 					<Typography

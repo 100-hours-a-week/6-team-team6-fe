@@ -1,5 +1,5 @@
 import DefaultNavigation from "@/shared/components/layout/bottomNavigations/DefaultNavigation";
-import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
+import LogoBackHeader from "@/shared/components/layout/headers/LogoBackHeader";
 import { Typography } from "@/shared/components/ui/typography";
 
 interface ChatPageLayoutProps {
@@ -11,7 +11,7 @@ function ChatPageLayout(props: ChatPageLayoutProps) {
 
 	return (
 		<>
-			<DefaultHeader />
+			<LogoBackHeader />
 			<div className="flex flex-1">
 				<section className="flex flex-1  flex-col h-full px-5 py-10 w-full max-w-(--app-max-width)">
 					<Typography type={"title"} className="mb-8">
