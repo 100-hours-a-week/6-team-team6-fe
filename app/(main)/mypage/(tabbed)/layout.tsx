@@ -1,5 +1,5 @@
 import DefaultNavigation from "@/shared/components/layout/bottomNavigations/DefaultNavigation";
-import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
+import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
 
 interface MyPageLayoutProps {
 	children: React.ReactNode;
@@ -10,9 +10,9 @@ function MyPageLayout(props: MyPageLayoutProps) {
 
 	return (
 		<>
-			<DefaultHeader />
+			<TitleBackHeader title="설정" />
 			<div className="flex flex-1">
-				<section className="flex flex-1 flex-col h-full px-5 py-10">{children}</section>
+				<section className="flex h-full flex-1 flex-col">{children}</section>
 			</div>
 			<DefaultNavigation />
 		</>
