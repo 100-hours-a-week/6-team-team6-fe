@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 import { getServerSession } from "next-auth";
 
+import { ChatInboxRealtimeBridge } from "@/features/chat/components/ChatInboxRealtimeBridge";
+
 import { authOptions } from "@/shared/lib/auth";
 
 import { AuthSessionProvider } from "@/shared/providers";
@@ -19,6 +21,7 @@ export default async function MainLayout({ children }: MainLayoutProps) {
 
 	return (
 		<AuthSessionProvider session={session} unauthenticatedRedirect="/login">
+			<ChatInboxRealtimeBridge />
 			{children}
 		</AuthSessionProvider>
 	);

@@ -5,11 +5,7 @@ import { signOut } from "next-auth/react";
 
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import StatusCodes from "@/shared/lib/api/status-codes";
-import {
-	clearSession,
-	getAccessToken,
-	refreshSession,
-} from "@/shared/lib/auth/session-store";
+import { clearSession, getAccessToken, refreshSession } from "@/shared/lib/auth/session-store";
 
 const API_PROXY_PREFIX = "/api/proxy";
 
