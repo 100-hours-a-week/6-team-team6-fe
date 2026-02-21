@@ -7,7 +7,7 @@ import {
 	FormLabel,
 	FormMessage,
 } from "@/shared/components/ui/form";
-import { Input } from "@/shared/components/ui/input";
+import { InputField } from "@/shared/components/ui/input-field";
 
 type AuthFormFieldProps<TFieldValues extends FieldValues> = {
 	control: Control<TFieldValues>;
@@ -16,6 +16,8 @@ type AuthFormFieldProps<TFieldValues extends FieldValues> = {
 	placeholder: string;
 	type?: string;
 	autoComplete?: string;
+	clearable?: boolean;
+	passwordToggle?: boolean;
 };
 
 function AuthFormField<TFieldValues extends FieldValues>({
@@ -25,6 +27,8 @@ function AuthFormField<TFieldValues extends FieldValues>({
 	placeholder,
 	type = "text",
 	autoComplete,
+	clearable = false,
+	passwordToggle = false,
 }: AuthFormFieldProps<TFieldValues>) {
 	return (
 		<FormField
@@ -34,7 +38,14 @@ function AuthFormField<TFieldValues extends FieldValues>({
 				<FormItem>
 					<FormLabel>{label}</FormLabel>
 					<FormControl>
-						<Input type={type} placeholder={placeholder} autoComplete={autoComplete} {...field} />
+						<InputField
+							type={type}
+							placeholder={placeholder}
+							autoComplete={autoComplete}
+							clearable={clearable}
+							passwordToggle={passwordToggle}
+							{...field}
+						/>
 					</FormControl>
 					<FormMessage />
 				</FormItem>

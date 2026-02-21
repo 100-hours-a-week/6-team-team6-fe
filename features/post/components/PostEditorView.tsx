@@ -19,6 +19,7 @@ import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBo
 import { Button } from "@/shared/components/ui/button";
 import { IconButton } from "@/shared/components/ui/icon-button";
 import { Input } from "@/shared/components/ui/input";
+import { InputField } from "@/shared/components/ui/input-field";
 import { Label } from "@/shared/components/ui/label";
 import { SelectField } from "@/shared/components/ui/select-field";
 import { Spinner } from "@/shared/components/ui/spinner";
@@ -216,8 +217,9 @@ export function PostEditorView(props: PostEditorViewProps) {
 						<Label className="text-sm font-bold" htmlFor="post-title">
 							제목
 						</Label>
-						<Input
+						<InputField
 							id="post-title"
+							clearable
 							value={values.title}
 							onChange={(event) => onChangeField("title", event.target.value)}
 							aria-invalid={!!errors.title}
@@ -254,7 +256,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 							대여료
 						</Label>
 						<div className="flex items-center gap-2">
-							<Input
+							<InputField
 								id="post-rentalFee"
 								type="text"
 								inputMode="numeric"
@@ -322,13 +324,7 @@ export function PostEditorView(props: PostEditorViewProps) {
 
 				<div className="flex items-center gap-2 ">
 					{onCancel && (
-						<Button
-							type="button"
-							variant="outline"
-							size="lg"
-							onClick={onCancel}
-							disabled={isBusy}
-						>
+						<Button type="button" variant="outline" size="lg" onClick={onCancel} disabled={isBusy}>
 							취소
 						</Button>
 					)}
