@@ -7,16 +7,20 @@ import HeaderLayout from "@/shared/components/layout/headers/HeaderLayout";
 import HeaderLogo from "@/shared/components/layout/headers/HeaderLogo";
 import { IconButton } from "@/shared/components/ui/icon-button";
 
-// TODO: link
-function DefaultHeader() {
+interface GroupHeaderProps {
+	groupId: string;
+}
+
+function GroupHeader(props: GroupHeaderProps) {
+	const { groupId } = props;
+
 	return (
 		<HeaderLayout
 			left={<BackButton />}
 			center={<HeaderLogo />}
 			right={
 				<IconButton asChild>
-					{/* TODO: groupId */}
-					<Link href={`/groups/1/search`}>
+					<Link href={`/groups/${groupId}/search`}>
 						<SearchIcon />
 					</Link>
 				</IconButton>
@@ -25,4 +29,4 @@ function DefaultHeader() {
 	);
 }
 
-export default DefaultHeader;
+export default GroupHeader;
