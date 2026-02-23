@@ -3,7 +3,8 @@ const GROUP_INVITE_NICKNAME_MAX_LENGTH = 12;
 const GROUP_INVITE_NICKNAME_LENGTH_ERROR = `닉네임은 최소 ${GROUP_INVITE_NICKNAME_MIN_LENGTH}자, 최대 ${GROUP_INVITE_NICKNAME_MAX_LENGTH}자로 입력해주세요`;
 
 const GROUP_INVITE_ERROR_CODES = {
-	alreadyMembership: "IS_ALREADY_MEMBERSHIP",
+	// alreadyMembership: "IS_ALREADY_MEMBERSHIP",
+	alreadyMembership: "GROUP03",
 	groupLimitReached: "GROUP_LIMIT_REACHED",
 	groupNotFound: "GROUP_NOT_FOUND",
 	invalidNickname: "INVALID_NICKNAME",

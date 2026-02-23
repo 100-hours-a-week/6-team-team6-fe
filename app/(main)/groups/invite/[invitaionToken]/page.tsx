@@ -43,12 +43,6 @@ export default async function Page(props: GroupInviteRoutePageProps) {
 			error.status === StatusCodes.CONFLICT &&
 			error.code === GROUP_INVITE_ERROR_CODES.alreadyMembership
 		) {
-			const groupId = error.groupId ?? error.invitation?.groupId;
-
-			if (typeof groupId === "number") {
-				redirect(groupRoutes.posts(groupId));
-			}
-
 			redirect(groupRoutes.list());
 		}
 
@@ -70,10 +64,6 @@ export default async function Page(props: GroupInviteRoutePageProps) {
 	}
 
 	return (
-		<GroupInvitePage
-			status={status}
-			groupInfo={groupInfo}
-			invitationToken={invitationToken}
-		/>
+		<GroupInvitePage status={status} groupInfo={groupInfo} invitationToken={invitationToken} />
 	);
 }
