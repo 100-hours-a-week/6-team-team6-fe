@@ -5,10 +5,11 @@ interface NotificationToggleProps {
 	onCheckedChange: (nextChecked: boolean) => void;
 	ariaLabel: string;
 	size?: "sm" | "default" | "lg";
+	disabled?: boolean;
 }
 
 function NotificationToggle(props: NotificationToggleProps) {
-	const { checked, onCheckedChange, ariaLabel, size = "default" } = props;
+	const { checked, onCheckedChange, ariaLabel, size = "default", disabled = false } = props;
 
 	return (
 		<Switch
@@ -16,6 +17,7 @@ function NotificationToggle(props: NotificationToggleProps) {
 			size={size}
 			checked={checked}
 			onCheckedChange={onCheckedChange}
+			disabled={disabled}
 			aria-label={ariaLabel}
 		/>
 	);

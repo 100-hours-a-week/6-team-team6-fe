@@ -1,15 +1,17 @@
 "use client";
 
-import { useState } from "react";
-
 import { NotificationToggle } from "@/features/notification/components/NotificationToggle";
+import { useWebPushSetting } from "@/features/notification/hooks/useWebPushSetting";
 
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Typography } from "@/shared/components/ui/typography";
 
 function NotificationSettingsView() {
-	const [isNotificationEnabled, setIsNotificationEnabled] = useState(true);
+	const {
+		state: { isEnabled, isLoading, isUpdating },
+		actions: { toggleEnabled },
+	} = useWebPushSetting();
 
 	return (
 		<>
@@ -26,8 +28,9 @@ function NotificationSettingsView() {
 							</div>
 							<NotificationToggle
 								size="lg"
-								checked={isNotificationEnabled}
-								onCheckedChange={setIsNotificationEnabled}
+								checked={isEnabled}
+								onCheckedChange={toggleEnabled}
+								disabled={isLoading || isUpdating}
 								ariaLabel="푸시 알림 수신"
 							/>
 						</div>
