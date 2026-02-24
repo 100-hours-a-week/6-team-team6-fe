@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 
 import {
+	deletePushToken,
 	getWebPushSetting,
 	notificationQueryKeys,
 	registerPushToken,
@@ -15,7 +16,7 @@ import {
 	getFirebaseMessagingVapidKey,
 	registerFirebaseMessagingServiceWorker,
 } from "@/shared/lib/firebase-messaging";
-import { getOrCreatePushDeviceId } from "@/shared/lib/push-device";
+import { getOrCreatePushDeviceId, getPushDeviceId } from "@/shared/lib/push-device";
 
 export function WebPushRegistrationBridge() {
 	const queryClient = useQueryClient();
@@ -32,6 +33,16 @@ export function WebPushRegistrationBridge() {
 				const setting = await getWebPushSetting();
 
 				if (!setting?.enabled) {
+					return;
+				}
+
+				if (Notification.permission === "denied") {
+					const deviceId = getPushDeviceId();
+					if (deviceId) {
+						try {
+							await deletePushToken(deviceId);
+						} catch {}
+					}
 					return;
 				}
 
