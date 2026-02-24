@@ -48,6 +48,14 @@ const ChatMessageSendResponseSchema = z.object({
 const ChatMessageSendResponseApiSchema = ChatMessageSendResponseSchema;
 const ChatMessageSendResponseDtoSchema = ChatMessageSendResponseSchema;
 
+const ChatSendAckResponseSchema = z.object({
+	chatroomId: z.number(),
+	membershipId: z.number(),
+	messageId: nonEmptyString,
+	messageContent: nonEmptyString,
+	createdAt: nonEmptyString,
+});
+
 const ChatroomPostIdResponseSchema = z.object({
 	postId: z.number(),
 });
@@ -132,6 +140,7 @@ type ChatRoomSummaryDto = z.infer<typeof ChatRoomSummaryDtoSchema>;
 type ChatRoomsResponseDto = z.infer<typeof ChatRoomsResponseDtoSchema>;
 type ChatroomIdResponseDto = z.infer<typeof ChatroomIdResponseDtoSchema>;
 type ChatMessageSendResponseDto = z.infer<typeof ChatMessageSendResponseDtoSchema>;
+type ChatSendAckResponse = z.infer<typeof ChatSendAckResponseSchema>;
 type ChatroomPostIdResponseDto = z.infer<typeof ChatroomPostIdResponseDtoSchema>;
 type ChatroomPostInfoDto = z.infer<typeof ChatroomPostInfoDtoSchema>;
 type ChatMessageDto = z.infer<typeof ChatMessageDtoSchema>;
@@ -147,6 +156,7 @@ export type {
 	ChatroomPostInfoDto,
 	ChatRoomsResponseDto,
 	ChatRoomSummaryDto,
+	ChatSendAckResponse,
 	UnreadChatCountResponseDto,
 };
 export {
@@ -166,6 +176,7 @@ export {
 	ChatRoomsResponseDtoSchema,
 	ChatRoomSummaryApiSchema,
 	ChatRoomSummaryDtoSchema,
+	ChatSendAckResponseSchema,
 	UnreadChatCountResponseApiSchema,
 	UnreadChatCountResponseDtoSchema,
 };

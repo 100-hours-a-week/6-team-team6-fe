@@ -1,16 +1,17 @@
-import { type MutableRefObject,useCallback, useEffect, useRef } from "react";
+import { type RefObject, useCallback, useEffect, useRef } from "react";
 
 import type { Client } from "@stomp/stompjs";
 
 import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
+import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
 
 type UsePendingStompQueueParams = {
 	authHeader: string | null;
 	chatroomId: number | null;
 	submitMessage: (text: string) => void;
-	stompClientRef: MutableRefObject<Client | null>;
-	isStompConnectedRef: MutableRefObject<boolean>;
-	myMembershipIdRef: MutableRefObject<number | null>;
+	stompClientRef: RefObject<Client | null>;
+	isStompConnectedRef: RefObject<boolean>;
+	myMembershipIdRef: RefObject<number | null>;
 };
 
 type UsePendingStompQueueResult = {
@@ -18,6 +19,13 @@ type UsePendingStompQueueResult = {
 	markAsReadByStomp: (readMessageId: string) => void;
 	flushPendingMessages: () => void;
 };
+
+type PublishContext = {
+	client: Client;
+	membershipId: number;
+};
+
+type StompBodyFactory = (membershipId: number) => Record<string, unknown>;
 
 export function usePendingStompQueue(
 	params: UsePendingStompQueueParams,
@@ -37,54 +45,58 @@ export function usePendingStompQueue(
 		pendingMessagesRef.current = [];
 	}, [chatroomId]);
 
-	const canPublishNow = useCallback(() => {
+	const getPublishContext = useCallback((): PublishContext | null => {
 		const client = stompClientRef.current;
-		return Boolean(
-			authHeader &&
-				chatroomId !== null &&
-				client?.connected &&
-				isStompConnectedRef.current &&
-				myMembershipIdRef.current !== null,
-		);
-	}, [authHeader, chatroomId, isStompConnectedRef, myMembershipIdRef, stompClientRef]);
-
-	const enqueuePendingMessage = useCallback((text: string) => {
-		pendingMessagesRef.current = [...pendingMessagesRef.current, text];
-		submitMessage(text);
-	}, [submitMessage]);
-
-	const publishMessage = useCallback((text: string) => {
-		if (!canPublishNow() || !authHeader || chatroomId === null) {
-			return false;
-		}
-
 		const membershipId = myMembershipIdRef.current;
-		const client = stompClientRef.current;
-		if (membershipId === null || !client || !client.connected) {
-			return false;
+		if (!client || !client.connected || !isStompConnectedRef.current || membershipId === null) {
+			return null;
 		}
 
-		client.publish({
-			destination: STOMP_DESTINATION.send,
-			headers: {
-				Authorization: authHeader,
-				"content-type": "application/json",
-			},
-			body: JSON.stringify({
+		return { client, membershipId };
+	}, [isStompConnectedRef, myMembershipIdRef, stompClientRef]);
+
+	const enqueuePendingMessage = useCallback(
+		(text: string) => {
+			pendingMessagesRef.current = [...pendingMessagesRef.current, text];
+			submitMessage(text);
+		},
+		[submitMessage],
+	);
+
+	const publishWithMembership = useCallback(
+		(destination: string, buildBody: StompBodyFactory) => {
+			if (!authHeader || chatroomId === null) {
+				return false;
+			}
+
+			const publishContext = getPublishContext();
+			if (!publishContext) {
+				return false;
+			}
+
+			publishContext.client.publish({
+				destination,
+				headers: buildStompJsonHeaders(authHeader),
+				body: JSON.stringify(buildBody(publishContext.membershipId)),
+			});
+
+			return true;
+		},
+		[authHeader, chatroomId, getPublishContext],
+	);
+
+	const publishMessage = useCallback(
+		(text: string) => {
+			return publishWithMembership(STOMP_DESTINATION.send, (membershipId) => ({
 				chatroomId,
 				message: text,
 				membershipId,
-			}),
-		});
-
-		return true;
-	}, [authHeader, canPublishNow, chatroomId, myMembershipIdRef, stompClientRef]);
+			}));
+		},
+		[chatroomId, publishWithMembership],
+	);
 
 	const flushPendingMessages = useCallback(() => {
-		if (!canPublishNow()) {
-			return;
-		}
-
 		const pendingMessages = pendingMessagesRef.current;
 		if (pendingMessages.length === 0) {
 			return;
@@ -98,47 +110,31 @@ export function usePendingStompQueue(
 				break;
 			}
 		}
-	}, [canPublishNow, publishMessage]);
+	}, [publishMessage]);
 
-	const submitMessageByStomp = useCallback((text: string) => {
-		if (!canPublishNow()) {
-			enqueuePendingMessage(text);
-			return;
-		}
+	const submitMessageByStomp = useCallback(
+		(text: string) => {
+			const isPublished = publishMessage(text);
+			if (!isPublished) {
+				enqueuePendingMessage(text);
+				return;
+			}
 
-		const isPublished = publishMessage(text);
-		if (!isPublished) {
-			enqueuePendingMessage(text);
-			return;
-		}
+			submitMessage(text);
+		},
+		[enqueuePendingMessage, publishMessage, submitMessage],
+	);
 
-		submitMessage(text);
-	}, [canPublishNow, enqueuePendingMessage, publishMessage, submitMessage]);
-
-	const markAsReadByStomp = useCallback((readMessageId: string) => {
-		if (!authHeader || chatroomId === null || !isStompConnectedRef.current) {
-			return;
-		}
-
-		const membershipId = myMembershipIdRef.current;
-		const client = stompClientRef.current;
-		if (!client || !client.connected || membershipId === null) {
-			return;
-		}
-
-		client.publish({
-			destination: STOMP_DESTINATION.read,
-			headers: {
-				Authorization: authHeader,
-				"content-type": "application/json",
-			},
-			body: JSON.stringify({
+	const markAsReadByStomp = useCallback(
+		(readMessageId: string) => {
+			void publishWithMembership(STOMP_DESTINATION.read, (membershipId) => ({
 				chatroomId,
 				membershipId,
 				readMessageId,
-			}),
-		});
-	}, [authHeader, chatroomId, isStompConnectedRef, myMembershipIdRef, stompClientRef]);
+			}));
+		},
+		[chatroomId, publishWithMembership],
+	);
 
 	return {
 		submitMessageByStomp,

@@ -1,32 +1,26 @@
-import Image from "next/image";
 import Link from "next/link";
 
 import { SearchIcon } from "lucide-react";
 
 import { BackButton } from "@/shared/components/layout/headers/BackButton";
 import HeaderLayout from "@/shared/components/layout/headers/HeaderLayout";
+import HeaderLogo from "@/shared/components/layout/headers/HeaderLogo";
 import { IconButton } from "@/shared/components/ui/icon-button";
 
-import { uiConst } from "@/shared/lib/constants";
+interface GroupHeaderProps {
+	groupId: string;
+}
 
-// TODO: link
-function DefaultHeader() {
+function GroupHeader(props: GroupHeaderProps) {
+	const { groupId } = props;
+
 	return (
 		<HeaderLayout
 			left={<BackButton />}
-			center={
-				<Image
-					src="/text-logo.png"
-					alt="Logo"
-					width={uiConst.WIDTH.HEADER_LOGO}
-					height={uiConst.HEIGHT.HEADER_LOGO}
-					loading="eager"
-				/>
-			}
+			center={<HeaderLogo />}
 			right={
-				<IconButton asChild>
-					{/* TODO: groupId */}
-					<Link href={`/groups/1/search`}>
+				<IconButton asChild size="icon-touch" aria-label="게시글 검색">
+					<Link href={`/groups/${groupId}/search`}>
 						<SearchIcon />
 					</Link>
 				</IconButton>
@@ -35,4 +29,4 @@ function DefaultHeader() {
 	);
 }
 
-export default DefaultHeader;
+export default GroupHeader;

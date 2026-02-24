@@ -2,8 +2,8 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useSearchParams } from "next/navigation";
 
-import { useChatListSSE } from "@/features/chat/hooks/useChatListSSE";
 import { useChatRooms } from "@/features/chat/hooks/useChatRooms";
+
 export function useChatList() {
 	const searchParams = useSearchParams();
 	const typeParam = searchParams.get("type");
@@ -25,8 +25,6 @@ export function useChatList() {
 	const fetchNextPageRef = useRef(fetchNextPage);
 	const hasNextPageRef = useRef(hasNextPage);
 	const observerRef = useRef<IntersectionObserver | null>(null);
-
-	useChatListSSE();
 
 	useEffect(() => {
 		fetchNextPageRef.current = fetchNextPage;

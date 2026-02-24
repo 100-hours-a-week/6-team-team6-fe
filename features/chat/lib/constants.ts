@@ -10,6 +10,7 @@ export const CHAT_LIST_LABELS: ChatRoomListLabels = {
 
 export const STOMP_DESTINATION = {
 	subscribe: (chatroomId: number) => `/topic/chatrooms/${chatroomId}`,
+	chatInbox: "/user/queue/chat-inbox",
 	join: "/app/chat/join",
 	send: "/app/chat/send",
 	read: "/app/chat/read",

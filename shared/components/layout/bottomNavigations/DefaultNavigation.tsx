@@ -3,12 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { HomeIcon, MessagesSquareIcon, UserRound } from "lucide-react";
+import { MessagesSquareIcon, UserRound, UsersIcon } from "lucide-react";
 
 import useUnreadChatCount from "@/features/chat/hooks/useUnreadChatCount";
 
 import NavigationLayout from "@/shared/components/layout/bottomNavigations/NavigationLayout";
-import { Typography } from "@/shared/components/ui/typography";
 
 import { cn } from "@/shared/lib/utils";
 
@@ -17,12 +16,10 @@ function DefaultNavigation() {
 	const { data: unreadData } = useUnreadChatCount();
 	// TODO: fix field name
 	const unreadCount = unreadData?.unreadChatMesageCount ?? 0;
-	// TODO: implement - Getting GroupId logic
-	const groupId = 1;
-	const homeHref = groupId ? `/groups/${groupId}/posts` : "/";
+	const groupListHref = "/groups";
 
 	const navigationItems = [
-		{ href: homeHref, label: "홈", icon: HomeIcon },
+		{ href: groupListHref, label: "그룹리스트", icon: UsersIcon },
 		{ href: "/chat", label: "채팅", icon: MessagesSquareIcon },
 		{ href: "/mypage", label: "마이페이지", icon: UserRound },
 	];
@@ -34,8 +31,8 @@ function DefaultNavigation() {
 					{navigationItems.map((item) => {
 						const Icon = item.icon;
 						const isActive =
-							item.href === homeHref
-								? pathname === homeHref || pathname.startsWith(`${homeHref}/`)
+							item.href === groupListHref
+								? pathname === groupListHref || pathname.startsWith(`${groupListHref}/`)
 								: pathname === item.href || pathname.startsWith(`${item.href}/`);
 						return (
 							<li key={item.href} className="h-full">

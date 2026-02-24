@@ -10,7 +10,7 @@ import { usePostDetailParams } from "@/features/post/hooks/usePostDetailParams";
 import { usePostDetailQuery } from "@/features/post/hooks/usePostDetailQuery";
 import { usePostDetailUIState } from "@/features/post/hooks/usePostDetailUIState";
 
-import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
+import GroupHeader from "@/shared/components/layout/headers/GroupHeader";
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
 import HorizontalPaddingBox from "@/shared/components/layout/HorizontalPaddingBox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/shared/components/ui/avatar";
@@ -52,7 +52,7 @@ export function PostDetailPage() {
 	if (isLoading) {
 		return (
 			<>
-				<DefaultHeader />
+				<GroupHeader groupId={normalizedGroupId} />
 				<PostStateMessage label={POST_DETAIL_LOADING_LABEL} showSpinner fullHeight />
 			</>
 		);
@@ -61,7 +61,7 @@ export function PostDetailPage() {
 	if (!post) {
 		return (
 			<>
-				<DefaultHeader />
+				<GroupHeader groupId={normalizedGroupId} />
 				<PostStateMessage label={POST_DETAIL_ERROR_LABEL} fullHeight />
 			</>
 		);
