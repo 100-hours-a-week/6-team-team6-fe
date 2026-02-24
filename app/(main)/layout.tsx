@@ -4,6 +4,7 @@ import { getServerSession } from "next-auth";
 
 import { ChatInboxRealtimeBridge } from "@/features/chat/components/ChatInboxRealtimeBridge";
 import { WebPushForegroundBridge } from "@/features/notification/components/WebPushForegroundBridge";
+import { WebPushRegistrationBridge } from "@/features/notification/components/WebPushRegistrationBridge";
 
 import { authOptions } from "@/shared/lib/auth";
 
@@ -23,6 +24,7 @@ export default async function MainLayout({ children }: MainLayoutProps) {
 	return (
 		<AuthSessionProvider session={session} unauthenticatedRedirect="/login">
 			<ChatInboxRealtimeBridge />
+			<WebPushRegistrationBridge />
 			<WebPushForegroundBridge />
 			{children}
 		</AuthSessionProvider>
