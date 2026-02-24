@@ -21,6 +21,7 @@
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"embla-carousel-react": "^8.6.0",
+		"firebase": "^12.9.0",
 		"ky": "^1.14.3",
 		"lucide-react": "^0.562.0",
 		"next": "16.1.3",
