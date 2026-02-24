@@ -22,11 +22,18 @@ const firebaseMessagingConfig = {
 	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+const firebaseMessagingVapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.trim() ?? "";
+
 const hasRequiredFirebaseMessagingConfig =
 	Boolean(firebaseMessagingConfig.apiKey) &&
 	Boolean(firebaseMessagingConfig.projectId) &&
 	Boolean(firebaseMessagingConfig.messagingSenderId) &&
 	Boolean(firebaseMessagingConfig.appId);
+
+const hasFirebaseMessagingVapidKey = firebaseMessagingVapidKey.length > 0;
+
+const getFirebaseMessagingVapidKey = () =>
+	hasFirebaseMessagingVapidKey ? firebaseMessagingVapidKey : null;
 
 let messagingPromise: Promise<Messaging | null> | null = null;
 
@@ -125,6 +132,8 @@ export type { GetFirebaseMessagingTokenParams };
 export {
 	getFirebaseMessaging,
 	getFirebaseMessagingToken,
+	getFirebaseMessagingVapidKey,
+	hasFirebaseMessagingVapidKey,
 	hasRequiredFirebaseMessagingConfig,
 	registerFirebaseMessagingServiceWorker,
 	subscribeFirebaseForegroundMessage,

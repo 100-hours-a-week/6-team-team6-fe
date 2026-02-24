@@ -14,12 +14,11 @@ import { Typography } from "@/shared/components/ui/typography";
 
 import {
 	getFirebaseMessagingToken,
+	getFirebaseMessagingVapidKey,
 	hasRequiredFirebaseMessagingConfig,
 	registerFirebaseMessagingServiceWorker,
 } from "@/shared/lib/firebase-messaging";
 import { getOrCreatePushDeviceId } from "@/shared/lib/push-device";
-
-const FIREBASE_VAPID_KEY = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY ?? "";
 
 function NotificationSettingsView() {
 	const {
@@ -56,11 +55,12 @@ function NotificationSettingsView() {
 			const permission = await Notification.requestPermission();
 			const serviceWorkerRegistration = await registerFirebaseMessagingServiceWorker();
 			const deviceId = getOrCreatePushDeviceId();
+			const vapidKey = getFirebaseMessagingVapidKey();
 
 			let token: string | null = null;
-			if (permission === "granted" && FIREBASE_VAPID_KEY) {
+			if (permission === "granted" && vapidKey) {
 				token = await getFirebaseMessagingToken({
-					vapidKey: FIREBASE_VAPID_KEY,
+					vapidKey,
 					serviceWorkerRegistration: serviceWorkerRegistration ?? undefined,
 				});
 			}
@@ -71,7 +71,7 @@ function NotificationSettingsView() {
 						notificationSupported: true,
 						permission,
 						hasRequiredFirebaseConfig: hasRequiredFirebaseMessagingConfig,
-						hasVapidKey: Boolean(FIREBASE_VAPID_KEY),
+						hasVapidKey: Boolean(vapidKey),
 						serviceWorkerScope: serviceWorkerRegistration?.scope ?? null,
 						deviceId,
 						tokenPreview: token ? `${token.slice(0, 16)}...` : null,
