@@ -2,7 +2,7 @@ import "./globals.css";
 
 import { Noto_Sans_KR } from "next/font/google";
 
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 
 import { Toaster } from "@/shared/components/ui/sonner";
 
@@ -14,8 +14,23 @@ const notoSansKr = Noto_Sans_KR({
 });
 
 export const metadata: Metadata = {
+	applicationName: "빌리지",
 	title: "그룹을 위한 대여 서비스, 빌리지",
 	description: "빌리고, 나누고, 연결되는 공간. 우리 팀을 위한 대여 플랫폼 빌리지.",
+	manifest: "/manifest.webmanifest",
+	icons: {
+		icon: [
+			{ url: "/favicon.ico" },
+			{ url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
+			{ url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+		],
+		apple: [{ url: "/icons/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
+	},
+	appleWebApp: {
+		capable: true,
+		statusBarStyle: "default",
+		title: "빌리지",
+	},
 	openGraph: {
 		url: "https://www.billages.com/",
 		type: "website",
@@ -40,9 +55,10 @@ export const metadata: Metadata = {
 	},
 };
 
-export const viewport = {
+export const viewport: Viewport = {
 	width: "device-width",
 	initialScale: 1,
+	themeColor: "#ffffff",
 };
 
 function RootLayout({
