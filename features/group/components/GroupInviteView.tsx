@@ -20,7 +20,7 @@ import {
 	FormMessage,
 } from "@/shared/components/ui/form";
 import { IconButton } from "@/shared/components/ui/icon-button";
-import { Input } from "@/shared/components/ui/input";
+import { InputField } from "@/shared/components/ui/input-field";
 import { Typography } from "@/shared/components/ui/typography";
 
 import { normalizeImageSrcForNextImage } from "@/shared/lib/image-src";
@@ -91,12 +91,14 @@ function GroupInviteView(props: GroupInviteViewProps) {
 								<FormItem className="gap-1.5">
 									<FormLabel>{GROUP_INVITE_LABELS.nicknameLabel}</FormLabel>
 									<FormControl>
-										<Input
+										<InputField
 											{...field}
+											clearable
 											maxLength={GROUP_INVITE_NICKNAME_MAX_LENGTH}
 											onKeyDown={onNicknameKeyDown}
 											placeholder={GROUP_INVITE_LABELS.nicknamePlaceholder}
-											className="h-12 rounded-xl px-4 text-base"
+											groupClassName="h-12 rounded-xl"
+											inputClassName="h-12 px-4 text-base"
 										/>
 									</FormControl>
 									<FormMessage className="text-xs leading-snug" />

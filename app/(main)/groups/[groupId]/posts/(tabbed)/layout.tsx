@@ -5,7 +5,7 @@ import { Plus } from "lucide-react";
 import { postRoutes } from "@/features/post/lib/postRoutes";
 
 import GroupNavigation from "@/shared/components/layout/bottomNavigations/GroupNavigation";
-import DefaultHeader from "@/shared/components/layout/headers/DefaultHeader";
+import GroupHeader from "@/shared/components/layout/headers/GroupHeader";
 import { IconButton } from "@/shared/components/ui/icon-button";
 
 interface GroupLayoutProps {
@@ -20,7 +20,7 @@ async function GroupLayout({ children, params }: GroupLayoutProps) {
 
 	return (
 		<>
-			<DefaultHeader />
+			<GroupHeader groupId={groupId} />
 			<div className="flex flex-1">
 				<section
 					className={`flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar 

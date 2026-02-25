@@ -37,6 +37,7 @@ function LoginFormView({ form, onSubmit, submitError, isSubmitting }: LoginFormV
 					label="아이디"
 					placeholder="아이디를 입력하세요"
 					autoComplete="username"
+					clearable
 				/>
 				<AuthFormField
 					control={control}
@@ -45,6 +46,8 @@ function LoginFormView({ form, onSubmit, submitError, isSubmitting }: LoginFormV
 					placeholder="비밀번호를 입력하세요"
 					type="password"
 					autoComplete="current-password"
+					passwordToggle
+					clearable
 				/>
 
 				{submitError ? (

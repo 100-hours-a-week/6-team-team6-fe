@@ -7,7 +7,7 @@ type IconButtonBaseProps = Omit<
 	"children" | "onClick" | "size"
 > & {
 	onClick?: React.ComponentProps<"button">["onClick"] | null;
-	size?: "icon" | "icon-xs" | "icon-sm" | "icon-lg";
+	size?: "icon" | "icon-xs" | "icon-sm" | "icon-lg" | "icon-touch";
 };
 
 type IconButtonProps =

@@ -109,12 +109,7 @@ function useGroupInvite(options: UseGroupInviteOptions): {
 	});
 
 	const closePage = useCallback(() => {
-		if (window.history.length > 1) {
-			router.back();
-			return;
-		}
-
-		router.push(groupRoutes.list());
+		router.replace(groupRoutes.list());
 	}, [router]);
 
 	const preventNicknameSpaceKey = useCallback(
