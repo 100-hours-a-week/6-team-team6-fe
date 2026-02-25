@@ -20,8 +20,16 @@ const hasRequiredFirebaseConfig = (firebaseConfig) =>
 	Boolean(firebaseConfig.messagingSenderId) &&
 	Boolean(firebaseConfig.appId);
 
+self.addEventListener("install", (event) => {
+	event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener("activate", (event) => {
+	event.waitUntil(self.clients.claim());
+});
+
 const buildNotificationTargetUrl = (notificationData) => {
-	const fallbackUrl = "/chat";
+	const fallbackUrl = "/"; // TODO: 알람 센터 (phase 3)
 	const chatroomId = notificationData.chatroomId;
 	const messageId = notificationData.messageId;
 
@@ -91,8 +99,8 @@ self.addEventListener("notificationclick", (event) => {
 
 	const notificationData = event.notification.data ?? {};
 	const targetUrl =
-		typeof notificationData.url === "string"
-			? notificationData.url
+		typeof notificationData.targetUrl === "string"
+			? notificationData.targetUrl
 			: buildNotificationTargetUrl(notificationData);
 
 	event.waitUntil(openOrFocusClientWindow(targetUrl));

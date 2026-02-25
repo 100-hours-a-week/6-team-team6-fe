@@ -4,6 +4,8 @@ import { Noto_Sans_KR } from "next/font/google";
 
 import type { Metadata, Viewport } from "next";
 
+import { GoogleAnalytics } from "@/shared/components/analytics/GoogleAnalytics";
+import { PwaServiceWorkerBridge } from "@/shared/components/pwa/PwaServiceWorkerBridge";
 import { Toaster } from "@/shared/components/ui/sonner";
 
 import { Providers } from "@/shared/providers";
@@ -73,8 +75,10 @@ function RootLayout({
 					<div className="app">
 						<main className="flex-1 flex flex-col">{children}</main>
 						<Toaster />
+						<PwaServiceWorkerBridge />
 					</div>
 				</Providers>
+				<GoogleAnalytics />
 			</body>
 		</html>
 	);

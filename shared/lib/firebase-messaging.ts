@@ -22,7 +22,6 @@ const firebaseMessagingConfig = {
 	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-console.log(firebaseMessagingConfig);
 
 const firebaseMessagingVapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.trim() ?? "";
 
@@ -65,6 +64,19 @@ async function registerFirebaseMessagingServiceWorker(): Promise<ServiceWorkerRe
 		buildFirebaseMessagingServiceWorkerUrl(),
 		{ scope: "/" },
 	);
+}
+
+async function getFirebaseMessagingServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+	if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+		return null;
+	}
+
+	const existingRegistration = await navigator.serviceWorker.getRegistration("/");
+	if (existingRegistration) {
+		return existingRegistration;
+	}
+
+	return registerFirebaseMessagingServiceWorker();
 }
 
 async function getFirebaseMessaging(): Promise<Messaging | null> {
@@ -133,6 +145,7 @@ async function subscribeFirebaseForegroundMessage(
 export type { GetFirebaseMessagingTokenParams };
 export {
 	getFirebaseMessaging,
+	getFirebaseMessagingServiceWorkerRegistration,
 	getFirebaseMessagingToken,
 	getFirebaseMessagingVapidKey,
 	hasFirebaseMessagingVapidKey,
