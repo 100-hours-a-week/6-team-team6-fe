@@ -22,6 +22,8 @@ const firebaseMessagingConfig = {
 	measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
+console.log(firebaseMessagingConfig);
+
 const firebaseMessagingVapidKey = process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY?.trim() ?? "";
 
 const hasRequiredFirebaseMessagingConfig =
