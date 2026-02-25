@@ -1,5 +1,7 @@
 import "./globals.css";
 
+import { Suspense } from "react";
+
 import { Noto_Sans_KR } from "next/font/google";
 
 import type { Metadata, Viewport } from "next";
@@ -78,7 +80,9 @@ function RootLayout({
 						<PwaServiceWorkerBridge />
 					</div>
 				</Providers>
-				<GoogleAnalytics />
+				<Suspense fallback={null}>
+					<GoogleAnalytics />
+				</Suspense>
 			</body>
 		</html>
 	);
