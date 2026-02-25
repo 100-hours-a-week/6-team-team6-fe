@@ -66,6 +66,19 @@ async function registerFirebaseMessagingServiceWorker(): Promise<ServiceWorkerRe
 	);
 }
 
+async function getFirebaseMessagingServiceWorkerRegistration(): Promise<ServiceWorkerRegistration | null> {
+	if (typeof window === "undefined" || !("serviceWorker" in navigator)) {
+		return null;
+	}
+
+	const existingRegistration = await navigator.serviceWorker.getRegistration("/");
+	if (existingRegistration) {
+		return existingRegistration;
+	}
+
+	return registerFirebaseMessagingServiceWorker();
+}
+
 async function getFirebaseMessaging(): Promise<Messaging | null> {
 	if (!messagingPromise) {
 		messagingPromise = (async () => {
@@ -132,6 +145,7 @@ async function subscribeFirebaseForegroundMessage(
 export type { GetFirebaseMessagingTokenParams };
 export {
 	getFirebaseMessaging,
+	getFirebaseMessagingServiceWorkerRegistration,
 	getFirebaseMessagingToken,
 	getFirebaseMessagingVapidKey,
 	hasFirebaseMessagingVapidKey,

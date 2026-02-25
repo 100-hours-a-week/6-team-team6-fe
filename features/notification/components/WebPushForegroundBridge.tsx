@@ -5,7 +5,7 @@ import { useEffect } from "react";
 import type { MessagePayload } from "firebase/messaging";
 
 import {
-	registerFirebaseMessagingServiceWorker,
+	getFirebaseMessagingServiceWorkerRegistration,
 	subscribeFirebaseForegroundMessage,
 } from "@/shared/lib/firebase-messaging";
 
@@ -30,7 +30,7 @@ export function WebPushForegroundBridge() {
 		let unsubscribe: (() => void) | null = null;
 
 		const initializeForegroundNotification = async () => {
-			await registerFirebaseMessagingServiceWorker();
+			await getFirebaseMessagingServiceWorkerRegistration();
 
 			const release = await subscribeFirebaseForegroundMessage(async (payload) => {
 				if (typeof window === "undefined" || !("Notification" in window)) {

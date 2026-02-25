@@ -18,9 +18,9 @@ import type { WebPushSettingDto } from "@/features/notification/schemas";
 import { getApiErrorCode } from "@/shared/lib/api/error-guards";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import {
+	getFirebaseMessagingServiceWorkerRegistration,
 	getFirebaseMessagingToken,
 	getFirebaseMessagingVapidKey,
-	registerFirebaseMessagingServiceWorker,
 } from "@/shared/lib/firebase-messaging";
 import { getOrCreatePushDeviceId, getPushDeviceId } from "@/shared/lib/push-device";
 
@@ -127,7 +127,7 @@ function useWebPushSetting(): {
 			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.vapidKeyMissing);
 		}
 
-		const serviceWorkerRegistration = await registerFirebaseMessagingServiceWorker();
+		const serviceWorkerRegistration = await getFirebaseMessagingServiceWorkerRegistration();
 		const deviceId = getOrCreatePushDeviceId();
 
 		if (!deviceId) {
