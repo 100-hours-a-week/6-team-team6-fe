@@ -12,7 +12,7 @@ function MyPageLayout(props: MyPageLayoutProps) {
 		<>
 			<LogoBackHeader />
 			<div className="flex flex-1">
-				<section className="flex flex-1 flex-col h-full px-5 py-10">{children}</section>
+				<section className="flex flex-1 min-h-0 flex-col">{children}</section>
 			</div>
 			<DefaultNavigation />
 		</>
