@@ -18,7 +18,7 @@ interface MyPageSettingsRowItem {
 interface MyPageSettingsRowProps extends MyPageSettingsRowItem {}
 
 function MyPageSettingsRow(props: MyPageSettingsRowProps) {
-	const { title, description, href } = props;
+	const { id, title, description, href } = props;
 
 	const content = (
 		<HorizontalPaddingBox className="flex flex-1 items-center justify-between">

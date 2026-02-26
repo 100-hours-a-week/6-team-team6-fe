@@ -7,6 +7,7 @@ import { Noto_Sans_KR } from "next/font/google";
 import type { Metadata, Viewport } from "next";
 
 import { GoogleAnalytics } from "@/shared/components/analytics/GoogleAnalytics";
+import { PwaInstallBannerSlot } from "@/shared/components/pwa/PwaInstallBannerSlot";
 import { PwaServiceWorkerBridge } from "@/shared/components/pwa/PwaServiceWorkerBridge";
 import { Toaster } from "@/shared/components/ui/sonner";
 
@@ -74,6 +75,7 @@ function RootLayout({
 		<html lang="en" className={notoSansKr.variable}>
 			<body className="antialiased">
 				<Providers>
+					<PwaInstallBannerSlot />
 					<div className="app">
 						<main className="flex-1 flex flex-col">{children}</main>
 						<Toaster />
