@@ -10,9 +10,9 @@ import {
 	deletePushToken,
 	getWebPushSetting,
 	type GetWebPushSettingError,
-	registerPushToken,
 	updateWebPushSetting,
 } from "@/features/notification/api";
+import { enableWebPush, type EnableWebPushResult } from "@/features/notification/lib/enableWebPush";
 import {
 	getCurrentNotificationPermission,
 	requestNotificationPermission,
@@ -21,12 +21,7 @@ import type { WebPushSettingDto } from "@/features/notification/schemas";
 
 import { getApiErrorCode } from "@/shared/lib/api/error-guards";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
-import {
-	getFirebaseMessagingServiceWorkerRegistration,
-	getFirebaseMessagingToken,
-	getFirebaseMessagingVapidKey,
-} from "@/shared/lib/firebase-messaging";
-import { getOrCreatePushDeviceId, getPushDeviceId } from "@/shared/lib/push-device";
+import { getPushDeviceId } from "@/shared/lib/push-device";
 
 interface WebPushSettingState {
 	isEnabled: boolean;
@@ -73,6 +68,24 @@ const resolveNotificationSettingErrorMessage = (error: unknown, fallbackMessage:
 const isPermissionDeniedError = (error: unknown) =>
 	error instanceof Error &&
 	error.message === NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
+
+const resolveEnableWebPushFailureMessage = (result: EnableWebPushResult) => {
+	switch (result) {
+		case "unsupported":
+			return NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported;
+		case "permission_denied":
+			return NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
+		case "vapid_missing":
+			return NOTIFICATION_SETTINGS_MESSAGES.vapidKeyMissing;
+		case "device_id_unavailable":
+			return NOTIFICATION_SETTINGS_MESSAGES.deviceIdUnavailable;
+		case "token_issue_failed":
+			return NOTIFICATION_SETTINGS_MESSAGES.tokenIssueFailed;
+		case "enabled":
+		default:
+			return null;
+	}
+};
 
 const showNotificationPermissionToast = () => {
 	const permission = getCurrentNotificationPermission();
@@ -127,34 +140,13 @@ function useWebPushSetting(): {
 			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied);
 		}
 
-		const vapidKey = getFirebaseMessagingVapidKey();
-		if (!vapidKey) {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.vapidKeyMissing);
+		const result = await enableWebPush();
+		const failureMessage = resolveEnableWebPushFailureMessage(result);
+		if (failureMessage) {
+			throw new Error(failureMessage);
 		}
 
-		const serviceWorkerRegistration = await getFirebaseMessagingServiceWorkerRegistration();
-		const deviceId = getOrCreatePushDeviceId();
-
-		if (!deviceId) {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.deviceIdUnavailable);
-		}
-
-		const token = await getFirebaseMessagingToken({
-			vapidKey,
-			serviceWorkerRegistration: serviceWorkerRegistration ?? undefined,
-		});
-
-		if (!token) {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.tokenIssueFailed);
-		}
-
-		await registerPushToken({
-			platform: "WEB",
-			deviceId,
-			newToken: token,
-		});
-
-		return updateWebPushSetting({ enabled: true });
+		return { enabled: true };
 	};
 
 	const disableWebPushSetting = async (): Promise<WebPushSettingDto> => {
