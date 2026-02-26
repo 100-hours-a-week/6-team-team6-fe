@@ -11,6 +11,7 @@ import { z } from "zod";
 
 import { resolveAuthErrorMessage } from "@/features/auth/lib/auth-error-message";
 import { loginSchema } from "@/features/auth/schemas";
+import { requestNotificationPermission } from "@/features/notification/lib/requestNotificationPermission";
 
 import { routeConst } from "@/shared/lib/constants";
 import { authErrorMessages } from "@/shared/lib/error-messages";
@@ -62,6 +63,7 @@ function useLoginForm(onSubmit?: LoginFormSubmit) {
 			}
 
 			if (result.ok) {
+				await requestNotificationPermission();
 				router.replace(result.url ?? routeConst.DEFAULT_AUTH_REDIRECT_PATH);
 			} else {
 				setSubmitError(authErrorMessages.loginUnknown);
