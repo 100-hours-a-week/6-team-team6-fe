@@ -28,26 +28,6 @@ self.addEventListener("activate", (event) => {
 	event.waitUntil(self.clients.claim());
 });
 
-const buildNotificationTargetUrl = (notificationData) => {
-	const fallbackUrl = "/"; // TODO: 알람 센터 (phase 3)
-	const chatroomId = notificationData.chatroomId;
-	const messageId = notificationData.messageId;
-
-	if (!chatroomId) {
-		return fallbackUrl;
-	}
-
-	const searchParams = new URLSearchParams();
-	if (messageId) {
-		searchParams.set("messageId", messageId);
-	}
-
-	const queryString = searchParams.toString();
-	return queryString
-		? `/chat/${encodeURIComponent(chatroomId)}?${queryString}`
-		: `/chat/${encodeURIComponent(chatroomId)}`;
-};
-
 const openOrFocusClientWindow = async (targetUrl) => {
 	const clientList = await self.clients.matchAll({
 		type: "window",
@@ -98,10 +78,11 @@ self.addEventListener("notificationclick", (event) => {
 	event.notification.close();
 
 	const notificationData = event.notification.data ?? {};
+
 	const targetUrl =
-		typeof notificationData.targetUrl === "string"
+		typeof notificationData.targetUrl === "string" && notificationData.targetUrl.length > 0
 			? notificationData.targetUrl
-			: buildNotificationTargetUrl(notificationData);
+			: "/";
 
 	event.waitUntil(openOrFocusClientWindow(targetUrl));
 });

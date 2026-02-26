@@ -8,15 +8,10 @@ import {
 	deletePushToken,
 	getWebPushSetting,
 	notificationQueryKeys,
-	registerPushToken,
 } from "@/features/notification/api";
+import { enableWebPush } from "@/features/notification/lib/enableWebPush";
 
-import {
-	getFirebaseMessagingToken,
-	getFirebaseMessagingVapidKey,
-	registerFirebaseMessagingServiceWorker,
-} from "@/shared/lib/firebase-messaging";
-import { getOrCreatePushDeviceId, getPushDeviceId } from "@/shared/lib/push-device";
+import { getPushDeviceId } from "@/shared/lib/push-device";
 
 export function WebPushRegistrationBridge() {
 	const queryClient = useQueryClient();
@@ -50,32 +45,7 @@ export function WebPushRegistrationBridge() {
 					return;
 				}
 
-				const vapidKey = getFirebaseMessagingVapidKey();
-				if (!vapidKey) {
-					return;
-				}
-
-				const serviceWorkerRegistration = await registerFirebaseMessagingServiceWorker();
-				const deviceId = getOrCreatePushDeviceId();
-
-				if (!deviceId) {
-					return;
-				}
-
-				const token = await getFirebaseMessagingToken({
-					vapidKey,
-					serviceWorkerRegistration: serviceWorkerRegistration ?? undefined,
-				});
-
-				if (!token) {
-					return;
-				}
-
-				await registerPushToken({
-					platform: "WEB",
-					deviceId,
-					newToken: token,
-				});
+				await enableWebPush();
 			} catch {
 				// NOTE: 앱 시작 시 자동 동기화는 best-effort로 처리
 				// 실패하더라도 사용자에게 알리지 않고 조용히 실패 처리

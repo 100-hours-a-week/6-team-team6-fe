@@ -10,19 +10,18 @@ import {
 	deletePushToken,
 	getWebPushSetting,
 	type GetWebPushSettingError,
-	registerPushToken,
 	updateWebPushSetting,
 } from "@/features/notification/api";
+import { enableWebPush, type EnableWebPushResult } from "@/features/notification/lib/enableWebPush";
+import {
+	getCurrentNotificationPermission,
+	requestNotificationPermission,
+} from "@/features/notification/lib/requestNotificationPermission";
 import type { WebPushSettingDto } from "@/features/notification/schemas";
 
 import { getApiErrorCode } from "@/shared/lib/api/error-guards";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
-import {
-	getFirebaseMessagingServiceWorkerRegistration,
-	getFirebaseMessagingToken,
-	getFirebaseMessagingVapidKey,
-} from "@/shared/lib/firebase-messaging";
-import { getOrCreatePushDeviceId, getPushDeviceId } from "@/shared/lib/push-device";
+import { getPushDeviceId } from "@/shared/lib/push-device";
 
 interface WebPushSettingState {
 	isEnabled: boolean;
@@ -70,23 +69,44 @@ const isPermissionDeniedError = (error: unknown) =>
 	error instanceof Error &&
 	error.message === NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
 
+const resolveEnableWebPushFailureMessage = (result: EnableWebPushResult) => {
+	switch (result) {
+		case "unsupported":
+			return NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported;
+		case "permission_denied":
+			return NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
+		case "vapid_missing":
+			return NOTIFICATION_SETTINGS_MESSAGES.vapidKeyMissing;
+		case "device_id_unavailable":
+			return NOTIFICATION_SETTINGS_MESSAGES.deviceIdUnavailable;
+		case "token_issue_failed":
+			return NOTIFICATION_SETTINGS_MESSAGES.tokenIssueFailed;
+		case "enabled":
+		default:
+			return null;
+	}
+};
+
 const showNotificationPermissionToast = () => {
-	const permission =
-		typeof window !== "undefined" && "Notification" in window ? Notification.permission : null;
+	const permission = getCurrentNotificationPermission();
 
 	if (permission === "default") {
 		toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied, {
 			action: {
 				label: "권한 허용",
-				onClick: () => {
-					void Notification.requestPermission().then((nextPermission) => {
-						if (nextPermission === "granted") {
-							toast.success(NOTIFICATION_SETTINGS_MESSAGES.permissionGrantedRetry);
-							return;
-						}
+				onClick: async () => {
+					const nextPermission = await requestNotificationPermission();
+					if (nextPermission === "unsupported") {
+						toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported);
+						return;
+					}
 
-						toast.error(NOTIFICATION_SETTINGS_MESSAGES.permissionStillDenied);
-					});
+					if (nextPermission === "granted") {
+						toast.success(NOTIFICATION_SETTINGS_MESSAGES.permissionGrantedRetry);
+						return;
+					}
+
+					toast.error(NOTIFICATION_SETTINGS_MESSAGES.permissionStillDenied);
 				},
 			},
 		});
@@ -111,45 +131,22 @@ function useWebPushSetting(): {
 	});
 
 	const enableWebPushSetting = async (): Promise<WebPushSettingDto> => {
-		if (typeof window === "undefined" || !("Notification" in window)) {
+		const permission = await requestNotificationPermission();
+		if (permission === "unsupported") {
 			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported);
 		}
-
-		const permission =
-			Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
 
 		if (permission !== "granted") {
 			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied);
 		}
 
-		const vapidKey = getFirebaseMessagingVapidKey();
-		if (!vapidKey) {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.vapidKeyMissing);
+		const result = await enableWebPush();
+		const failureMessage = resolveEnableWebPushFailureMessage(result);
+		if (failureMessage) {
+			throw new Error(failureMessage);
 		}
 
-		const serviceWorkerRegistration = await getFirebaseMessagingServiceWorkerRegistration();
-		const deviceId = getOrCreatePushDeviceId();
-
-		if (!deviceId) {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.deviceIdUnavailable);
-		}
-
-		const token = await getFirebaseMessagingToken({
-			vapidKey,
-			serviceWorkerRegistration: serviceWorkerRegistration ?? undefined,
-		});
-
-		if (!token) {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.tokenIssueFailed);
-		}
-
-		await registerPushToken({
-			platform: "WEB",
-			deviceId,
-			newToken: token,
-		});
-
-		return updateWebPushSetting({ enabled: true });
+		return { enabled: true };
 	};
 
 	const disableWebPushSetting = async (): Promise<WebPushSettingDto> => {
