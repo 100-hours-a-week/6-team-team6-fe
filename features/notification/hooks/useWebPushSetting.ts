@@ -13,6 +13,10 @@ import {
 	registerPushToken,
 	updateWebPushSetting,
 } from "@/features/notification/api";
+import {
+	getCurrentNotificationPermission,
+	requestNotificationPermission,
+} from "@/features/notification/lib/requestNotificationPermission";
 import type { WebPushSettingDto } from "@/features/notification/schemas";
 
 import { getApiErrorCode } from "@/shared/lib/api/error-guards";
@@ -71,22 +75,25 @@ const isPermissionDeniedError = (error: unknown) =>
 	error.message === NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
 
 const showNotificationPermissionToast = () => {
-	const permission =
-		typeof window !== "undefined" && "Notification" in window ? Notification.permission : null;
+	const permission = getCurrentNotificationPermission();
 
 	if (permission === "default") {
 		toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied, {
 			action: {
 				label: "권한 허용",
-				onClick: () => {
-					void Notification.requestPermission().then((nextPermission) => {
-						if (nextPermission === "granted") {
-							toast.success(NOTIFICATION_SETTINGS_MESSAGES.permissionGrantedRetry);
-							return;
-						}
+				onClick: async () => {
+					const nextPermission = await requestNotificationPermission();
+					if (nextPermission === "unsupported") {
+						toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported);
+						return;
+					}
 
-						toast.error(NOTIFICATION_SETTINGS_MESSAGES.permissionStillDenied);
-					});
+					if (nextPermission === "granted") {
+						toast.success(NOTIFICATION_SETTINGS_MESSAGES.permissionGrantedRetry);
+						return;
+					}
+
+					toast.error(NOTIFICATION_SETTINGS_MESSAGES.permissionStillDenied);
 				},
 			},
 		});
@@ -111,12 +118,10 @@ function useWebPushSetting(): {
 	});
 
 	const enableWebPushSetting = async (): Promise<WebPushSettingDto> => {
-		if (typeof window === "undefined" || !("Notification" in window)) {
+		const permission = await requestNotificationPermission();
+		if (permission === "unsupported") {
 			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported);
 		}
-
-		const permission =
-			Notification.permission === "granted" ? "granted" : await Notification.requestPermission();
 
 		if (permission !== "granted") {
 			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied);
