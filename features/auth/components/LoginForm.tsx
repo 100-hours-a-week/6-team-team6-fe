@@ -14,10 +14,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Form } from "@/shared/components/ui/form";
 import { Spinner } from "@/shared/components/ui/spinner";
 
-interface LoginFormProps {
-	onSubmit?: LoginFormSubmit;
-}
-
 type LoginFormViewProps = {
 	form: UseFormReturn<LoginFormValues>;
 	onSubmit: LoginFormSubmit;
@@ -69,9 +65,8 @@ function LoginFormView({ form, onSubmit, submitError, isSubmitting }: LoginFormV
 	);
 }
 
-function LoginForm(props: LoginFormProps) {
-	const { onSubmit } = props;
-	const { form, submitError, isSubmitting, handleFormSubmit } = useLoginForm(onSubmit);
+function LoginForm() {
+	const { form, submitError, isSubmitting, handleFormSubmit } = useLoginForm();
 
 	return (
 		<LoginFormView
