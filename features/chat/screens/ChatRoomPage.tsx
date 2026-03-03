@@ -202,7 +202,6 @@ export function ChatRoomPage() {
 			{isPostInfoLoading ? (
 				<div className="flex items-center justify-center gap-2 px-4 py-6 text-muted-foreground">
 					<Spinner />
-					{/* <Typography type="body-sm">채팅 정보를 불러오는 중</Typography> */}
 				</div>
 			) : isPostInfoError || !postInfo ? (
 				<div className="flex items-center justify-center px-4 py-6 text-muted-foreground">
