@@ -13,7 +13,6 @@ import type { ChatMessages } from "@/features/chat/lib/types";
 
 interface UseChatRoomStompProps {
 	messages: ChatMessages;
-	submitMessage: (text: string) => void;
 }
 
 interface UseChatRoomStompResult {
@@ -23,7 +22,7 @@ interface UseChatRoomStompResult {
 }
 
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {
-	const { messages, submitMessage } = props;
+	const { messages } = props;
 	const params = useParams<{ chatRoomId?: string }>();
 	const { data: session } = useSession();
 
@@ -69,7 +68,6 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		usePendingStompQueue({
 			authHeader,
 			chatroomId,
-			submitMessage,
 			stompClientRef,
 			isStompConnectedRef,
 			myMembershipIdRef,

@@ -8,7 +8,6 @@ import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
 type UsePendingStompQueueParams = {
 	authHeader: string | null;
 	chatroomId: number | null;
-	submitMessage: (text: string) => void;
 	stompClientRef: RefObject<Client | null>;
 	isStompConnectedRef: RefObject<boolean>;
 	myMembershipIdRef: RefObject<number | null>;
@@ -30,14 +29,8 @@ type StompBodyFactory = (membershipId: number) => Record<string, unknown>;
 export function usePendingStompQueue(
 	params: UsePendingStompQueueParams,
 ): UsePendingStompQueueResult {
-	const {
-		authHeader,
-		chatroomId,
-		submitMessage,
-		stompClientRef,
-		isStompConnectedRef,
-		myMembershipIdRef,
-	} = params;
+	const { authHeader, chatroomId, stompClientRef, isStompConnectedRef, myMembershipIdRef } =
+		params;
 
 	const pendingMessagesRef = useRef<string[]>([]);
 
@@ -55,13 +48,9 @@ export function usePendingStompQueue(
 		return { client, membershipId };
 	}, [isStompConnectedRef, myMembershipIdRef, stompClientRef]);
 
-	const enqueuePendingMessage = useCallback(
-		(text: string) => {
-			pendingMessagesRef.current = [...pendingMessagesRef.current, text];
-			submitMessage(text);
-		},
-		[submitMessage],
-	);
+	const enqueuePendingMessage = useCallback((text: string) => {
+		pendingMessagesRef.current = [...pendingMessagesRef.current, text];
+	}, []);
 
 	const publishWithMembership = useCallback(
 		(destination: string, buildBody: StompBodyFactory) => {
@@ -119,10 +108,8 @@ export function usePendingStompQueue(
 				enqueuePendingMessage(text);
 				return;
 			}
-
-			submitMessage(text);
 		},
-		[enqueuePendingMessage, publishMessage, submitMessage],
+		[enqueuePendingMessage, publishMessage],
 	);
 
 	const markAsReadByStomp = useCallback(

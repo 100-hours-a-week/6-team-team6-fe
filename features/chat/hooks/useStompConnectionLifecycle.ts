@@ -158,12 +158,9 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 				return;
 			}
 
-			if (
+			const isOwnMessage =
 				myMembershipIdRef.current !== null &&
-				messagePayload.membershipId === myMembershipIdRef.current
-			) {
-				return;
-			}
+				messagePayload.membershipId === myMembershipIdRef.current;
 
 			const shouldReuseRealtimeMessages = realtimeChatroomIdRef.current === chatroomId;
 			realtimeChatroomIdRef.current = chatroomId;
@@ -177,7 +174,7 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 
 				const nextMessage: ChatMessage = {
 					messageId: messagePayload.messageId,
-					who: "partner",
+					who: isOwnMessage ? "me" : "partner",
 					message: messagePayload.messageContent,
 					createdAt: messagePayload.createdAt,
 				};

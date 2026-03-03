@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 import { useParams, useSearchParams } from "next/navigation";
 
@@ -11,7 +11,7 @@ import type { GetChatroomPostIdError } from "@/features/chat/api/getChatroomPost
 import { getChatroomPostId } from "@/features/chat/api/getChatroomPostId";
 import type { GetChatroomPostInfoError } from "@/features/chat/api/getChatroomPostInfo";
 import { getChatroomPostInfo } from "@/features/chat/api/getChatroomPostInfo";
-import type { ChatMessage, ChatMessages, ChatPostInfoData } from "@/features/chat/lib/types";
+import type { ChatMessages, ChatPostInfoData } from "@/features/chat/lib/types";
 import type { ChatMessagesResponseDto } from "@/features/chat/schemas";
 
 export type UseChatRoomResult = {
@@ -24,7 +24,6 @@ export type UseChatRoomResult = {
 	hasMoreMessage: boolean;
 	isLoadingPreviousMessage: boolean;
 	loadMoreMessages: () => void;
-	submitMessage: (text: string) => void;
 };
 
 const CHAT_ROOM_PREFETCH_STALE_TIME_MS = 60_000;
@@ -89,15 +88,9 @@ export function useChatRoom(): UseChatRoomResult {
 		enabled: chatroomId !== null && resolvedPostId !== null,
 	});
 
-	const [optimisticMessages, setOptimisticMessages] = useState<ChatMessages>([]);
-
 	const messages = useMemo(() => {
-		const fetched = messagesQuery.data?.pages.flatMap((page) => page.messages) ?? [];
-		if (optimisticMessages.length === 0) {
-			return fetched;
-		}
-		return [...optimisticMessages, ...fetched];
-	}, [messagesQuery.data, optimisticMessages]);
+		return messagesQuery.data?.pages.flatMap((page) => page.messages) ?? [];
+	}, [messagesQuery.data]);
 
 	const loadMoreMessages = useCallback(() => {
 		if (!messagesQuery.hasNextPage || messagesQuery.isFetchingNextPage) {
@@ -105,16 +98,6 @@ export function useChatRoom(): UseChatRoomResult {
 		}
 		void messagesQuery.fetchNextPage();
 	}, [messagesQuery]);
-
-	const submitMessage = useCallback((text: string) => {
-		const nextMessage: ChatMessage = {
-			messageId: `local-${Date.now()}`,
-			who: "me",
-			message: text,
-			createdAt: new Date().toISOString(),
-		};
-		setOptimisticMessages((prev) => [nextMessage, ...prev]);
-	}, []);
 
 	return {
 		postInfo: postInfoQuery.data ?? null,
@@ -126,6 +109,5 @@ export function useChatRoom(): UseChatRoomResult {
 		hasMoreMessage: messagesQuery.hasNextPage ?? false,
 		isLoadingPreviousMessage: messagesQuery.isFetchingNextPage,
 		loadMoreMessages,
-		submitMessage,
 	};
 }

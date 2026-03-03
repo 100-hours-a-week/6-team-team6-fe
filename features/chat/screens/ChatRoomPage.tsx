@@ -208,12 +208,8 @@ export function ChatRoomPage() {
 		hasMoreMessage,
 		isLoadingPreviousMessage,
 		loadMoreMessages,
-		submitMessage,
 	} = useChatRoom();
-	const { mergedMessages, submitMessageByStomp } = useChatRoomStomp({
-		messages,
-		submitMessage,
-	});
+	const { mergedMessages, submitMessageByStomp } = useChatRoomStomp({ messages });
 	const isChatUnavailable = postInfo?.isPostDeleted ?? false;
 
 	return (
