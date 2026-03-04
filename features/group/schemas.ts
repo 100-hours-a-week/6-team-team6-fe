@@ -6,7 +6,7 @@ import {
 	GROUP_INVITE_NICKNAME_MIN_LENGTH,
 } from "@/features/group/lib/groupInvite";
 
-const GROUP_NAME_REGEX = /^[가-힣A-Za-z0-9]+$/;
+const GROUP_NAME_REGEX = /^[가-힣A-Za-z0-9 ]+$/;
 const GROUP_NAME_MIN_LENGTH = 2;
 const GROUP_NAME_MAX_LENGTH = 30;
 
