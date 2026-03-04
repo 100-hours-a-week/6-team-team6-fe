@@ -76,6 +76,8 @@ const ChatroomPostInfoSchema = z.object({
 	rentalFee: nonNegativeNumber,
 	feeUnit: feeUnitSchema,
 	rentalStatus: rentalStatusSchema,
+	isPartnerLeftGroup: z.boolean(),
+	isPostDeleted: z.boolean(),
 });
 const ChatroomPostInfoApiSchema = ChatroomPostInfoSchema;
 const ChatroomPostInfoDtoSchema = ChatroomPostInfoSchema;

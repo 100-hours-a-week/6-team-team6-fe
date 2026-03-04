@@ -1,3 +1,5 @@
+import type { ChatroomPostInfoDto } from "@/features/chat/schemas";
+
 export type ChatSummary = {
 	chatRoomId: number;
 	postFirstImageUrl: string;
@@ -29,18 +31,7 @@ export type ChatMessage = {
 
 export type ChatMessages = ChatMessage[];
 
-export type ChatPostInfoData = {
-	partnerId: number;
-	partnerNickname: string;
-	groupId: number;
-	groupName: string;
-	postId: number;
-	postTitle: string;
-	postFirstImageUrl: string;
-	rentalFee: number;
-	feeUnit: "HOUR" | "DAY";
-	rentalStatus: "AVAILABLE" | "RENTED_OUT";
-};
+export type ChatPostInfoData = ChatroomPostInfoDto;
 
 export type ChatRoomListLabels = {
 	loading: string;
