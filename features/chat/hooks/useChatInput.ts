@@ -2,22 +2,26 @@ import { useCallback, useState } from "react";
 
 interface UseChatInputProps {
 	onSubmit: (text: string) => void;
+	disabled?: boolean;
 }
 
 export function useChatInput(props: UseChatInputProps) {
-	const { onSubmit } = props;
+	const { onSubmit, disabled = false } = props;
 
 	const [value, setValue] = useState("");
 	const [isComposing, setIsComposing] = useState(false);
 
 	const submitValue = useCallback(() => {
+		if (disabled) {
+			return;
+		}
 		const trimmed = value.trim();
 		if (!trimmed) {
 			return;
 		}
 		onSubmit(trimmed);
 		setValue("");
-	}, [onSubmit, value]);
+	}, [disabled, onSubmit, value]);
 
 	const handleSubmit = useCallback(
 		(event: React.FormEvent<HTMLFormElement>) => {
@@ -29,6 +33,9 @@ export function useChatInput(props: UseChatInputProps) {
 
 	const handleKeyDown = useCallback(
 		(event: React.KeyboardEvent<HTMLTextAreaElement>) => {
+			if (disabled) {
+				return;
+			}
 			if (isComposing || event.nativeEvent.isComposing) {
 				return;
 			}
@@ -39,12 +46,15 @@ export function useChatInput(props: UseChatInputProps) {
 			event.preventDefault();
 			submitValue();
 		},
-		[isComposing, submitValue],
+		[disabled, isComposing, submitValue],
 	);
 
 	const handleChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
+		if (disabled) {
+			return;
+		}
 		setValue(event.target.value);
-	}, []);
+	}, [disabled]);
 
 	const handleCompositionStart = useCallback(() => {
 		setIsComposing(true);

@@ -1,12 +1,9 @@
-import {
-	ChatroomPostIdResponseApiSchema,
-	ChatroomPostInfoApiSchema,
-} from "@/features/chat/schemas";
+import { dehydrate, HydrationBoundary, QueryClient } from "@tanstack/react-query";
+
+import { chatQueryKeys } from "@/features/chat/api/chatQueries";
+import { getChatroomPostInfoServer } from "@/features/chat/api/getChatroomPostInfoServer";
 
 import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader";
-
-import { apiServer } from "@/shared/lib/api/api-server";
-import { requestJson } from "@/shared/lib/api/request";
 
 interface ChatRoomLayoutProps {
 	children: React.ReactNode;
@@ -15,29 +12,26 @@ interface ChatRoomLayoutProps {
 	}>;
 }
 
-const fetchPartnerNickname = async (chatroomId: number) => {
-	const postIdResponse = await requestJson(
-		apiServer.get(`chatrooms/${chatroomId}/post`, { throwHttpErrors: false }),
-		ChatroomPostIdResponseApiSchema,
-	);
-	const postInfo = await requestJson(
-		apiServer.get(`posts/${postIdResponse.postId}/chatrooms/${chatroomId}/post`, {
-			throwHttpErrors: false,
-		}),
-		ChatroomPostInfoApiSchema,
-	);
-	return postInfo.partnerNickname;
-};
-
 async function ChatRoomLayout(props: ChatRoomLayoutProps) {
 	const { children, params } = props;
 	const { chatRoomId } = await params;
 	const parsedChatroomId = Number(chatRoomId);
+	const queryClient = new QueryClient();
+
 	let title = "";
 
 	if (!Number.isNaN(parsedChatroomId)) {
 		try {
-			title = await fetchPartnerNickname(parsedChatroomId);
+			const { postId, postInfo } = await getChatroomPostInfoServer({
+				chatroomId: parsedChatroomId,
+			});
+
+			queryClient.setQueryData(chatQueryKeys.chatroomPostId(parsedChatroomId), { postId });
+			queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(parsedChatroomId, postId), postInfo);
+
+			title = postInfo.isPartnerLeftGroup
+				? `${postInfo.partnerNickname}(탈퇴)`
+				: postInfo.partnerNickname;
 		} catch {
 			// TODO fallback logic
 		}
@@ -46,7 +40,7 @@ async function ChatRoomLayout(props: ChatRoomLayoutProps) {
 	return (
 		<div className="relative">
 			<TitleBackHeader title={title} />
-			{children}
+			<HydrationBoundary state={dehydrate(queryClient)}>{children}</HydrationBoundary>
 		</div>
 	);
 }

@@ -24,7 +24,8 @@ import { usePwaInstallPrompt } from "@/shared/hooks/usePwaInstallPrompt";
 
 const DISMISS_STORAGE_KEY = "billage:pwa-install-banner-dismissed-at";
 const DISMISS_DURATION = 1000 * 60 * 60 * 24;
-const PWA_INSTALL_GUIDE_URL = "https://billages.notion.site/Billage-3135e71cb26c80b7a590e7a8b9a444c1";
+const PWA_INSTALL_GUIDE_URL =
+	"https://billages.notion.site/Billage-3135e71cb26c80b7a590e7a8b9a444c1";
 
 const getDismissedState = () => {
 	if (typeof window === "undefined") {
@@ -113,7 +114,7 @@ function PwaInstallBanner() {
 
 	return (
 		<>
-			<div className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur-sm">
+			<div className="sticky top-0 z-30 border-b border-border bg-card/95 backdrop-blur-sm max-w-(--app-max-width) mx-auto">
 				<HorizontalPaddingBox className="py-2">
 					<div className="flex items-center gap-3">
 						<div className="size-10 shrink-0 overflow-hidden rounded-xl border border-border bg-background">
@@ -130,10 +131,14 @@ function PwaInstallBanner() {
 								빌리지를 설치해 보세요
 							</Typography>
 							<Typography type="caption" className="truncate-1">
-								홈 화면에서 더 빠르게 접속할 수 있어요.
+								홈에서 더 빠르게 접속할 수 있어요.
 							</Typography>
 						</div>
-						<Button size="sm" className="h-8 px-3 text-xs" onClick={() => void handleInstallAction()}>
+						<Button
+							size="sm"
+							className="h-8 px-3 text-xs"
+							onClick={() => void handleInstallAction()}
+						>
 							<DownloadIcon className="size-3.5" />
 							{isInstallable ? "설치" : "방법"}
 						</Button>
@@ -154,8 +159,8 @@ function PwaInstallBanner() {
 				<DrawerContent>
 					<DrawerHeader className="text-left">
 						<DrawerTitle>앱 설치 방법</DrawerTitle>
-						<DrawerDescription >
-							{'브라우저마다 메뉴 이름이 조금 다를 수 있어요. \n 아래 순서대로 진행해 주세요.'}
+						<DrawerDescription>
+							{"브라우저마다 메뉴 이름이 조금 다를 수 있어요. \n 아래 순서대로 진행해 주세요."}
 						</DrawerDescription>
 					</DrawerHeader>
 

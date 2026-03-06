@@ -19,6 +19,7 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Typography } from "@/shared/components/ui/typography";
 
 import { formatRentalFeeLabel } from "@/shared/lib/format";
+import { cn } from "@/shared/lib/utils";
 
 interface ChatPostInfoProps {
 	postInfo: ChatPostInfoData;
@@ -26,16 +27,27 @@ interface ChatPostInfoProps {
 
 function ChatPostInfo(props: ChatPostInfoProps) {
 	const { postInfo } = props;
-	const { groupId, postId, postFirstImageUrl, postTitle, rentalFee, feeUnit, rentalStatus } =
-		postInfo;
+	const {
+		groupId,
+		postId,
+		postFirstImageUrl,
+		postTitle,
+		rentalFee,
+		feeUnit,
+		rentalStatus,
+		isPostDeleted,
+	} = postInfo;
 	const feeLabel = formatRentalFeeLabel(rentalFee, feeUnit);
 	const statusLabel = rentalStatus === "RENTED_OUT" ? "대여 중" : "대여 가능";
 
 	return (
-		<Link href={`/groups/${groupId}/posts/${postId}`} className="block">
+		<Link href={`/groups/${groupId}/posts/${postId}`} className="border-none">
 			<Card
 				size="sm"
-				className="transition-colors hover:bg-muted/40 border-0 border-t-none border-l-none border-r-none border-b-none"
+				className={cn(
+					"relative border-0 rounded-none",
+					isPostDeleted ? "overflow-hidden" : "transition-colors hover:bg-muted/40",
+				)}
 			>
 				<CardContent className="flex items-center gap-3 border-0">
 					<Image
@@ -47,15 +59,18 @@ function ChatPostInfo(props: ChatPostInfoProps) {
 					/>
 					<div className="flex min-w-0 flex-1 flex-col gap-1">
 						<Typography type="subtitle" className="truncate">
-							{postTitle}
+							{isPostDeleted ? <span className="font-bold mr-1">(삭제됨)</span> : null}
+							<span>{postTitle}</span>
 						</Typography>
 						<Typography type="body-sm" className="text-muted-foreground">
 							{feeLabel}
 						</Typography>
 					</div>
-					<Badge variant={rentalStatus === "RENTED_OUT" ? "secondary" : "outline"}>
-						{statusLabel}
-					</Badge>
+					{isPostDeleted ? null : (
+						<Badge variant={rentalStatus === "RENTED_OUT" ? "secondary" : "outline"}>
+							{statusLabel}
+						</Badge>
+					)}
 				</CardContent>
 			</Card>
 		</Link>
@@ -104,11 +119,6 @@ function ChatMessageList({
 						<Spinner className="text-muted-foreground" />
 					</div>
 				)}
-				{/* {!hasMoreMessage && (
-					<Typography type="caption" className="text-center text-muted-foreground">
-						이전 메시지가 없습니다.
-					</Typography> */}
-				{/* )} */}
 				{messageEntries.map(({ message, isMe, timeLabel }, index) => {
 					return (
 						<div
@@ -145,10 +155,12 @@ function ChatMessageList({
 
 interface ChatInputProps {
 	onSubmit: (text: string) => void;
+	isDisabled?: boolean;
+	disabledMessage?: string;
 }
 
 function ChatInput(props: ChatInputProps) {
-	const { onSubmit } = props;
+	const { onSubmit, isDisabled = false, disabledMessage = "상대방과 대화가 불가능합니다." } = props;
 	const {
 		value,
 		handleChange,
@@ -156,7 +168,7 @@ function ChatInput(props: ChatInputProps) {
 		handleSubmit,
 		handleCompositionStart,
 		handleCompositionEnd,
-	} = useChatInput({ onSubmit });
+	} = useChatInput({ onSubmit, disabled: isDisabled });
 
 	return (
 		<NavigationLayout>
@@ -167,11 +179,17 @@ function ChatInput(props: ChatInputProps) {
 					onKeyDown={handleKeyDown}
 					onCompositionStart={handleCompositionStart}
 					onCompositionEnd={handleCompositionEnd}
-					placeholder="메시지를 입력하세요"
+					placeholder={isDisabled ? disabledMessage : "메시지를 입력하세요"}
 					rows={1}
+					disabled={isDisabled}
 					className="h-10 min-h-10 resize-none overflow-y-auto no-scrollbar"
 				/>
-				<Button type="submit" size="xl" className="w-20 h-10">
+				<Button
+					type="submit"
+					size="xl"
+					className="w-20 h-10"
+					disabled={isDisabled || value.trim() === ""}
+				>
 					전송
 				</Button>
 			</form>
@@ -196,13 +214,13 @@ export function ChatRoomPage() {
 		messages,
 		submitMessage,
 	});
+	const isChatUnavailable = postInfo?.isPostDeleted ?? false;
 
 	return (
 		<div className="flex flex-col h-[calc(100dvh-var(--h-header))]">
 			{isPostInfoLoading ? (
 				<div className="flex items-center justify-center gap-2 px-4 py-6 text-muted-foreground">
 					<Spinner />
-					{/* <Typography type="body-sm">채팅 정보를 불러오는 중</Typography> */}
 				</div>
 			) : isPostInfoError || !postInfo ? (
 				<div className="flex items-center justify-center px-4 py-6 text-muted-foreground">
@@ -229,7 +247,7 @@ export function ChatRoomPage() {
 					isLoadingPreviousMessage={isLoadingPreviousMessage}
 				/>
 			)}
-			<ChatInput onSubmit={submitMessageByStomp} />
+			<ChatInput onSubmit={submitMessageByStomp} isDisabled={isChatUnavailable} />
 		</div>
 	);
 }

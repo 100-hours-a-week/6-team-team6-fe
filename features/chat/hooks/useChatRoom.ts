@@ -27,6 +27,8 @@ export type UseChatRoomResult = {
 	submitMessage: (text: string) => void;
 };
 
+const CHAT_ROOM_PREFETCH_STALE_TIME_MS = 60_000;
+
 export function useChatRoom(): UseChatRoomResult {
 	const params = useParams<{ chatRoomId?: string }>();
 	const searchParams = useSearchParams();
@@ -51,6 +53,7 @@ export function useChatRoom(): UseChatRoomResult {
 		queryKey: chatQueryKeys.chatroomPostId(chatroomId),
 		queryFn: () => getChatroomPostId({ chatroomId: chatroomId as number }),
 		enabled: chatroomId !== null && postIdFromQuery === null,
+		staleTime: CHAT_ROOM_PREFETCH_STALE_TIME_MS,
 	});
 
 	const resolvedPostId = postIdFromQuery ?? postIdQuery.data?.postId ?? null;
@@ -63,6 +66,7 @@ export function useChatRoom(): UseChatRoomResult {
 				chatroomId: chatroomId as number,
 			}),
 		enabled: chatroomId !== null && resolvedPostId !== null,
+		staleTime: CHAT_ROOM_PREFETCH_STALE_TIME_MS,
 	});
 
 	const messagesQuery = useInfiniteQuery<
