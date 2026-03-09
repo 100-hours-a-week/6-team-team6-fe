@@ -26,6 +26,10 @@ type PublishContext = {
 
 type StompBodyFactory = (membershipId: number) => Record<string, unknown>;
 
+function createClientMessageId() {
+	return crypto.randomUUID();
+}
+
 export function usePendingStompQueue(
 	params: UsePendingStompQueueParams,
 ): UsePendingStompQueueResult {
@@ -80,6 +84,7 @@ export function usePendingStompQueue(
 				chatroomId,
 				message: text,
 				membershipId,
+				clientMessageId: createClientMessageId(),
 			}));
 		},
 		[chatroomId, publishWithMembership],
