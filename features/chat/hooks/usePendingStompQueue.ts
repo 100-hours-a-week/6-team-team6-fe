@@ -1,6 +1,7 @@
 import { type RefObject, useCallback, useEffect, useRef } from "react";
 
 import type { Client } from "@stomp/stompjs";
+import { toast } from "sonner";
 
 import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
 import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
@@ -32,6 +33,14 @@ type PendingQueueItem = {
 	text: string;
 };
 
+type InFlightMessage = {
+	text: string;
+	timeoutId: ReturnType<typeof setTimeout>;
+};
+
+const ACK_TIMEOUT_MS = 8_000;
+const ACK_TIMEOUT_ERROR_MESSAGE = "메시지 전송에 실패했습니다. 네트워크 상태를 확인해 주세요.";
+
 function createClientMessageId() {
 	return crypto.randomUUID();
 }
@@ -43,12 +52,48 @@ export function usePendingStompQueue(
 		params;
 
 	const pendingMessagesRef = useRef<PendingQueueItem[]>([]);
-	const inFlightMessageMapRef = useRef<Map<string, string>>(new Map());
+	const inFlightMessageMapRef = useRef<Map<string, InFlightMessage>>(new Map());
+
+	const clearInFlightMessage = useCallback((clientMessageId: string) => {
+		const inFlightMessage = inFlightMessageMapRef.current.get(clientMessageId);
+		if (!inFlightMessage) {
+			return;
+		}
+
+		clearTimeout(inFlightMessage.timeoutId);
+		inFlightMessageMapRef.current.delete(clientMessageId);
+	}, []);
+
+	const clearAllInFlightMessages = useCallback(() => {
+		for (const inFlightMessage of inFlightMessageMapRef.current.values()) {
+			clearTimeout(inFlightMessage.timeoutId);
+		}
+		inFlightMessageMapRef.current = new Map();
+	}, []);
+
+	const registerInFlightMessage = useCallback(
+		(message: PendingQueueItem) => {
+			clearInFlightMessage(message.clientMessageId);
+			const timeoutId = setTimeout(() => {
+				inFlightMessageMapRef.current.delete(message.clientMessageId);
+				toast.error(ACK_TIMEOUT_ERROR_MESSAGE);
+			}, ACK_TIMEOUT_MS);
+
+			inFlightMessageMapRef.current.set(message.clientMessageId, {
+				text: message.text,
+				timeoutId,
+			});
+		},
+		[clearInFlightMessage],
+	);
 
 	useEffect(() => {
 		pendingMessagesRef.current = [];
-		inFlightMessageMapRef.current = new Map();
-	}, [chatroomId]);
+		clearAllInFlightMessages();
+		return () => {
+			clearAllInFlightMessages();
+		};
+	}, [chatroomId, clearAllInFlightMessages]);
 
 	const getPublishContext = useCallback((): PublishContext | null => {
 		const client = stompClientRef.current;
@@ -112,9 +157,9 @@ export function usePendingStompQueue(
 				break;
 			}
 
-			inFlightMessageMapRef.current.set(pendingMessage.clientMessageId, pendingMessage.text);
+			registerInFlightMessage(pendingMessage);
 		}
-	}, [publishMessage]);
+	}, [publishMessage, registerInFlightMessage]);
 
 	const submitMessageByStomp = useCallback(
 		(text: string) => {
@@ -128,26 +173,26 @@ export function usePendingStompQueue(
 				return;
 			}
 
-			inFlightMessageMapRef.current.set(pendingMessage.clientMessageId, pendingMessage.text);
+			registerInFlightMessage(pendingMessage);
 		},
-		[enqueuePendingMessage, publishMessage],
+		[enqueuePendingMessage, publishMessage, registerInFlightMessage],
 	);
 
 	const handleOwnMessageAck = useCallback(
 		(clientMessageId: string | null | undefined, messageContent: string) => {
 			if (clientMessageId && inFlightMessageMapRef.current.has(clientMessageId)) {
-				inFlightMessageMapRef.current.delete(clientMessageId);
+				clearInFlightMessage(clientMessageId);
 				return;
 			}
 
-			for (const [id, text] of inFlightMessageMapRef.current.entries()) {
-				if (text === messageContent) {
-					inFlightMessageMapRef.current.delete(id);
+			for (const [id, inFlightMessage] of inFlightMessageMapRef.current.entries()) {
+				if (inFlightMessage.text === messageContent) {
+					clearInFlightMessage(id);
 					return;
 				}
 			}
 		},
-		[],
+		[clearInFlightMessage],
 	);
 
 	const markAsReadByStomp = useCallback(
