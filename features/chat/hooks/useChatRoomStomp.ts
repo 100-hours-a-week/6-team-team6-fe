@@ -64,7 +64,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 			messages,
 		});
 
-	const { submitMessageByStomp, markAsReadByStomp, flushPendingMessages } =
+	const { submitMessageByStomp, markAsReadByStomp, flushPendingMessages, handleOwnMessageAck } =
 		usePendingStompQueue({
 			authHeader,
 			chatroomId,
@@ -86,6 +86,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		setRealtimeChatroomId,
 		setRealtimeMessages,
 		flushPendingMessages,
+		onOwnMessageAck: handleOwnMessageAck,
 	});
 
 	return {

@@ -17,6 +17,7 @@ type UsePendingStompQueueResult = {
 	submitMessageByStomp: (text: string) => void;
 	markAsReadByStomp: (readMessageId: string) => void;
 	flushPendingMessages: () => void;
+	handleOwnMessageAck: (clientMessageId: string | null | undefined, messageContent: string) => void;
 };
 
 type PublishContext = {
@@ -25,6 +26,11 @@ type PublishContext = {
 };
 
 type StompBodyFactory = (membershipId: number) => Record<string, unknown>;
+
+type PendingQueueItem = {
+	clientMessageId: string;
+	text: string;
+};
 
 function createClientMessageId() {
 	return crypto.randomUUID();
@@ -36,10 +42,12 @@ export function usePendingStompQueue(
 	const { authHeader, chatroomId, stompClientRef, isStompConnectedRef, myMembershipIdRef } =
 		params;
 
-	const pendingMessagesRef = useRef<string[]>([]);
+	const pendingMessagesRef = useRef<PendingQueueItem[]>([]);
+	const inFlightMessageMapRef = useRef<Map<string, string>>(new Map());
 
 	useEffect(() => {
 		pendingMessagesRef.current = [];
+		inFlightMessageMapRef.current = new Map();
 	}, [chatroomId]);
 
 	const getPublishContext = useCallback((): PublishContext | null => {
@@ -52,8 +60,8 @@ export function usePendingStompQueue(
 		return { client, membershipId };
 	}, [isStompConnectedRef, myMembershipIdRef, stompClientRef]);
 
-	const enqueuePendingMessage = useCallback((text: string) => {
-		pendingMessagesRef.current = [...pendingMessagesRef.current, text];
+	const enqueuePendingMessage = useCallback((message: PendingQueueItem) => {
+		pendingMessagesRef.current = [...pendingMessagesRef.current, message];
 	}, []);
 
 	const publishWithMembership = useCallback(
@@ -79,12 +87,12 @@ export function usePendingStompQueue(
 	);
 
 	const publishMessage = useCallback(
-		(text: string) => {
+		(message: PendingQueueItem) => {
 			return publishWithMembership(STOMP_DESTINATION.send, (membershipId) => ({
 				chatroomId,
-				message: text,
+				message: message.text,
 				membershipId,
-				clientMessageId: createClientMessageId(),
+				clientMessageId: message.clientMessageId,
 			}));
 		},
 		[chatroomId, publishWithMembership],
@@ -103,18 +111,43 @@ export function usePendingStompQueue(
 				pendingMessagesRef.current = pendingMessages.slice(index);
 				break;
 			}
+
+			inFlightMessageMapRef.current.set(pendingMessage.clientMessageId, pendingMessage.text);
 		}
 	}, [publishMessage]);
 
 	const submitMessageByStomp = useCallback(
 		(text: string) => {
-			const isPublished = publishMessage(text);
+			const pendingMessage: PendingQueueItem = {
+				clientMessageId: createClientMessageId(),
+				text,
+			};
+			const isPublished = publishMessage(pendingMessage);
 			if (!isPublished) {
-				enqueuePendingMessage(text);
+				enqueuePendingMessage(pendingMessage);
 				return;
 			}
+
+			inFlightMessageMapRef.current.set(pendingMessage.clientMessageId, pendingMessage.text);
 		},
 		[enqueuePendingMessage, publishMessage],
+	);
+
+	const handleOwnMessageAck = useCallback(
+		(clientMessageId: string | null | undefined, messageContent: string) => {
+			if (clientMessageId && inFlightMessageMapRef.current.has(clientMessageId)) {
+				inFlightMessageMapRef.current.delete(clientMessageId);
+				return;
+			}
+
+			for (const [id, text] of inFlightMessageMapRef.current.entries()) {
+				if (text === messageContent) {
+					inFlightMessageMapRef.current.delete(id);
+					return;
+				}
+			}
+		},
+		[],
 	);
 
 	const markAsReadByStomp = useCallback(
@@ -132,5 +165,6 @@ export function usePendingStompQueue(
 		submitMessageByStomp,
 		markAsReadByStomp,
 		flushPendingMessages,
+		handleOwnMessageAck,
 	};
 }
