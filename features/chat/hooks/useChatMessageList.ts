@@ -23,7 +23,21 @@ export function useChatMessageList(props: UseChatMessageListProps) {
 	const bottomRef = useRef<HTMLDivElement | null>(null);
 	const skipAutoScrollRef = useRef(false);
 
-	const orderedMessages = useMemo(() => [...messageList].reverse(), [messageList]);
+	const orderedMessages = useMemo(() => {
+		const chronologicalMessages = [...messageList].reverse();
+		const regularMessages: ChatMessages = [];
+		const retryableMessages: ChatMessages = [];
+
+		for (const message of chronologicalMessages) {
+			if (message.deliveryStatus === "failed" || message.deliveryStatus === "held") {
+				retryableMessages.push(message);
+				continue;
+			}
+			regularMessages.push(message);
+		}
+
+		return [...regularMessages, ...retryableMessages];
+	}, [messageList]);
 	const messageEntries = useMemo<ChatMessageEntry[]>(() => {
 		return orderedMessages.map((message, index) => {
 			const showTime = shouldShowTime(index, orderedMessages);
