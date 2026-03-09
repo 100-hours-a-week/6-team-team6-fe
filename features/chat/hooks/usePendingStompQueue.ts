@@ -4,11 +4,17 @@ import type { Client } from "@stomp/stompjs";
 import { toast } from "sonner";
 
 import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
+import {
+	clearChatPendingMessages,
+	readChatPendingMessages,
+	writeChatPendingMessages,
+} from "@/features/chat/lib/pending-storage";
 import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
 
 type UsePendingStompQueueParams = {
 	authHeader: string | null;
 	chatroomId: number | null;
+	userId: number | null;
 	stompClientRef: RefObject<Client | null>;
 	isStompConnectedRef: RefObject<boolean>;
 	myMembershipIdRef: RefObject<number | null>;
@@ -48,11 +54,30 @@ function createClientMessageId() {
 export function usePendingStompQueue(
 	params: UsePendingStompQueueParams,
 ): UsePendingStompQueueResult {
-	const { authHeader, chatroomId, stompClientRef, isStompConnectedRef, myMembershipIdRef } =
+	const { authHeader, chatroomId, userId, stompClientRef, isStompConnectedRef, myMembershipIdRef } =
 		params;
 
 	const pendingMessagesRef = useRef<PendingQueueItem[]>([]);
 	const inFlightMessageMapRef = useRef<Map<string, InFlightMessage>>(new Map());
+
+	const syncPendingStorage = useCallback(() => {
+		if (userId === null || chatroomId === null) {
+			return;
+		}
+
+		const pendingMap = new Map<string, PendingQueueItem>();
+		for (const pendingMessage of pendingMessagesRef.current) {
+			pendingMap.set(pendingMessage.clientMessageId, pendingMessage);
+		}
+		for (const [clientMessageId, inFlightMessage] of inFlightMessageMapRef.current.entries()) {
+			pendingMap.set(clientMessageId, {
+				clientMessageId,
+				text: inFlightMessage.text,
+			});
+		}
+
+		writeChatPendingMessages({ userId, chatroomId }, [...pendingMap.values()]);
+	}, [chatroomId, userId]);
 
 	const clearInFlightMessage = useCallback((clientMessageId: string) => {
 		const inFlightMessage = inFlightMessageMapRef.current.get(clientMessageId);
@@ -62,7 +87,8 @@ export function usePendingStompQueue(
 
 		clearTimeout(inFlightMessage.timeoutId);
 		inFlightMessageMapRef.current.delete(clientMessageId);
-	}, []);
+		syncPendingStorage();
+	}, [syncPendingStorage]);
 
 	const clearAllInFlightMessages = useCallback(() => {
 		for (const inFlightMessage of inFlightMessageMapRef.current.values()) {
@@ -77,23 +103,43 @@ export function usePendingStompQueue(
 			const timeoutId = setTimeout(() => {
 				inFlightMessageMapRef.current.delete(message.clientMessageId);
 				toast.error(ACK_TIMEOUT_ERROR_MESSAGE);
+				syncPendingStorage();
 			}, ACK_TIMEOUT_MS);
 
 			inFlightMessageMapRef.current.set(message.clientMessageId, {
 				text: message.text,
 				timeoutId,
 			});
+			syncPendingStorage();
 		},
-		[clearInFlightMessage],
+		[clearInFlightMessage, syncPendingStorage],
 	);
 
 	useEffect(() => {
 		pendingMessagesRef.current = [];
 		clearAllInFlightMessages();
+
+		if (userId !== null && chatroomId !== null) {
+			pendingMessagesRef.current = readChatPendingMessages({ userId, chatroomId });
+		}
+
 		return () => {
 			clearAllInFlightMessages();
 		};
-	}, [chatroomId, clearAllInFlightMessages]);
+	}, [chatroomId, clearAllInFlightMessages, userId]);
+
+	useEffect(() => {
+		if (userId === null || chatroomId === null) {
+			return;
+		}
+
+		if (pendingMessagesRef.current.length === 0 && inFlightMessageMapRef.current.size === 0) {
+			clearChatPendingMessages({ userId, chatroomId });
+			return;
+		}
+
+		syncPendingStorage();
+	}, [chatroomId, syncPendingStorage, userId]);
 
 	const getPublishContext = useCallback((): PublishContext | null => {
 		const client = stompClientRef.current;
@@ -107,7 +153,8 @@ export function usePendingStompQueue(
 
 	const enqueuePendingMessage = useCallback((message: PendingQueueItem) => {
 		pendingMessagesRef.current = [...pendingMessagesRef.current, message];
-	}, []);
+		syncPendingStorage();
+	}, [syncPendingStorage]);
 
 	const publishWithMembership = useCallback(
 		(destination: string, buildBody: StompBodyFactory) => {
@@ -154,12 +201,13 @@ export function usePendingStompQueue(
 			const isPublished = publishMessage(pendingMessage);
 			if (!isPublished) {
 				pendingMessagesRef.current = pendingMessages.slice(index);
+				syncPendingStorage();
 				break;
 			}
 
 			registerInFlightMessage(pendingMessage);
 		}
-	}, [publishMessage, registerInFlightMessage]);
+	}, [publishMessage, registerInFlightMessage, syncPendingStorage]);
 
 	const submitMessageByStomp = useCallback(
 		(text: string) => {

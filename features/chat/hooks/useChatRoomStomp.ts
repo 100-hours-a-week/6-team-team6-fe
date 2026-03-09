@@ -68,6 +68,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		usePendingStompQueue({
 			authHeader,
 			chatroomId,
+			userId: myUserId,
 			stompClientRef,
 			isStompConnectedRef,
 			myMembershipIdRef,
