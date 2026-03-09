@@ -1,4 +1,4 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useParams } from "next/navigation";
 
@@ -9,21 +9,55 @@ import { usePendingStompQueue } from "@/features/chat/hooks/usePendingStompQueue
 import { useRealtimeMessageMerge } from "@/features/chat/hooks/useRealtimeMessageMerge";
 import { useStompConnectionLifecycle } from "@/features/chat/hooks/useStompConnectionLifecycle";
 import { buildWebSocketEndpoint } from "@/features/chat/lib/stomp";
-import type { ChatMessages } from "@/features/chat/lib/types";
+import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 interface UseChatRoomStompProps {
 	messages: ChatMessages;
-	submitMessage: (text: string) => void;
 }
 
 interface UseChatRoomStompResult {
 	mergedMessages: ChatMessages;
 	submitMessageByStomp: (text: string) => void;
 	markAsReadByStomp: (readMessageId: string) => void;
+	retryHeldMessageByClientMessageId: (clientMessageId: string) => void;
+}
+
+function isReconciledServerMessage(message: ChatMessage) {
+	// NOTE: 서버 확정 메시지(messageId)이며, 클라이언트 원본과 매칭 가능한(clientMessageId) 경우에만 reconcile
+	return (
+		typeof message.clientMessageId === "string" &&
+		message.clientMessageId.length > 0 &&
+		typeof message.messageId === "string" &&
+		message.messageId.length > 0
+	);
+}
+
+function getMessageMergeKey(message: ChatMessage) {
+	const stableId = message.messageId ?? message.clientMessageId;
+	if (stableId) {
+		return stableId;
+	}
+	return `${message.who}:${message.createdAt}:${message.message}`;
+}
+
+function mergeMessages(baseMessages: ChatMessages, deliveryMessages: ChatMessages): ChatMessages {
+	const merged: ChatMessages = [];
+	const seen = new Set<string>();
+
+	for (const message of [...baseMessages, ...deliveryMessages]) {
+		const key = getMessageMergeKey(message);
+		if (seen.has(key)) {
+			continue;
+		}
+		seen.add(key);
+		merged.push(message);
+	}
+
+	return merged.sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
 }
 
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {
-	const { messages, submitMessage } = props;
+	const { messages } = props;
 	const params = useParams<{ chatRoomId?: string }>();
 	const { data: session } = useSession();
 
@@ -65,15 +99,22 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 			messages,
 		});
 
-	const { submitMessageByStomp, markAsReadByStomp, flushPendingMessages } =
-		usePendingStompQueue({
-			authHeader,
-			chatroomId,
-			submitMessage,
-			stompClientRef,
-			isStompConnectedRef,
-			myMembershipIdRef,
-		});
+	const {
+		submitMessageByStomp,
+		markAsReadByStomp,
+		flushPendingMessages,
+		handleOwnMessageAck,
+		retryHeldMessageByClientMessageId,
+		reconcileDeliveredClientMessageIds,
+		messageDeliveryIssues,
+	} = usePendingStompQueue({
+		authHeader,
+		chatroomId,
+		userId: myUserId,
+		stompClientRef,
+		isStompConnectedRef,
+		myMembershipIdRef,
+	});
 
 	useStompConnectionLifecycle({
 		authHeader,
@@ -88,11 +129,43 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		setRealtimeChatroomId,
 		setRealtimeMessages,
 		flushPendingMessages,
+		onOwnMessageAck: handleOwnMessageAck,
 	});
 
+	const deliveredClientMessageIds = useMemo(() => {
+		return [
+			...new Set(
+				mergedMessages
+					.filter(isReconciledServerMessage)
+					.map((message) => message.clientMessageId as string),
+			),
+		];
+	}, [mergedMessages]);
+
+	useEffect(() => {
+		if (deliveredClientMessageIds.length === 0) {
+			return;
+		}
+
+		reconcileDeliveredClientMessageIds(deliveredClientMessageIds);
+	}, [deliveredClientMessageIds, reconcileDeliveredClientMessageIds]);
+
+	const mergedMessagesWithDeliveryState = useMemo(() => {
+		const deliveryMessages: ChatMessages = messageDeliveryIssues.map((issue) => ({
+			clientMessageId: issue.clientMessageId,
+			who: "me",
+			message: issue.text,
+			createdAt: issue.createdAt,
+			deliveryStatus: issue.status,
+		}));
+
+		return mergeMessages(mergedMessages, deliveryMessages);
+	}, [mergedMessages, messageDeliveryIssues]);
+
 	return {
-		mergedMessages,
+		mergedMessages: mergedMessagesWithDeliveryState,
 		submitMessageByStomp,
 		markAsReadByStomp,
+		retryHeldMessageByClientMessageId,
 	};
 }
