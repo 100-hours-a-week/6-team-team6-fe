@@ -3,11 +3,19 @@
 import ky from "ky";
 import { signOut } from "next-auth/react";
 
+import { clearAllChatPendingMessages } from "@/features/chat/lib/pending-storage";
+
 import { apiErrorCodes } from "@/shared/lib/api/api-error-codes";
 import StatusCodes from "@/shared/lib/api/status-codes";
 import { clearSession, getAccessToken, refreshSession } from "@/shared/lib/auth/session-store";
 
 const API_PROXY_PREFIX = "/api/proxy";
+
+export async function signOutWithChatPendingCleanup(callbackUrl = "/login") {
+	clearSession();
+	clearAllChatPendingMessages();
+	await signOut({ callbackUrl });
+}
 
 export const apiClient = ky.create({
 	prefixUrl: API_PROXY_PREFIX,
@@ -55,8 +63,7 @@ export const apiClient = ky.create({
 					const newSession = await refreshSession(); // jwt callback -> refreshAccessToken 실행
 
 					if (newSession?.error === "RefreshAccessTokenError") {
-						clearSession();
-						await signOut({ callbackUrl: "/login" });
+						await signOutWithChatPendingCleanup();
 						return;
 					}
 
@@ -68,8 +75,7 @@ export const apiClient = ky.create({
 						return apiClient(request, options);
 					}
 
-					clearSession();
-					await signOut({ callbackUrl: "/login" });
+					await signOutWithChatPendingCleanup();
 					return;
 				}
 
@@ -78,8 +84,7 @@ export const apiClient = ky.create({
 					errorCode === apiErrorCodes.TOKEN_EXPIRED_REFRESH ||
 					errorCode === apiErrorCodes.TOKEN_INVALID_REFRESH
 				) {
-					clearSession();
-					await signOut({ callbackUrl: "/login" });
+					await signOutWithChatPendingCleanup();
 					return;
 				}
 			},

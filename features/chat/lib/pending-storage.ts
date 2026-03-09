@@ -81,10 +81,34 @@ function clearChatPendingMessages(params: ChatPendingStorageParams): void {
 	}
 }
 
+function clearAllChatPendingMessages(): void {
+	if (!canUseLocalStorage()) {
+		return;
+	}
+
+	try {
+		const keysToRemove: string[] = [];
+		for (let index = 0; index < window.localStorage.length; index += 1) {
+			const key = window.localStorage.key(index);
+			if (!key || !key.startsWith(`${CHAT_PENDING_STORAGE_PREFIX}:`)) {
+				continue;
+			}
+			keysToRemove.push(key);
+		}
+
+		for (const key of keysToRemove) {
+			window.localStorage.removeItem(key);
+		}
+	} catch (error) {
+		console.error(error);
+	}
+}
+
 export type { ChatPendingMessage, ChatPendingStorageParams };
 export {
 	buildChatPendingStorageKey,
 	CHAT_PENDING_STORAGE_PREFIX,
+	clearAllChatPendingMessages,
 	clearChatPendingMessages,
 	readChatPendingMessages,
 	writeChatPendingMessages,

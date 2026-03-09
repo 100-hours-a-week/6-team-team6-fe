@@ -2,12 +2,11 @@
 
 import { useEffect, useRef } from "react";
 
-import { useRouter } from "next/navigation";
-
 import type { Session } from "next-auth";
-import { SessionProvider, signOut, useSession } from "next-auth/react";
+import { SessionProvider, useSession } from "next-auth/react";
 import type { ReactNode } from "react";
 
+import { signOutWithChatPendingCleanup } from "@/shared/lib/api/api-client";
 import { clearSession, setSession } from "@/shared/lib/auth/session-store";
 
 type AuthSessionProviderProps = {
@@ -46,8 +45,7 @@ function SessionErrorGuard() {
 
 		if (session?.error === "RefreshAccessTokenError") {
 			hasSignedOutRef.current = true;
-			clearSession();
-			signOut({ callbackUrl: "/login" });
+			signOutWithChatPendingCleanup();
 		}
 	}, [session?.error, status]);
 
@@ -56,7 +54,6 @@ function SessionErrorGuard() {
 
 function UnauthenticatedRedirectGuard({ redirectTo }: { redirectTo?: string }) {
 	const { status } = useSession();
-	const router = useRouter();
 	const hasRedirectedRef = useRef(false);
 
 	useEffect(() => {
@@ -75,10 +72,9 @@ function UnauthenticatedRedirectGuard({ redirectTo }: { redirectTo?: string }) {
 
 		if (!hasRedirectedRef.current && status === "unauthenticated") {
 			hasRedirectedRef.current = true;
-			clearSession();
-			router.replace(redirectTo);
+			signOutWithChatPendingCleanup(redirectTo);
 		}
-	}, [redirectTo, router, status]);
+	}, [redirectTo, status]);
 
 	return null;
 }
