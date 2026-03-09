@@ -24,6 +24,7 @@ export type ChatRoomSource = RoomSummary & {
 
 export type ChatMessage = {
 	messageId?: string;
+	clientMessageId?: string | null;
 	who: "me" | "partner";
 	message: string;
 	createdAt: string;

@@ -52,6 +52,7 @@ const ChatSendAckResponseSchema = z.object({
 	chatroomId: z.number(),
 	membershipId: z.number(),
 	messageId: nonEmptyString,
+	clientMessageId: nonEmptyString.nullable().optional(),
 	messageContent: nonEmptyString,
 	createdAt: nonEmptyString,
 });
@@ -84,6 +85,7 @@ const ChatroomPostInfoDtoSchema = ChatroomPostInfoSchema;
 
 const ChatMessageSchema = z.object({
 	messageId: nonEmptyString,
+	clientMessageId: nonEmptyString.nullable().optional(),
 	who: z.enum(["me", "partner"]),
 	message: nonEmptyString,
 	createdAt: nonEmptyString,
