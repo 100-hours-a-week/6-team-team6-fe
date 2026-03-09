@@ -15,7 +15,7 @@ type UseRealtimeMessageMergeResult = {
 };
 
 function getMessageKey(message: ChatMessage) {
-	const stableId = message.clientMessageId ?? message.messageId;
+	const stableId = message.messageId ?? message.clientMessageId;
 	if (stableId) {
 		return stableId;
 	}

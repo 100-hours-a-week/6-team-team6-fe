@@ -34,6 +34,7 @@ type UsePendingStompQueueResult = {
 	flushPendingMessages: () => void;
 	handleOwnMessageAck: (clientMessageId: string | null | undefined, messageContent: string) => void;
 	retryHeldMessageByClientMessageId: (clientMessageId: string) => void;
+	reconcileDeliveredClientMessageIds: (clientMessageIds: string[]) => void;
 	messageDeliveryIssues: MessageDeliveryIssue[];
 };
 
@@ -396,11 +397,58 @@ export function usePendingStompQueue(
 		[enqueuePendingMessage, publishMessage, registerInFlightMessage, removeHeldMessageByClientMessageId],
 	);
 
+	const reconcileDeliveredClientMessageIds = useCallback(
+		(clientMessageIds: string[]) => {
+			const idSet = new Set(
+				clientMessageIds.filter(
+					(clientMessageId) => typeof clientMessageId === "string" && clientMessageId.length > 0,
+				),
+			);
+			if (idSet.size === 0) {
+				return;
+			}
+
+			let hasChanged = false;
+
+			const nextPendingMessages = pendingMessagesRef.current.filter(
+				(pendingMessage) => !idSet.has(pendingMessage.clientMessageId),
+			);
+			if (nextPendingMessages.length !== pendingMessagesRef.current.length) {
+				pendingMessagesRef.current = nextPendingMessages;
+				syncPendingStorage();
+				hasChanged = true;
+			}
+
+			const nextHeldMessages = heldMessagesRef.current.filter(
+				(heldMessage) => !idSet.has(heldMessage.clientMessageId),
+			);
+			if (nextHeldMessages.length !== heldMessagesRef.current.length) {
+				heldMessagesRef.current = nextHeldMessages;
+				syncHeldStorage();
+				hasChanged = true;
+			}
+
+			for (const clientMessageId of idSet) {
+				const inFlightMessage = inFlightMessageMapRef.current.get(clientMessageId);
+				if (!inFlightMessage) {
+					continue;
+				}
+				clearTimeout(inFlightMessage.timeoutId);
+				inFlightMessageMapRef.current.delete(clientMessageId);
+				hasChanged = true;
+			}
+
+			if (hasChanged) {
+				syncDeliveryIssuesState();
+			}
+		},
+		[syncDeliveryIssuesState, syncHeldStorage, syncPendingStorage],
+	);
+
 	const handleOwnMessageAck = useCallback(
 		(clientMessageId: string | null | undefined, messageContent: string) => {
 			if (typeof clientMessageId === "string" && clientMessageId.length > 0) {
-				clearInFlightMessage(clientMessageId);
-				removeHeldMessageByClientMessageId(clientMessageId);
+				reconcileDeliveredClientMessageIds([clientMessageId]);
 				return;
 			}
 
@@ -408,10 +456,10 @@ export function usePendingStompQueue(
 				.filter(([, inFlightMessage]) => inFlightMessage.text === messageContent)
 				.map(([id]) => id);
 			if (matchedIds.length === 1) {
-				clearInFlightMessage(matchedIds[0]);
+				reconcileDeliveredClientMessageIds([matchedIds[0]]);
 			}
 		},
-		[clearInFlightMessage, removeHeldMessageByClientMessageId],
+		[reconcileDeliveredClientMessageIds],
 	);
 
 	const markAsReadByStomp = useCallback(
@@ -431,6 +479,7 @@ export function usePendingStompQueue(
 		flushPendingMessages,
 		handleOwnMessageAck,
 		retryHeldMessageByClientMessageId,
+		reconcileDeliveredClientMessageIds,
 		messageDeliveryIssues,
 	};
 }

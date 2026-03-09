@@ -1,13 +1,11 @@
-import { useMemo, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 
 import { useParams } from "next/navigation";
 
 import type { Client } from "@stomp/stompjs";
 import { useSession } from "next-auth/react";
 
-import {
-	usePendingStompQueue,
-} from "@/features/chat/hooks/usePendingStompQueue";
+import { usePendingStompQueue } from "@/features/chat/hooks/usePendingStompQueue";
 import { useRealtimeMessageMerge } from "@/features/chat/hooks/useRealtimeMessageMerge";
 import { useStompConnectionLifecycle } from "@/features/chat/hooks/useStompConnectionLifecycle";
 import { buildWebSocketEndpoint } from "@/features/chat/lib/stomp";
@@ -24,8 +22,18 @@ interface UseChatRoomStompResult {
 	retryHeldMessageByClientMessageId: (clientMessageId: string) => void;
 }
 
+function isReconciledServerMessage(message: ChatMessage) {
+	// NOTE: 서버 확정 메시지(messageId)이며, 클라이언트 원본과 매칭 가능한(clientMessageId) 경우에만 reconcile
+	return (
+		typeof message.clientMessageId === "string" &&
+		message.clientMessageId.length > 0 &&
+		typeof message.messageId === "string" &&
+		message.messageId.length > 0
+	);
+}
+
 function getMessageMergeKey(message: ChatMessage) {
-	const stableId = message.clientMessageId ?? message.messageId;
+	const stableId = message.messageId ?? message.clientMessageId;
 	if (stableId) {
 		return stableId;
 	}
@@ -97,6 +105,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		flushPendingMessages,
 		handleOwnMessageAck,
 		retryHeldMessageByClientMessageId,
+		reconcileDeliveredClientMessageIds,
 		messageDeliveryIssues,
 	} = usePendingStompQueue({
 		authHeader,
@@ -122,6 +131,24 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		flushPendingMessages,
 		onOwnMessageAck: handleOwnMessageAck,
 	});
+
+	const deliveredClientMessageIds = useMemo(() => {
+		return [
+			...new Set(
+				mergedMessages
+					.filter(isReconciledServerMessage)
+					.map((message) => message.clientMessageId as string),
+			),
+		];
+	}, [mergedMessages]);
+
+	useEffect(() => {
+		if (deliveredClientMessageIds.length === 0) {
+			return;
+		}
+
+		reconcileDeliveredClientMessageIds(deliveredClientMessageIds);
+	}, [deliveredClientMessageIds, reconcileDeliveredClientMessageIds]);
 
 	const mergedMessagesWithDeliveryState = useMemo(() => {
 		const deliveryMessages: ChatMessages = messageDeliveryIssues.map((issue) => ({
