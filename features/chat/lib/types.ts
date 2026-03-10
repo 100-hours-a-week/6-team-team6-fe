@@ -1,7 +1,7 @@
 import type { ChatroomPostInfoDto } from "@/features/chat/schemas";
 
 export type ChatSummary = {
-	chatRoomId: number;
+	chatroomId: number;
 	postFirstImageUrl: string;
 	lastMessageAt: string;
 	lastMessage: string;

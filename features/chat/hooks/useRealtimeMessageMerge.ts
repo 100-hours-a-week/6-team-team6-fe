@@ -1,16 +1,24 @@
-import { type Dispatch, RefObject, type SetStateAction, useMemo, useRef, useState } from "react";
+import {
+	type Dispatch,
+	RefObject,
+	type SetStateAction,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 
 import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 type UseRealtimeMessageMergeParams = {
-	chatroomId: number | null;
+	chatroomId: string;
 	messages: ChatMessages;
 };
 
 type UseRealtimeMessageMergeResult = {
 	mergedMessages: ChatMessages;
-	realtimeChatroomIdRef: RefObject<number | null>;
-	setRealtimeChatroomId: Dispatch<SetStateAction<number | null>>;
+	realtimeChatroomIdRef: RefObject<string | null>;
+	setRealtimeChatroomId: Dispatch<SetStateAction<string | null>>;
 	setRealtimeMessages: Dispatch<SetStateAction<ChatMessages>>;
 };
 
@@ -62,15 +70,14 @@ export function useRealtimeMessageMerge(
 	params: UseRealtimeMessageMergeParams,
 ): UseRealtimeMessageMergeResult {
 	const { chatroomId, messages } = params;
-	const [realtimeChatroomId, setRealtimeChatroomId] = useState<number | null>(null);
+	const [realtimeChatroomId, setRealtimeChatroomId] = useState<string | null>(null);
 	const [realtimeMessages, setRealtimeMessages] = useState<ChatMessages>([]);
-	const realtimeChatroomIdRef = useRef<number | null>(null);
+	const realtimeChatroomIdRef = useRef<string | null>(null);
 
 	const mergedMessages = useMemo(() => {
-		if (chatroomId === null || realtimeChatroomId !== chatroomId) {
-			return mergeMessages(messages, []);
-		}
-		return mergeMessages(messages, realtimeMessages);
+		return realtimeChatroomId !== chatroomId
+			? mergeMessages(messages, [])
+			: mergeMessages(messages, realtimeMessages);
 	}, [chatroomId, messages, realtimeChatroomId, realtimeMessages]);
 
 	return {

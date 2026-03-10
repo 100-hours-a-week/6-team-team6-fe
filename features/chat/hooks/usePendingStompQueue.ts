@@ -10,12 +10,12 @@ import {
 	writeChatPendingHeldMessages,
 	writeChatPendingMessages,
 } from "@/features/chat/lib/pending-storage";
-import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
+import { buildStompJsonHeaders, parseStompChatroomId } from "@/features/chat/lib/stomp";
 
 type UsePendingStompQueueParams = {
 	authHeader: string | null;
-	chatroomId: number | null;
-	userId: number | null;
+	chatroomId: string;
+	userId: number;
 	stompClientRef: RefObject<Client | null>;
 	isStompConnectedRef: RefObject<boolean>;
 	myMembershipIdRef: RefObject<number | null>;
@@ -64,6 +64,7 @@ type InFlightMessage = {
 };
 
 const ACK_TIMEOUT_MS = 8_000;
+const ACK_TIMEOUT_TOAST_THROTTLE_MS = 5_000;
 const ACK_TIMEOUT_ERROR_MESSAGE = "메시지 전송에 실패했습니다. 네트워크 상태를 확인해 주세요.";
 
 function createClientMessageId() {
@@ -91,7 +92,17 @@ export function usePendingStompQueue(
 	const pendingMessagesRef = useRef<PendingQueueItem[]>([]);
 	const heldMessagesRef = useRef<HeldMessage[]>([]);
 	const inFlightMessageMapRef = useRef<Map<string, InFlightMessage>>(new Map());
+	const lastAckTimeoutToastAtRef = useRef(0);
 	const [messageDeliveryIssues, setMessageDeliveryIssues] = useState<MessageDeliveryIssue[]>([]);
+
+	const showAckTimeoutToast = useCallback(() => {
+		const now = Date.now();
+		if (now - lastAckTimeoutToastAtRef.current < ACK_TIMEOUT_TOAST_THROTTLE_MS) {
+			return;
+		}
+		lastAckTimeoutToastAtRef.current = now;
+		toast.error(ACK_TIMEOUT_ERROR_MESSAGE);
+	}, []);
 
 	const syncDeliveryIssuesState = useCallback(() => {
 		const issueMap = new Map<string, MessageDeliveryIssue>();
@@ -127,18 +138,10 @@ export function usePendingStompQueue(
 	}, []);
 
 	const syncPendingStorage = useCallback(() => {
-		if (userId === null || chatroomId === null) {
-			return;
-		}
-
 		writeChatPendingMessages({ userId, chatroomId }, pendingMessagesRef.current);
 	}, [chatroomId, userId]);
 
 	const syncHeldStorage = useCallback(() => {
-		if (userId === null || chatroomId === null) {
-			return;
-		}
-
 		writeChatPendingHeldMessages(
 			{ userId, chatroomId },
 			heldMessagesRef.current.map(toPendingQueueItem),
@@ -230,7 +233,7 @@ export function usePendingStompQueue(
 			const timeoutId = setTimeout(() => {
 				inFlightMessageMapRef.current.delete(message.clientMessageId);
 				upsertHeldMessage(message, "timeout");
-				toast.error(ACK_TIMEOUT_ERROR_MESSAGE);
+				showAckTimeoutToast();
 			}, ACK_TIMEOUT_MS);
 
 			inFlightMessageMapRef.current.set(message.clientMessageId, {
@@ -240,7 +243,7 @@ export function usePendingStompQueue(
 			});
 			syncDeliveryIssuesState();
 		},
-		[clearInFlightMessage, syncDeliveryIssuesState, upsertHeldMessage],
+		[clearInFlightMessage, showAckTimeoutToast, syncDeliveryIssuesState, upsertHeldMessage],
 	);
 
 	useEffect(() => {
@@ -251,19 +254,15 @@ export function usePendingStompQueue(
 		}
 		inFlightMessageMapRef.current = new Map();
 
-		if (userId !== null && chatroomId !== null) {
-			pendingMessagesRef.current = readChatPendingMessages({ userId, chatroomId }).map((message) => ({
-				...message,
-				createdAt: message.createdAt ?? createMessageCreatedAt(),
-			}));
-			heldMessagesRef.current = readChatPendingHeldMessages({ userId, chatroomId }).map(
-				(message) => ({
-					...message,
-					createdAt: message.createdAt ?? createMessageCreatedAt(),
-					reason: "deferred",
-				}),
-			);
-		}
+		pendingMessagesRef.current = readChatPendingMessages({ userId, chatroomId }).map((message) => ({
+			...message,
+			createdAt: message.createdAt ?? createMessageCreatedAt(),
+		}));
+		heldMessagesRef.current = readChatPendingHeldMessages({ userId, chatroomId }).map((message) => ({
+			...message,
+			createdAt: message.createdAt ?? createMessageCreatedAt(),
+			reason: "deferred",
+		}));
 		const syncTimerId = setTimeout(() => {
 			syncDeliveryIssuesState();
 		}, 0);
@@ -302,7 +301,7 @@ export function usePendingStompQueue(
 
 	const publishWithMembership = useCallback(
 		(destination: string, buildBody: StompBodyFactory) => {
-			if (!authHeader || chatroomId === null) {
+			if (!authHeader) {
 				return false;
 			}
 
@@ -319,13 +318,18 @@ export function usePendingStompQueue(
 
 			return true;
 		},
-		[authHeader, chatroomId, getPublishContext],
+		[authHeader, getPublishContext],
 	);
 
 	const publishMessage = useCallback(
 		(message: PendingQueueItem) => {
+			const numericChatroomId = parseStompChatroomId(chatroomId);
+			if (numericChatroomId === null) {
+				return false;
+			}
+
 			return publishWithMembership(STOMP_DESTINATION.send, (membershipId) => ({
-				chatroomId,
+				chatroomId: numericChatroomId,
 				message: message.text,
 				membershipId,
 				clientMessageId: message.clientMessageId,
@@ -464,8 +468,13 @@ export function usePendingStompQueue(
 
 	const markAsReadByStomp = useCallback(
 		(readMessageId: string) => {
+			const numericChatroomId = parseStompChatroomId(chatroomId);
+			if (numericChatroomId === null) {
+				return;
+			}
+
 			void publishWithMembership(STOMP_DESTINATION.read, (membershipId) => ({
-				chatroomId,
+				chatroomId: numericChatroomId,
 				membershipId,
 				readMessageId,
 			}));
