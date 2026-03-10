@@ -8,33 +8,30 @@ import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader"
 interface ChatRoomLayoutProps {
 	children: React.ReactNode;
 	params: Promise<{
-		chatRoomId: string;
+		chatroomId: string;
 	}>;
 }
 
 async function ChatRoomLayout(props: ChatRoomLayoutProps) {
 	const { children, params } = props;
-	const { chatRoomId } = await params;
-	const parsedChatroomId = Number(chatRoomId);
+	const { chatroomId } = await params;
 	const queryClient = new QueryClient();
 
 	let title = "";
 
-	if (!Number.isNaN(parsedChatroomId)) {
-		try {
-			const { postId, postInfo } = await getChatroomPostInfoServer({
-				chatroomId: parsedChatroomId,
-			});
+	try {
+		const { postId, postInfo } = await getChatroomPostInfoServer({
+			chatroomId,
+		});
 
-			queryClient.setQueryData(chatQueryKeys.chatroomPostId(parsedChatroomId), { postId });
-			queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(parsedChatroomId, postId), postInfo);
+		queryClient.setQueryData(chatQueryKeys.chatroomPostId(chatroomId), { postId });
+		queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(chatroomId, postId), postInfo);
 
-			title = postInfo.isPartnerLeftGroup
-				? `${postInfo.partnerNickname}(탈퇴)`
-				: postInfo.partnerNickname;
-		} catch {
-			// TODO fallback logic
-		}
+		title = postInfo.isPartnerLeftGroup
+			? `${postInfo.partnerNickname}(탈퇴)`
+			: postInfo.partnerNickname;
+	} catch {
+		// TODO fallback logic
 	}
 
 	return (

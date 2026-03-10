@@ -21,6 +21,11 @@ import { Typography } from "@/shared/components/ui/typography";
 import { formatRentalFeeLabel } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
 
+interface ChatRoomPageProps {
+	chatroomId: string;
+	initialPostId: number | null;
+}
+
 interface ChatPostInfoProps {
 	postInfo: ChatPostInfoData;
 }
@@ -216,7 +221,8 @@ function ChatInput(props: ChatInputProps) {
 	);
 }
 
-export function ChatRoomPage() {
+export function ChatRoomPage(props: ChatRoomPageProps) {
+	const { chatroomId, initialPostId } = props;
 	const {
 		postInfo,
 		isPostInfoLoading,
@@ -227,9 +233,9 @@ export function ChatRoomPage() {
 		hasMoreMessage,
 		isLoadingPreviousMessage,
 		loadMoreMessages,
-	} = useChatRoom();
+	} = useChatRoom({ chatroomId, initialPostId });
 	const { mergedMessages, submitMessageByStomp, retryHeldMessageByClientMessageId } =
-		useChatRoomStomp({ messages });
+		useChatRoomStomp({ chatroomId, messages });
 	const isChatUnavailable = postInfo?.isPostDeleted ?? false;
 
 	return (

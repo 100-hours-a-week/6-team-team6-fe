@@ -11,7 +11,7 @@ import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatMessagesParams = {
 	postId: number;
-	chatroomId: number;
+	chatroomId: string;
 	cursor?: string;
 };
 
@@ -37,21 +37,11 @@ async function getChatMessages(params: GetChatMessagesParams): Promise<ChatMessa
 		GetChatMessagesError,
 	);
 
-	const cursorDto =
-		"cursorDto" in parsed
-			? parsed.cursorDto
-			: {
-					cursor: parsed.nextCursor,
-					hasNext: parsed.hasNext,
-				};
-
-	const messageItems = "messageItems" in parsed ? parsed.messageItems : parsed.chatMessages;
-
 	return ChatMessagesResponseDtoSchema.parse({
 		chatroomId: parsed.chatroomId,
-		messages: messageItems,
-		nextCursor: cursorDto.cursor,
-		hasNextPage: cursorDto.hasNext,
+		messages: parsed.messageItems,
+		nextCursor: parsed.cursorDto.cursor,
+		hasNextPage: parsed.cursorDto.hasNext,
 	});
 }
 

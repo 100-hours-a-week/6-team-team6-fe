@@ -10,7 +10,7 @@ import { apiServer } from "@/shared/lib/api/api-server";
 import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatroomPostInfoServerParams = {
-	chatroomId: number;
+	chatroomId: string;
 };
 
 type ChatRoomHydrationData = {

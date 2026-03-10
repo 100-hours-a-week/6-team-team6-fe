@@ -64,7 +64,7 @@ function ChatRoomListContent(props: ChatRoomListContentProps) {
 		<div className="flex flex-col gap-4">
 			<ul className="flex flex-col">
 				{rooms.map((room) => (
-					<li key={room.chatRoomId}>
+					<li key={room.chatroomId}>
 						<ChatRoomItem room={room} />
 					</li>
 				))}

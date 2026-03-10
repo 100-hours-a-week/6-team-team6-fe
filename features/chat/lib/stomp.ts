@@ -12,6 +12,11 @@ export function buildWebSocketEndpoint(apiUrl: string | undefined) {
 	}
 }
 
+export function parseStompChatroomId(chatroomId: string) {
+	const parsed = Number(chatroomId);
+	return Number.isNaN(parsed) ? null : parsed;
+}
+
 export function buildStompAuthHeaders(authHeader: string) {
 	return {
 		Authorization: authHeader,

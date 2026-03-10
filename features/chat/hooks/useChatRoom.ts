@@ -1,7 +1,5 @@
 import { useCallback, useMemo } from "react";
 
-import { useParams, useSearchParams } from "next/navigation";
-
 import { type InfiniteData, useInfiniteQuery, useQuery } from "@tanstack/react-query";
 
 import { chatQueryKeys } from "@/features/chat/api/chatQueries";
@@ -26,45 +24,33 @@ export type UseChatRoomResult = {
 	loadMoreMessages: () => void;
 };
 
+type UseChatRoomParams = {
+	chatroomId: string;
+	initialPostId: number | null;
+};
+
 const CHAT_ROOM_PREFETCH_STALE_TIME_MS = 60_000;
 
-export function useChatRoom(): UseChatRoomResult {
-	const params = useParams<{ chatRoomId?: string }>();
-	const searchParams = useSearchParams();
-	const chatroomId = useMemo(() => {
-		const raw = params?.chatRoomId;
-		if (!raw) {
-			return null;
-		}
-		const parsed = Number(raw);
-		return Number.isNaN(parsed) ? null : parsed;
-	}, [params]);
-	const postIdFromQuery = useMemo(() => {
-		const raw = searchParams.get("postId");
-		if (!raw) {
-			return null;
-		}
-		const parsed = Number(raw);
-		return Number.isNaN(parsed) ? null : parsed;
-	}, [searchParams]);
+export function useChatRoom(params: UseChatRoomParams): UseChatRoomResult {
+	const { chatroomId, initialPostId } = params;
 
 	const postIdQuery = useQuery<{ postId: number }, GetChatroomPostIdError>({
 		queryKey: chatQueryKeys.chatroomPostId(chatroomId),
-		queryFn: () => getChatroomPostId({ chatroomId: chatroomId as number }),
-		enabled: chatroomId !== null && postIdFromQuery === null,
+		queryFn: () => getChatroomPostId({ chatroomId }),
+		enabled: initialPostId === null,
 		staleTime: CHAT_ROOM_PREFETCH_STALE_TIME_MS,
 	});
 
-	const resolvedPostId = postIdFromQuery ?? postIdQuery.data?.postId ?? null;
+	const resolvedPostId = initialPostId ?? postIdQuery.data?.postId ?? null;
 
 	const postInfoQuery = useQuery<ChatPostInfoData, GetChatroomPostInfoError>({
 		queryKey: chatQueryKeys.chatroomPostInfo(chatroomId, resolvedPostId),
 		queryFn: () =>
 			getChatroomPostInfo({
 				postId: resolvedPostId as number,
-				chatroomId: chatroomId as number,
+				chatroomId,
 			}),
-		enabled: chatroomId !== null && resolvedPostId !== null,
+		enabled: resolvedPostId !== null,
 		staleTime: CHAT_ROOM_PREFETCH_STALE_TIME_MS,
 	});
 
@@ -79,13 +65,13 @@ export function useChatRoom(): UseChatRoomResult {
 		queryFn: ({ pageParam }) =>
 			getChatMessages({
 				postId: resolvedPostId as number,
-				chatroomId: chatroomId as number,
+				chatroomId,
 				cursor: pageParam,
 			}),
 		initialPageParam: undefined,
 		getNextPageParam: (lastPage) =>
 			lastPage.hasNextPage ? (lastPage.nextCursor ?? undefined) : undefined,
-		enabled: chatroomId !== null && resolvedPostId !== null,
+		enabled: resolvedPostId !== null,
 	});
 
 	const messages = useMemo(() => {
