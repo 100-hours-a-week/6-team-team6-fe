@@ -1,10 +1,7 @@
 "use client";
 
 import type { ChatroomIdResponseDto } from "@/features/chat/schemas";
-import {
-	ChatroomIdResponseApiSchema,
-	ChatroomIdResponseDtoSchema,
-} from "@/features/chat/schemas";
+import { ChatroomIdResponseApiSchema, ChatroomIdResponseDtoSchema } from "@/features/chat/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { requestJson } from "@/shared/lib/api/request";

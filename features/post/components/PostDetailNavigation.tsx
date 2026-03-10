@@ -4,14 +4,13 @@ import { useCallback, useMemo } from "react";
 
 import { useRouter } from "next/navigation";
 
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
-import {
-	createChatroom,
-	type CreateChatroomError,
-} from "@/features/chat/api/createChatroom";
+import { createChatroom, type CreateChatroomError } from "@/features/chat/api/createChatroom";
+import { postQueryKeys } from "@/features/post/api/postQueryKeys";
 import { postRoutes } from "@/features/post/lib/postRoutes";
+import type { PostDetailDto } from "@/features/post/schemas";
 
 import NavigationLayout from "@/shared/components/layout/bottomNavigations/NavigationLayout";
 import { Button } from "@/shared/components/ui/button";
@@ -20,6 +19,8 @@ import { Typography } from "@/shared/components/ui/typography";
 import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 
 interface PostDetailNavigationProps {
+	groupId: string;
+	detailPostId: string;
 	isSeller: boolean;
 	activeChatroomCount: number | null;
 	chatroomId: number | null;
@@ -27,10 +28,12 @@ interface PostDetailNavigationProps {
 }
 
 function PostDetailNavigation(props: PostDetailNavigationProps) {
-	const { isSeller, activeChatroomCount, chatroomId, postId } = props;
+	const { groupId, detailPostId, isSeller, activeChatroomCount, chatroomId, postId } = props;
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const normalizedCount = activeChatroomCount ?? 0;
 	const hasActiveChats = normalizedCount > 0;
+	const detailQueryKey = postQueryKeys.detail(groupId, detailPostId);
 
 	const { mutate: createRoom, isPending: isCreating } = useMutation<
 		Awaited<ReturnType<typeof createChatroom>>,
@@ -39,6 +42,19 @@ function PostDetailNavigation(props: PostDetailNavigationProps) {
 	>({
 		mutationFn: () => createChatroom({ postId }),
 		onSuccess: (data) => {
+			queryClient.setQueryData<PostDetailDto>(detailQueryKey, (previous) => {
+				if (!previous) {
+					return previous;
+				}
+
+				return {
+					...previous,
+					chatroomId: data.chatroomId,
+					activeChatroomCount:
+						previous.activeChatroomCount === null ? 1 : Math.max(previous.activeChatroomCount, 1),
+				};
+			});
+			queryClient.invalidateQueries({ queryKey: detailQueryKey });
 			router.push(postRoutes.chatRoom(data.chatroomId));
 		},
 		onError: (error) => {
