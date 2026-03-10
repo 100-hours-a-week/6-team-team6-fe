@@ -3,7 +3,7 @@ import { z } from "zod";
 const nonEmptyString = z.string().min(1);
 const nonNegativeNumber = z.number().min(0);
 
-const chatRoomSummarySharedShape = {
+const chatroomSummarySharedShape = {
 	chatPartnerId: z.number(),
 	chatPartnerNickname: nonEmptyString,
 	groupId: z.number(),
@@ -15,21 +15,13 @@ const chatRoomSummarySharedShape = {
 	unreadCount: nonNegativeNumber,
 };
 
-const ChatRoomSummaryApiSchema = z.object({
-	chatroomId: z.number(),
-	chatPartnerAvartUrl: nonEmptyString.optional(),
-	chatPartnerAvatarUrl: nonEmptyString.optional(),
-	...chatRoomSummarySharedShape,
-});
-
-const ChatRoomSummaryDtoSchema = z.object({
+const ChatroomSummarySchema = z.object({
 	chatroomId: z.number(),
 	chatPartnerAvatarUrl: nonEmptyString,
-	...chatRoomSummarySharedShape,
+	...chatroomSummarySharedShape,
 });
 
-const ChatRoomSummariesApiSchema = z.array(ChatRoomSummaryApiSchema);
-const ChatRoomSummariesDtoSchema = z.array(ChatRoomSummaryDtoSchema);
+const ChatroomSummariesSchema = z.array(ChatroomSummarySchema);
 
 const CursorDtoSchema = z.object({
 	cursor: z.string().nullable(),
@@ -114,17 +106,17 @@ const UnreadChatCountResponseApiSchema = UnreadChatCountResponseSchema;
 const UnreadChatCountResponseDtoSchema = UnreadChatCountResponseSchema;
 
 const ChatRoomsResponseApiSchema = z.object({
-	chatroomSummaries: ChatRoomSummariesApiSchema,
+	chatroomSummaries: ChatroomSummariesSchema,
 	cursorDto: CursorDtoSchema,
 });
 
 const ChatRoomsResponseDtoSchema = z.object({
-	rooms: ChatRoomSummariesDtoSchema,
+	rooms: ChatroomSummariesSchema,
 	nextCursor: z.string().nullable(),
 	hasNextPage: z.boolean(),
 });
 
-type ChatRoomSummaryDto = z.infer<typeof ChatRoomSummaryDtoSchema>;
+type ChatroomSummaryDto = z.infer<typeof ChatroomSummarySchema>;
 type ChatRoomsResponseDto = z.infer<typeof ChatRoomsResponseDtoSchema>;
 type ChatroomIdResponseDto = z.infer<typeof ChatroomIdResponseDtoSchema>;
 type ChatMessageSendResponseDto = z.infer<typeof ChatMessageSendResponseDtoSchema>;
@@ -143,7 +135,7 @@ export type {
 	ChatroomPostIdResponseDto,
 	ChatroomPostInfoDto,
 	ChatRoomsResponseDto,
-	ChatRoomSummaryDto,
+	ChatroomSummaryDto,
 	ChatSendAckResponse,
 	UnreadChatCountResponseDto,
 };
@@ -162,8 +154,8 @@ export {
 	ChatroomPostInfoDtoSchema,
 	ChatRoomsResponseApiSchema,
 	ChatRoomsResponseDtoSchema,
-	ChatRoomSummaryApiSchema,
-	ChatRoomSummaryDtoSchema,
+	ChatroomSummariesSchema,
+	ChatroomSummarySchema,
 	ChatSendAckResponseSchema,
 	UnreadChatCountResponseApiSchema,
 	UnreadChatCountResponseDtoSchema,

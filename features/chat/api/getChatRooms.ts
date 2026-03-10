@@ -38,25 +38,8 @@ async function getChatRooms(params: GetChatRoomsParams): Promise<ChatRoomsRespon
 		ChatRoomsError,
 	);
 
-	const rooms = parsed.chatroomSummaries.map((summary) => {
-		const avatarUrl = summary.chatPartnerAvatarUrl ?? summary.chatPartnerAvartUrl;
-		return {
-			chatroomId: summary.chatroomId,
-			chatPartnerId: summary.chatPartnerId,
-			chatPartnerAvatarUrl: avatarUrl ?? "",
-			chatPartnerNickname: summary.chatPartnerNickname,
-			groupId: summary.groupId,
-			groupName: summary.groupName,
-			postId: summary.postId,
-			postFirstImageUrl: summary.postFirstImageUrl,
-			lastMessageAt: summary.lastMessageAt,
-			lastMessage: summary.lastMessage,
-			unreadCount: summary.unreadCount,
-		};
-	});
-
 	return ChatRoomsResponseDtoSchema.parse({
-		rooms,
+		rooms: parsed.chatroomSummaries,
 		nextCursor: parsed.cursorDto.cursor,
 		hasNextPage: parsed.cursorDto.hasNext,
 	});
