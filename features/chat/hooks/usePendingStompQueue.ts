@@ -10,7 +10,7 @@ import {
 	writeChatPendingHeldMessages,
 	writeChatPendingMessages,
 } from "@/features/chat/lib/pending-storage";
-import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
+import { buildStompJsonHeaders, parseStompChatroomId } from "@/features/chat/lib/stomp";
 
 type UsePendingStompQueueParams = {
 	authHeader: string | null;
@@ -312,8 +312,13 @@ export function usePendingStompQueue(
 
 	const publishMessage = useCallback(
 		(message: PendingQueueItem) => {
+			const numericChatroomId = parseStompChatroomId(chatroomId);
+			if (numericChatroomId === null) {
+				return false;
+			}
+
 			return publishWithMembership(STOMP_DESTINATION.send, (membershipId) => ({
-				chatroomId,
+				chatroomId: numericChatroomId,
 				message: message.text,
 				membershipId,
 				clientMessageId: message.clientMessageId,
@@ -452,8 +457,13 @@ export function usePendingStompQueue(
 
 	const markAsReadByStomp = useCallback(
 		(readMessageId: string) => {
+			const numericChatroomId = parseStompChatroomId(chatroomId);
+			if (numericChatroomId === null) {
+				return;
+			}
+
 			void publishWithMembership(STOMP_DESTINATION.read, (membershipId) => ({
-				chatroomId,
+				chatroomId: numericChatroomId,
 				membershipId,
 				readMessageId,
 			}));

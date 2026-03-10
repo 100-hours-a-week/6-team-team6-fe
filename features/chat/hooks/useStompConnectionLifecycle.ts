@@ -4,7 +4,11 @@ import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
 import { z } from "zod";
 
 import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
-import { buildStompAuthHeaders, buildStompJsonHeaders } from "@/features/chat/lib/stomp";
+import {
+	buildStompAuthHeaders,
+	buildStompJsonHeaders,
+	parseStompChatroomId,
+} from "@/features/chat/lib/stomp";
 import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 type ChatJoinPayload = {
@@ -106,6 +110,10 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 		if (!authHeader || !wsEndpoint) {
 			return;
 		}
+		const numericChatroomId = parseStompChatroomId(chatroomId);
+		if (numericChatroomId === null) {
+			return;
+		}
 
 		const client = new Client({
 			brokerURL: wsEndpoint,
@@ -191,7 +199,7 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 			client.publish({
 				destination: STOMP_DESTINATION.join,
 				headers: buildStompJsonHeaders(authHeader),
-				body: JSON.stringify({ chatroomId }),
+				body: JSON.stringify({ chatroomId: numericChatroomId }),
 			});
 			isAwaitingJoinAckRef.current = true;
 		};
