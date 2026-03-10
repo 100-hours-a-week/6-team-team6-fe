@@ -93,19 +93,11 @@ const ChatMessageSchema = z.object({
 const ChatMessageApiSchema = ChatMessageSchema;
 const ChatMessageDtoSchema = ChatMessageSchema;
 
-const ChatMessagesResponseApiSchema = z.union([
-	z.object({
-		chatroomId: z.number(),
-		messageItems: z.array(ChatMessageApiSchema),
-		cursorDto: CursorDtoSchema,
-	}),
-	z.object({
-		chatroomId: z.number(),
-		chatMessages: z.array(ChatMessageApiSchema),
-		nextCursor: z.string().nullable(),
-		hasNext: z.boolean(),
-	}),
-]);
+const ChatMessagesResponseApiSchema = z.object({
+	chatroomId: z.number(),
+	messageItems: z.array(ChatMessageApiSchema),
+	cursorDto: CursorDtoSchema,
+});
 
 const ChatMessagesResponseDtoSchema = z.object({
 	chatroomId: z.number(),
@@ -121,17 +113,10 @@ const UnreadChatCountResponseSchema = z.object({
 const UnreadChatCountResponseApiSchema = UnreadChatCountResponseSchema;
 const UnreadChatCountResponseDtoSchema = UnreadChatCountResponseSchema;
 
-const ChatRoomsResponseApiSchema = z.union([
-	z.object({
-		chatroomSummaries: ChatRoomSummariesApiSchema,
-		cursorDto: CursorDtoSchema,
-	}),
-	z.object({
-		chatroomSummaries: ChatRoomSummariesApiSchema,
-		nextCursor: z.string().nullable(),
-		hasNext: z.boolean(),
-	}),
-]);
+const ChatRoomsResponseApiSchema = z.object({
+	chatroomSummaries: ChatRoomSummariesApiSchema,
+	cursorDto: CursorDtoSchema,
+});
 
 const ChatRoomsResponseDtoSchema = z.object({
 	rooms: ChatRoomSummariesDtoSchema,
@@ -140,7 +125,6 @@ const ChatRoomsResponseDtoSchema = z.object({
 });
 
 type ChatRoomSummaryDto = z.infer<typeof ChatRoomSummaryDtoSchema>;
-
 type ChatRoomsResponseDto = z.infer<typeof ChatRoomsResponseDtoSchema>;
 type ChatroomIdResponseDto = z.infer<typeof ChatroomIdResponseDtoSchema>;
 type ChatMessageSendResponseDto = z.infer<typeof ChatMessageSendResponseDtoSchema>;

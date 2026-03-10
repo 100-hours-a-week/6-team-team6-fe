@@ -38,14 +38,6 @@ async function getChatRooms(params: GetChatRoomsParams): Promise<ChatRoomsRespon
 		ChatRoomsError,
 	);
 
-	const cursorDto =
-		"cursorDto" in parsed
-			? parsed.cursorDto
-			: {
-					cursor: parsed.nextCursor,
-					hasNext: parsed.hasNext,
-				};
-
 	const rooms = parsed.chatroomSummaries.map((summary) => {
 		const avatarUrl = summary.chatPartnerAvatarUrl ?? summary.chatPartnerAvartUrl;
 		return {
@@ -65,8 +57,8 @@ async function getChatRooms(params: GetChatRoomsParams): Promise<ChatRoomsRespon
 
 	return ChatRoomsResponseDtoSchema.parse({
 		rooms,
-		nextCursor: cursorDto.cursor,
-		hasNextPage: cursorDto.hasNext,
+		nextCursor: parsed.cursorDto.cursor,
+		hasNextPage: parsed.cursorDto.hasNext,
 	});
 }
 
