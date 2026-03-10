@@ -1,6 +1,7 @@
 import { type Dispatch, type RefObject, type SetStateAction, useEffect } from "react";
 
 import { Client, type IMessage, type StompSubscription } from "@stomp/stompjs";
+import { z } from "zod";
 
 import { STOMP_DESTINATION } from "@/features/chat/lib/constants";
 import { buildStompAuthHeaders, buildStompJsonHeaders } from "@/features/chat/lib/stomp";
@@ -16,6 +17,7 @@ type ChatMessagePayload = {
 	chatroomId: number;
 	membershipId: number;
 	messageId: string;
+	clientMessageId?: string | null;
 	messageContent: string;
 	createdAt: string;
 };
@@ -33,7 +35,29 @@ export type UseStompConnectionLifecycleParams = {
 	setRealtimeChatroomId: Dispatch<SetStateAction<number | null>>;
 	setRealtimeMessages: Dispatch<SetStateAction<ChatMessages>>;
 	flushPendingMessages: () => void;
+	onOwnMessageAck: (
+		clientMessageId: string | null | undefined,
+		messageContent: string,
+	) => void;
 };
+
+const StompChatJoinPayloadSchema = z.object({
+	chatroomId: z.coerce.number(),
+	userId: z.union([z.coerce.number(), z.null()]).optional().transform((value) => value ?? null),
+	membershipId: z.coerce.number(),
+	messageContent: z.never().optional(),
+	messageId: z.never().optional(),
+	createdAt: z.never().optional(),
+});
+
+const StompChatMessagePayloadSchema = z.object({
+	chatroomId: z.coerce.number(),
+	membershipId: z.coerce.number(),
+	messageId: z.string(),
+	clientMessageId: z.string().nullable().optional(),
+	messageContent: z.string(),
+	createdAt: z.string(),
+});
 
 function parseStompBody(message: IMessage): unknown {
 	try {
@@ -43,64 +67,22 @@ function parseStompBody(message: IMessage): unknown {
 	}
 }
 
-function parseNumberValue(value: unknown) {
-	if (typeof value === "number" && Number.isFinite(value)) {
-		return value;
-	}
-	if (typeof value === "string") {
-		const parsed = Number(value);
-		return Number.isFinite(parsed) ? parsed : null;
-	}
-	return null;
-}
-
 function parseChatJoinPayload(payload: unknown): ChatJoinPayload | null {
-	if (typeof payload !== "object" || payload === null) {
+	const parsed = StompChatJoinPayloadSchema.safeParse(payload);
+	if (!parsed.success) {
 		return null;
 	}
 
-	const data = payload as Record<string, unknown>;
-	if (
-		typeof data.messageContent === "string" ||
-		typeof data.messageId === "string" ||
-		typeof data.createdAt === "string"
-	) {
-		return null;
-	}
-	const chatroomId = parseNumberValue(data.chatroomId);
-	const userId = parseNumberValue(data.userId);
-	const membershipId = parseNumberValue(data.membershipId);
-
-	if (chatroomId === null || membershipId === null) {
-		return null;
-	}
-
-	return { chatroomId, userId, membershipId };
+	return parsed.data;
 }
 
 function parseChatMessagePayload(payload: unknown): ChatMessagePayload | null {
-	if (typeof payload !== "object" || payload === null) {
+	const parsed = StompChatMessagePayloadSchema.safeParse(payload);
+	if (!parsed.success) {
 		return null;
 	}
 
-	const data = payload as Record<string, unknown>;
-	const chatroomId = parseNumberValue(data.chatroomId);
-	const membershipId = parseNumberValue(data.membershipId);
-	const messageId = typeof data.messageId === "string" ? data.messageId : null;
-	const messageContent = typeof data.messageContent === "string" ? data.messageContent : null;
-	const createdAt = typeof data.createdAt === "string" ? data.createdAt : null;
-
-	if (
-		chatroomId === null ||
-		membershipId === null ||
-		messageId === null ||
-		messageContent === null ||
-		createdAt === null
-	) {
-		return null;
-	}
-
-	return { chatroomId, membershipId, messageId, messageContent, createdAt };
+	return parsed.data;
 }
 
 export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleParams): void {
@@ -117,6 +99,7 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 		setRealtimeChatroomId,
 		setRealtimeMessages,
 		flushPendingMessages,
+		onOwnMessageAck,
 	} = params;
 
 	useEffect(() => {
@@ -158,11 +141,11 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 				return;
 			}
 
-			if (
+			const isOwnMessage =
 				myMembershipIdRef.current !== null &&
-				messagePayload.membershipId === myMembershipIdRef.current
-			) {
-				return;
+				messagePayload.membershipId === myMembershipIdRef.current;
+			if (isOwnMessage) {
+				onOwnMessageAck(messagePayload.clientMessageId, messagePayload.messageContent);
 			}
 
 			const shouldReuseRealtimeMessages = realtimeChatroomIdRef.current === chatroomId;
@@ -177,7 +160,8 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 
 				const nextMessage: ChatMessage = {
 					messageId: messagePayload.messageId,
-					who: "partner",
+					clientMessageId: messagePayload.clientMessageId,
+					who: isOwnMessage ? "me" : "partner",
 					message: messagePayload.messageContent,
 					createdAt: messagePayload.createdAt,
 				};
@@ -248,5 +232,6 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 		setRealtimeMessages,
 		stompClientRef,
 		wsEndpoint,
+		onOwnMessageAck,
 	]);
 }

@@ -82,6 +82,7 @@ type ChatMessageListProps = {
 	hasMoreMessage: boolean;
 	onLoadMore: () => Promise<void> | void;
 	isLoadingPreviousMessage: boolean;
+	onRetryDeliveryMessage: (clientMessageId: string) => void;
 };
 
 function ChatMessageList({
@@ -89,6 +90,7 @@ function ChatMessageList({
 	hasMoreMessage,
 	onLoadMore,
 	isLoadingPreviousMessage,
+	onRetryDeliveryMessage,
 }: ChatMessageListProps) {
 	const { messageEntries, parentRef, bottomRef, handleScroll } = useChatMessageList({
 		messageList,
@@ -120,9 +122,14 @@ function ChatMessageList({
 					</div>
 				)}
 				{messageEntries.map(({ message, isMe, timeLabel }, index) => {
+					const showDeliverySpinner = message.deliveryStatus === "in_flight";
+					const canRetryDelivery =
+						(message.deliveryStatus === "failed" || message.deliveryStatus === "held") &&
+						typeof message.clientMessageId === "string";
+
 					return (
 						<div
-							key={`${message.messageId ?? message.createdAt}-${index}`}
+							key={`${message.clientMessageId ?? message.messageId ?? message.createdAt}-${index}`}
 							className={`flex ${isMe ? "justify-end" : "justify-start"}`}
 						>
 							<div
@@ -130,7 +137,19 @@ function ChatMessageList({
 									isMe ? "flex-row" : "flex-row-reverse"
 								}`}
 							>
-								{timeLabel ? (
+								{showDeliverySpinner ? <Spinner className="size-3 text-muted-foreground" /> : null}
+								{canRetryDelivery ? (
+									<Button
+										type="button"
+										variant="link"
+										size="xs"
+										className="h-auto p-0 text-muted-foreground"
+										onClick={() => onRetryDeliveryMessage(message.clientMessageId as string)}
+									>
+										다시 전송
+									</Button>
+								) : null}
+								{!showDeliverySpinner && !canRetryDelivery && timeLabel ? (
 									<Typography type="caption" className="text-muted-foreground whitespace-nowrap">
 										{timeLabel}
 									</Typography>
@@ -208,12 +227,9 @@ export function ChatRoomPage() {
 		hasMoreMessage,
 		isLoadingPreviousMessage,
 		loadMoreMessages,
-		submitMessage,
 	} = useChatRoom();
-	const { mergedMessages, submitMessageByStomp } = useChatRoomStomp({
-		messages,
-		submitMessage,
-	});
+	const { mergedMessages, submitMessageByStomp, retryHeldMessageByClientMessageId } =
+		useChatRoomStomp({ messages });
 	const isChatUnavailable = postInfo?.isPostDeleted ?? false;
 
 	return (
@@ -245,6 +261,7 @@ export function ChatRoomPage() {
 					hasMoreMessage={hasMoreMessage}
 					onLoadMore={loadMoreMessages}
 					isLoadingPreviousMessage={isLoadingPreviousMessage}
+					onRetryDeliveryMessage={retryHeldMessageByClientMessageId}
 				/>
 			)}
 			<ChatInput onSubmit={submitMessageByStomp} isDisabled={isChatUnavailable} />

@@ -24,6 +24,8 @@ export type ChatRoomSource = RoomSummary & {
 
 export type ChatMessage = {
 	messageId?: string;
+	clientMessageId?: string | null;
+	deliveryStatus?: "in_flight" | "held" | "failed";
 	who: "me" | "partner";
 	message: string;
 	createdAt: string;
