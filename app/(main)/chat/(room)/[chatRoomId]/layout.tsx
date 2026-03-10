@@ -15,26 +15,23 @@ interface ChatRoomLayoutProps {
 async function ChatRoomLayout(props: ChatRoomLayoutProps) {
 	const { children, params } = props;
 	const { chatRoomId } = await params;
-	const parsedChatroomId = Number(chatRoomId);
 	const queryClient = new QueryClient();
 
 	let title = "";
 
-	if (!Number.isNaN(parsedChatroomId)) {
-		try {
-			const { postId, postInfo } = await getChatroomPostInfoServer({
-				chatroomId: parsedChatroomId,
-			});
+	try {
+		const { postId, postInfo } = await getChatroomPostInfoServer({
+			chatroomId: chatRoomId,
+		});
 
-			queryClient.setQueryData(chatQueryKeys.chatroomPostId(parsedChatroomId), { postId });
-			queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(parsedChatroomId, postId), postInfo);
+		queryClient.setQueryData(chatQueryKeys.chatroomPostId(chatRoomId), { postId });
+		queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(chatRoomId, postId), postInfo);
 
-			title = postInfo.isPartnerLeftGroup
-				? `${postInfo.partnerNickname}(탈퇴)`
-				: postInfo.partnerNickname;
-		} catch {
-			// TODO fallback logic
-		}
+		title = postInfo.isPartnerLeftGroup
+			? `${postInfo.partnerNickname}(탈퇴)`
+			: postInfo.partnerNickname;
+	} catch {
+		// TODO fallback logic
 	}
 
 	return (

@@ -10,7 +10,7 @@ import { apiClient } from "@/shared/lib/api/api-client";
 import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatroomPostIdParams = {
-	chatroomId: number;
+	chatroomId: string;
 };
 
 class GetChatroomPostIdError extends Error {

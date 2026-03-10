@@ -11,7 +11,7 @@ import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatroomPostInfoParams = {
 	postId: number;
-	chatroomId: number;
+	chatroomId: string;
 };
 
 class GetChatroomPostInfoError extends Error {

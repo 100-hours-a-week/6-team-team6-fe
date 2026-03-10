@@ -11,7 +11,7 @@ import { requestJson } from "@/shared/lib/api/request";
 
 type GetChatMessagesParams = {
 	postId: number;
-	chatroomId: number;
+	chatroomId: string;
 	cursor?: string;
 };
 

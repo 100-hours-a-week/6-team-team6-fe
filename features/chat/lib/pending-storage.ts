@@ -15,7 +15,7 @@ type ChatPendingMessage = z.infer<typeof ChatPendingMessageSchema>;
 
 type ChatPendingStorageParams = {
 	userId: number;
-	chatroomId: number;
+	chatroomId: string;
 };
 
 function canUseLocalStorage() {

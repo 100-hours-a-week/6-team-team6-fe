@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef } from "react";
 
-import { useParams } from "next/navigation";
-
 import type { Client } from "@stomp/stompjs";
 import { useSession } from "next-auth/react";
 
@@ -12,6 +10,7 @@ import { buildWebSocketEndpoint } from "@/features/chat/lib/stomp";
 import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 interface UseChatRoomStompProps {
+	chatRoomId: string;
 	messages: ChatMessages;
 }
 
@@ -56,9 +55,21 @@ function mergeMessages(baseMessages: ChatMessages, deliveryMessages: ChatMessage
 	return merged.sort((left, right) => Date.parse(right.createdAt) - Date.parse(left.createdAt));
 }
 
+function parseRequiredUserId(rawUserId: string | undefined): number {
+	if (!rawUserId) {
+		throw new Error("useChatRoomStomp requires an authenticated user id.");
+	}
+
+	const parsed = Number(rawUserId);
+	if (Number.isNaN(parsed)) {
+		throw new Error("useChatRoomStomp received an invalid authenticated user id.");
+	}
+
+	return parsed;
+}
+
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {
-	const { messages } = props;
-	const params = useParams<{ chatRoomId?: string }>();
+	const { chatRoomId, messages } = props;
 	const { data: session } = useSession();
 
 	const stompClientRef = useRef<Client | null>(null);
@@ -66,22 +77,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 	const myMembershipIdRef = useRef<number | null>(null);
 	const isStompConnectedRef = useRef(false);
 
-	const chatroomId = useMemo(() => {
-		const raw = params?.chatRoomId;
-		if (!raw) {
-			return null;
-		}
-		const parsed = Number(raw);
-		return Number.isNaN(parsed) ? null : parsed;
-	}, [params]);
-	const myUserId = useMemo(() => {
-		const raw = session?.user?.id;
-		if (!raw) {
-			return null;
-		}
-		const parsed = Number(raw);
-		return Number.isNaN(parsed) ? null : parsed;
-	}, [session?.user?.id]);
+	const myUserId = useMemo(() => parseRequiredUserId(session?.user?.id), [session?.user?.id]);
 	const accessToken = session?.accessToken ?? null;
 	const authHeader = useMemo(() => {
 		if (!accessToken) {
@@ -95,7 +91,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 
 	const { mergedMessages, realtimeChatroomIdRef, setRealtimeChatroomId, setRealtimeMessages } =
 		useRealtimeMessageMerge({
-			chatroomId,
+			chatroomId: chatRoomId,
 			messages,
 		});
 
@@ -109,7 +105,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		messageDeliveryIssues,
 	} = usePendingStompQueue({
 		authHeader,
-		chatroomId,
+		chatroomId: chatRoomId,
 		userId: myUserId,
 		stompClientRef,
 		isStompConnectedRef,
@@ -118,7 +114,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 
 	useStompConnectionLifecycle({
 		authHeader,
-		chatroomId,
+		chatroomId: chatRoomId,
 		myUserId,
 		wsEndpoint,
 		stompClientRef,

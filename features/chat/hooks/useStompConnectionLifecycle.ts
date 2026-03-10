@@ -24,15 +24,15 @@ type ChatMessagePayload = {
 
 export type UseStompConnectionLifecycleParams = {
 	authHeader: string | null;
-	chatroomId: number | null;
-	myUserId: number | null;
+	chatroomId: string;
+	myUserId: number;
 	wsEndpoint: string | null;
 	stompClientRef: RefObject<Client | null>;
 	isStompConnectedRef: RefObject<boolean>;
 	isAwaitingJoinAckRef: RefObject<boolean>;
 	myMembershipIdRef: RefObject<number | null>;
-	realtimeChatroomIdRef: RefObject<number | null>;
-	setRealtimeChatroomId: Dispatch<SetStateAction<number | null>>;
+	realtimeChatroomIdRef: RefObject<string | null>;
+	setRealtimeChatroomId: Dispatch<SetStateAction<string | null>>;
 	setRealtimeMessages: Dispatch<SetStateAction<ChatMessages>>;
 	flushPendingMessages: () => void;
 	onOwnMessageAck: (
@@ -103,7 +103,7 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 	} = params;
 
 	useEffect(() => {
-		if (!authHeader || chatroomId === null || !wsEndpoint) {
+		if (!authHeader || !wsEndpoint) {
 			return;
 		}
 
@@ -125,11 +125,11 @@ export function useStompConnectionLifecycle(params: UseStompConnectionLifecycleP
 			const payload = parseStompBody(frame);
 
 			const messagePayload = parseChatMessagePayload(payload);
-			if (!messagePayload || messagePayload.chatroomId !== chatroomId) {
+			if (!messagePayload || String(messagePayload.chatroomId) !== chatroomId) {
 				const joinPayload = parseChatJoinPayload(payload);
-				if (joinPayload && joinPayload.chatroomId === chatroomId) {
+				if (joinPayload && String(joinPayload.chatroomId) === chatroomId) {
 					const isMyJoinPayload =
-						(joinPayload.userId !== null && myUserId !== null && joinPayload.userId === myUserId) ||
+						(joinPayload.userId !== null && joinPayload.userId === myUserId) ||
 						(joinPayload.userId === null && isAwaitingJoinAckRef.current);
 
 					if (isMyJoinPayload) {

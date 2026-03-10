@@ -14,8 +14,8 @@ import { buildStompJsonHeaders } from "@/features/chat/lib/stomp";
 
 type UsePendingStompQueueParams = {
 	authHeader: string | null;
-	chatroomId: number | null;
-	userId: number | null;
+	chatroomId: string;
+	userId: number;
 	stompClientRef: RefObject<Client | null>;
 	isStompConnectedRef: RefObject<boolean>;
 	myMembershipIdRef: RefObject<number | null>;
@@ -127,18 +127,10 @@ export function usePendingStompQueue(
 	}, []);
 
 	const syncPendingStorage = useCallback(() => {
-		if (userId === null || chatroomId === null) {
-			return;
-		}
-
 		writeChatPendingMessages({ userId, chatroomId }, pendingMessagesRef.current);
 	}, [chatroomId, userId]);
 
 	const syncHeldStorage = useCallback(() => {
-		if (userId === null || chatroomId === null) {
-			return;
-		}
-
 		writeChatPendingHeldMessages(
 			{ userId, chatroomId },
 			heldMessagesRef.current.map(toPendingQueueItem),
@@ -251,19 +243,15 @@ export function usePendingStompQueue(
 		}
 		inFlightMessageMapRef.current = new Map();
 
-		if (userId !== null && chatroomId !== null) {
-			pendingMessagesRef.current = readChatPendingMessages({ userId, chatroomId }).map((message) => ({
-				...message,
-				createdAt: message.createdAt ?? createMessageCreatedAt(),
-			}));
-			heldMessagesRef.current = readChatPendingHeldMessages({ userId, chatroomId }).map(
-				(message) => ({
-					...message,
-					createdAt: message.createdAt ?? createMessageCreatedAt(),
-					reason: "deferred",
-				}),
-			);
-		}
+		pendingMessagesRef.current = readChatPendingMessages({ userId, chatroomId }).map((message) => ({
+			...message,
+			createdAt: message.createdAt ?? createMessageCreatedAt(),
+		}));
+		heldMessagesRef.current = readChatPendingHeldMessages({ userId, chatroomId }).map((message) => ({
+			...message,
+			createdAt: message.createdAt ?? createMessageCreatedAt(),
+			reason: "deferred",
+		}));
 		const syncTimerId = setTimeout(() => {
 			syncDeliveryIssuesState();
 		}, 0);
@@ -302,7 +290,7 @@ export function usePendingStompQueue(
 
 	const publishWithMembership = useCallback(
 		(destination: string, buildBody: StompBodyFactory) => {
-			if (!authHeader || chatroomId === null) {
+			if (!authHeader) {
 				return false;
 			}
 
@@ -319,7 +307,7 @@ export function usePendingStompQueue(
 
 			return true;
 		},
-		[authHeader, chatroomId, getPublishContext],
+		[authHeader, getPublishContext],
 	);
 
 	const publishMessage = useCallback(
