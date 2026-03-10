@@ -25,18 +25,18 @@ export type UseChatRoomResult = {
 };
 
 type UseChatRoomParams = {
-	chatRoomId: string;
+	chatroomId: string;
 	initialPostId: number | null;
 };
 
 const CHAT_ROOM_PREFETCH_STALE_TIME_MS = 60_000;
 
 export function useChatRoom(params: UseChatRoomParams): UseChatRoomResult {
-	const { chatRoomId, initialPostId } = params;
+	const { chatroomId, initialPostId } = params;
 
 	const postIdQuery = useQuery<{ postId: number }, GetChatroomPostIdError>({
-		queryKey: chatQueryKeys.chatroomPostId(chatRoomId),
-		queryFn: () => getChatroomPostId({ chatroomId: chatRoomId }),
+		queryKey: chatQueryKeys.chatroomPostId(chatroomId),
+		queryFn: () => getChatroomPostId({ chatroomId }),
 		enabled: initialPostId === null,
 		staleTime: CHAT_ROOM_PREFETCH_STALE_TIME_MS,
 	});
@@ -44,11 +44,11 @@ export function useChatRoom(params: UseChatRoomParams): UseChatRoomResult {
 	const resolvedPostId = initialPostId ?? postIdQuery.data?.postId ?? null;
 
 	const postInfoQuery = useQuery<ChatPostInfoData, GetChatroomPostInfoError>({
-		queryKey: chatQueryKeys.chatroomPostInfo(chatRoomId, resolvedPostId),
+		queryKey: chatQueryKeys.chatroomPostInfo(chatroomId, resolvedPostId),
 		queryFn: () =>
 			getChatroomPostInfo({
 				postId: resolvedPostId as number,
-				chatroomId: chatRoomId,
+				chatroomId,
 			}),
 		enabled: resolvedPostId !== null,
 		staleTime: CHAT_ROOM_PREFETCH_STALE_TIME_MS,
@@ -61,11 +61,11 @@ export function useChatRoom(params: UseChatRoomParams): UseChatRoomResult {
 		ReturnType<typeof chatQueryKeys.chatroomMessages>,
 		string | undefined
 	>({
-		queryKey: chatQueryKeys.chatroomMessages(chatRoomId, resolvedPostId),
+		queryKey: chatQueryKeys.chatroomMessages(chatroomId, resolvedPostId),
 		queryFn: ({ pageParam }) =>
 			getChatMessages({
 				postId: resolvedPostId as number,
-				chatroomId: chatRoomId,
+				chatroomId,
 				cursor: pageParam,
 			}),
 		initialPageParam: undefined,

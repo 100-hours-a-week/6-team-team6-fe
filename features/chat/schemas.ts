@@ -23,7 +23,7 @@ const ChatRoomSummaryApiSchema = z.object({
 });
 
 const ChatRoomSummaryDtoSchema = z.object({
-	chatRoomId: z.number(),
+	chatroomId: z.number(),
 	chatPartnerAvatarUrl: nonEmptyString,
 	...chatRoomSummarySharedShape,
 });

@@ -8,24 +8,24 @@ import TitleBackHeader from "@/shared/components/layout/headers/TitleBackHeader"
 interface ChatRoomLayoutProps {
 	children: React.ReactNode;
 	params: Promise<{
-		chatRoomId: string;
+		chatroomId: string;
 	}>;
 }
 
 async function ChatRoomLayout(props: ChatRoomLayoutProps) {
 	const { children, params } = props;
-	const { chatRoomId } = await params;
+	const { chatroomId } = await params;
 	const queryClient = new QueryClient();
 
 	let title = "";
 
 	try {
 		const { postId, postInfo } = await getChatroomPostInfoServer({
-			chatroomId: chatRoomId,
+			chatroomId,
 		});
 
-		queryClient.setQueryData(chatQueryKeys.chatroomPostId(chatRoomId), { postId });
-		queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(chatRoomId, postId), postInfo);
+		queryClient.setQueryData(chatQueryKeys.chatroomPostId(chatroomId), { postId });
+		queryClient.setQueryData(chatQueryKeys.chatroomPostInfo(chatroomId, postId), postInfo);
 
 		title = postInfo.isPartnerLeftGroup
 			? `${postInfo.partnerNickname}(탈퇴)`

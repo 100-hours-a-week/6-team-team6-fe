@@ -18,7 +18,7 @@ export function ChatRoomItem(props: ChatRoomItemProps) {
 	const lastMessageAtLabel = formatRelativeTimeLabel(room.lastMessageAt);
 
 	return (
-		<Link href={`/chat/${room.chatRoomId}`} className="w-full text-left">
+		<Link href={`/chat/${room.chatroomId}`} className="w-full text-left">
 			<div className="transition-colors hover:bg-muted/40 py-3">
 				<div className="flex items-center gap-3">
 					<Avatar size="xl">

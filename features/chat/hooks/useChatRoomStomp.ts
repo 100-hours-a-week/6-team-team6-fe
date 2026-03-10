@@ -10,7 +10,7 @@ import { buildWebSocketEndpoint } from "@/features/chat/lib/stomp";
 import type { ChatMessage, ChatMessages } from "@/features/chat/lib/types";
 
 interface UseChatRoomStompProps {
-	chatRoomId: string;
+	chatroomId: string;
 	messages: ChatMessages;
 }
 
@@ -69,7 +69,7 @@ function parseRequiredUserId(rawUserId: string | undefined): number {
 }
 
 export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStompResult {
-	const { chatRoomId, messages } = props;
+	const { chatroomId, messages } = props;
 	const { data: session } = useSession();
 
 	const stompClientRef = useRef<Client | null>(null);
@@ -91,7 +91,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 
 	const { mergedMessages, realtimeChatroomIdRef, setRealtimeChatroomId, setRealtimeMessages } =
 		useRealtimeMessageMerge({
-			chatroomId: chatRoomId,
+			chatroomId,
 			messages,
 		});
 
@@ -105,7 +105,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 		messageDeliveryIssues,
 	} = usePendingStompQueue({
 		authHeader,
-		chatroomId: chatRoomId,
+		chatroomId,
 		userId: myUserId,
 		stompClientRef,
 		isStompConnectedRef,
@@ -114,7 +114,7 @@ export function useChatRoomStomp(props: UseChatRoomStompProps): UseChatRoomStomp
 
 	useStompConnectionLifecycle({
 		authHeader,
-		chatroomId: chatRoomId,
+		chatroomId,
 		myUserId,
 		wsEndpoint,
 		stompClientRef,

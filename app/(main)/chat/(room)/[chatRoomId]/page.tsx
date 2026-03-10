@@ -2,7 +2,7 @@ import { ChatRoomPage } from "@/features/chat/screens/ChatRoomPage";
 
 interface ChatRoomRoutePageProps {
 	params: Promise<{
-		chatRoomId: string;
+		chatroomId: string;
 	}>;
 	searchParams: Promise<{
 		postId?: string | string[];
@@ -19,13 +19,8 @@ function parseOptionalPostId(rawPostId: string | string[] | undefined): number |
 }
 
 export default async function Page(props: ChatRoomRoutePageProps) {
-	const { chatRoomId } = await props.params;
+	const { chatroomId } = await props.params;
 	const { postId } = await props.searchParams;
 
-	return (
-		<ChatRoomPage
-			chatRoomId={chatRoomId}
-			initialPostId={parseOptionalPostId(postId)}
-		/>
-	);
+	return <ChatRoomPage chatroomId={chatroomId} initialPostId={parseOptionalPostId(postId)} />;
 }

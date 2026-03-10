@@ -22,7 +22,7 @@ import { formatRentalFeeLabel } from "@/shared/lib/format";
 import { cn } from "@/shared/lib/utils";
 
 interface ChatRoomPageProps {
-	chatRoomId: string;
+	chatroomId: string;
 	initialPostId: number | null;
 }
 
@@ -222,7 +222,7 @@ function ChatInput(props: ChatInputProps) {
 }
 
 export function ChatRoomPage(props: ChatRoomPageProps) {
-	const { chatRoomId, initialPostId } = props;
+	const { chatroomId, initialPostId } = props;
 	const {
 		postInfo,
 		isPostInfoLoading,
@@ -233,9 +233,9 @@ export function ChatRoomPage(props: ChatRoomPageProps) {
 		hasMoreMessage,
 		isLoadingPreviousMessage,
 		loadMoreMessages,
-	} = useChatRoom({ chatRoomId, initialPostId });
+	} = useChatRoom({ chatroomId, initialPostId });
 	const { mergedMessages, submitMessageByStomp, retryHeldMessageByClientMessageId } =
-		useChatRoomStomp({ chatRoomId, messages });
+		useChatRoomStomp({ chatroomId, messages });
 	const isChatUnavailable = postInfo?.isPostDeleted ?? false;
 
 	return (

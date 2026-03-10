@@ -41,7 +41,7 @@ async function getChatRooms(params: GetChatRoomsParams): Promise<ChatRoomsRespon
 	const rooms = parsed.chatroomSummaries.map((summary) => {
 		const avatarUrl = summary.chatPartnerAvatarUrl ?? summary.chatPartnerAvartUrl;
 		return {
-			chatRoomId: summary.chatroomId,
+			chatroomId: summary.chatroomId,
 			chatPartnerId: summary.chatPartnerId,
 			chatPartnerAvatarUrl: avatarUrl ?? "",
 			chatPartnerNickname: summary.chatPartnerNickname,
