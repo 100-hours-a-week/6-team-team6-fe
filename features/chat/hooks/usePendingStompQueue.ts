@@ -64,6 +64,7 @@ type InFlightMessage = {
 };
 
 const ACK_TIMEOUT_MS = 8_000;
+const ACK_TIMEOUT_TOAST_THROTTLE_MS = 5_000;
 const ACK_TIMEOUT_ERROR_MESSAGE = "메시지 전송에 실패했습니다. 네트워크 상태를 확인해 주세요.";
 
 function createClientMessageId() {
@@ -91,7 +92,17 @@ export function usePendingStompQueue(
 	const pendingMessagesRef = useRef<PendingQueueItem[]>([]);
 	const heldMessagesRef = useRef<HeldMessage[]>([]);
 	const inFlightMessageMapRef = useRef<Map<string, InFlightMessage>>(new Map());
+	const lastAckTimeoutToastAtRef = useRef(0);
 	const [messageDeliveryIssues, setMessageDeliveryIssues] = useState<MessageDeliveryIssue[]>([]);
+
+	const showAckTimeoutToast = useCallback(() => {
+		const now = Date.now();
+		if (now - lastAckTimeoutToastAtRef.current < ACK_TIMEOUT_TOAST_THROTTLE_MS) {
+			return;
+		}
+		lastAckTimeoutToastAtRef.current = now;
+		toast.error(ACK_TIMEOUT_ERROR_MESSAGE);
+	}, []);
 
 	const syncDeliveryIssuesState = useCallback(() => {
 		const issueMap = new Map<string, MessageDeliveryIssue>();
@@ -222,7 +233,7 @@ export function usePendingStompQueue(
 			const timeoutId = setTimeout(() => {
 				inFlightMessageMapRef.current.delete(message.clientMessageId);
 				upsertHeldMessage(message, "timeout");
-				toast.error(ACK_TIMEOUT_ERROR_MESSAGE);
+				showAckTimeoutToast();
 			}, ACK_TIMEOUT_MS);
 
 			inFlightMessageMapRef.current.set(message.clientMessageId, {
@@ -232,7 +243,7 @@ export function usePendingStompQueue(
 			});
 			syncDeliveryIssuesState();
 		},
-		[clearInFlightMessage, syncDeliveryIssuesState, upsertHeldMessage],
+		[clearInFlightMessage, showAckTimeoutToast, syncDeliveryIssuesState, upsertHeldMessage],
 	);
 
 	useEffect(() => {
