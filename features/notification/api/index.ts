@@ -1,7 +1,12 @@
+export { deleteNotification } from "@/features/notification/api/deleteNotification";
 export { deletePushToken } from "@/features/notification/api/deletePushToken";
+export type { GetMyNotificationsParams } from "@/features/notification/api/getMyNotifications";
+export { getMyNotifications } from "@/features/notification/api/getMyNotifications";
 export { getWebPushSetting } from "@/features/notification/api/getWebPushSetting";
 export {
+	DeleteNotificationError,
 	DeletePushTokenError,
+	GetMyNotificationsError,
 	GetWebPushSettingError,
 	NotificationApiError,
 	RegisterPushTokenError,

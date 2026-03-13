@@ -19,7 +19,7 @@ const inputFieldVariants = cva("", {
 		variant: {
 			default: "",
 			search:
-				"h-11 rounded-full border-transparent bg-muted dark:bg-muted/50 has-disabled:bg-muted/80 dark:has-disabled:bg-muted/40",
+				"h-11  border-transparent bg-muted dark:bg-muted/50 has-disabled:bg-muted/80 dark:has-disabled:bg-muted/40",
 		},
 	},
 	defaultVariants: {
