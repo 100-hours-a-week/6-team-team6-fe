@@ -27,7 +27,7 @@ const notificationBaseSchema = z.object({
 	groupId: z.number().int(),
 	description: z.string().min(1),
 	createdAt: z.string().min(1),
-	firstImageUrl: z.string(),
+	postFirstImageUrl: z.string().nullable(),
 });
 
 const chatroomNotificationSchema = notificationBaseSchema.extend({

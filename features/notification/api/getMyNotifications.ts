@@ -1,8 +1,10 @@
 "use client";
 
-import { GetMyNotificationsError } from "@/features/notification/api/notificationApiError";
-import type { NotificationsResponse } from "@/features/notification/schemas";
-import { notificationsResponseSchema } from "@/features/notification/schemas";
+import { GetMyNotificationsError } from "@/features/notification/api";
+import {
+	type NotificationsResponse,
+	notificationsResponseSchema,
+} from "@/features/notification/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
 import { requestJson } from "@/shared/lib/api/request";

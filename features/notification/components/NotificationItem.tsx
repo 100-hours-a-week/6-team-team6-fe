@@ -39,9 +39,6 @@ function NotificationItem(props: NotificationItemProps) {
 
 	const TypeIcon = notification.type === "CHATROOM" ? MessageCircleIcon : FileTextIcon;
 	const typeLabel = notification.type === "CHATROOM" ? "채팅 알림" : "게시글 알림";
-	// TODO: remove this after connect api
-	const iconToneClass =
-		notification.type === "CHATROOM" ? "bg-sky-50 text-sky-600" : "bg-amber-100 text-amber-700";
 
 	return (
 		<div className="flex items-start gap-2 border-b border-border/70 px-3 py-3">
@@ -59,12 +56,7 @@ function NotificationItem(props: NotificationItemProps) {
 					disabled && "pointer-events-none opacity-70",
 				)}
 			>
-				<div
-					className={cn(
-						"flex size-10 shrink-0 items-center justify-center rounded-full",
-						iconToneClass,
-					)}
-				>
+				<div className={cn("flex size-10 shrink-0 items-center justify-center rounded-full")}>
 					<TypeIcon className="size-5" aria-hidden="true" />
 					<span className="sr-only">{typeLabel}</span>
 				</div>
