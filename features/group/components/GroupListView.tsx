@@ -11,7 +11,7 @@ import { groupRoutes } from "@/features/group/lib/groupRoutes";
 import type { GroupSummaryDto, MyPostSummaryDto } from "@/features/group/schemas";
 
 import DefaultNavigation from "@/shared/components/layout/bottomNavigations/DefaultNavigation";
-import LogoHeader from "@/shared/components/layout/headers/LogoHeader";
+import LogoNotificationHeader from "@/shared/components/layout/headers/LogoNotificationHeader";
 import { Carousel, CarouselContent, CarouselItem } from "@/shared/components/ui/carousel";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Spinner } from "@/shared/components/ui/spinner";
@@ -307,7 +307,7 @@ function GroupListView(props: GroupListViewProps) {
 
 	return (
 		<>
-			<LogoHeader />
+			<LogoNotificationHeader />
 			<div className="flex flex-1">
 				<section className="flex h-full flex-1 flex-col overflow-y-scroll no-scrollbar pb-(--h-bottom-nav)">
 					<div className="flex flex-col gap-8 px-5 py-6">

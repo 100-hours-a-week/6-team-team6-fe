@@ -34,8 +34,22 @@ class DeletePushTokenError extends NotificationApiError {
 	}
 }
 
+class GetMyNotificationsError extends NotificationApiError {
+	constructor(status: number, code?: string) {
+		super("GetMyNotificationsError", status, code);
+	}
+}
+
+class DeleteNotificationError extends NotificationApiError {
+	constructor(status: number, code?: string) {
+		super("DeleteNotificationError", status, code);
+	}
+}
+
 export {
+	DeleteNotificationError,
 	DeletePushTokenError,
+	GetMyNotificationsError,
 	GetWebPushSettingError,
 	NotificationApiError,
 	RegisterPushTokenError,

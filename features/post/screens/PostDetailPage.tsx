@@ -5,6 +5,7 @@ import { PostDetailImages } from "@/features/post/components/PostDetailImages";
 import { PostDetailMeta } from "@/features/post/components/PostDetailMeta";
 import PostDetailNavigation from "@/features/post/components/PostDetailNavigation";
 import { PostStateMessage } from "@/features/post/components/PostStateMessage";
+import { RecommendedPostsSection } from "@/features/post/components/RecommendedPostsSection";
 import { usePostDetailActions } from "@/features/post/hooks/usePostDetailActions";
 import { usePostDetailParams } from "@/features/post/hooks/usePostDetailParams";
 import { usePostDetailQuery } from "@/features/post/hooks/usePostDetailQuery";
@@ -86,7 +87,7 @@ export function PostDetailPage() {
 					isDeleting={isDeleting}
 				/>
 			) : null}
-			<div className="flex flex-1 pb-(--h-bottom-nav)">
+			<div className="flex flex-1 pb-(--h-bottom-nav) flex-col">
 				<section className="flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar">
 					<PostDetailSeller avatarUrl={post.sellerAvatar} nickname={post.sellerNickname} />
 					<PostDetailImages images={post.imageUrls.imageInfos} />
@@ -103,6 +104,9 @@ export function PostDetailPage() {
 						/>
 						<Separator className="my-6" />
 						<PostDetailBody content={post.content} />
+					</HorizontalPaddingBox>
+					<HorizontalPaddingBox className="mt-10 flex flex-col gap-y-4">
+						<RecommendedPostsSection />
 					</HorizontalPaddingBox>
 				</section>
 			</div>

@@ -30,7 +30,7 @@ function GroupSettingsActionRow(props: GroupSettingsActionRowProps) {
 					</Typography>
 				) : null}
 			</div>
-			<ChevronRightIcon className="size-6 shrink-0 text-muted-foreground/70" />
+			<ChevronRightIcon className="size-5 shrink-0 " />
 		</button>
 	);
 }

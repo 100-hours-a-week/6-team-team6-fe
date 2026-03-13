@@ -39,6 +39,11 @@ function GroupSettingsView(props: GroupSettingsViewProps) {
 			onClick: actions.openInviteDrawer,
 		},
 		{
+			title: "키워드 알림 설정",
+			description: GROUP_SETTINGS_LABELS.keywordGuide,
+			onClick: actions.moveToKeywordNotificationPage,
+		},
+		{
 			title: "그룹 나가기",
 			description: GROUP_SETTINGS_LABELS.leaveGuide,
 			onClick: actions.openLeaveDrawer,
