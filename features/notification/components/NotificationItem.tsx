@@ -8,6 +8,7 @@ import Link from "next/link";
 import { EllipsisVerticalIcon, FileTextIcon, MessageCircleIcon } from "lucide-react";
 
 import { groupRoutes } from "@/features/group/lib/groupRoutes";
+import { notificationMessages, notificationTypes } from "@/features/notification/lib/constants";
 import type { Notification } from "@/features/notification/schemas";
 import { postRoutes } from "@/features/post/lib/postRoutes";
 
@@ -27,19 +28,20 @@ function NotificationItem(props: NotificationItemProps) {
 	const { notification, onDeleteClick, disabled = false } = props;
 
 	const href = useMemo(() => {
-		if (notification.type === "CHATROOM" && notification.chatroomId !== null) {
+		if (notification.type === notificationTypes.chatroom && notification.chatroomId !== null) {
 			return postRoutes.chatRoom(notification.chatroomId);
 		}
 
-		if (notification.type === "POST" && notification.postId !== null) {
+		if (notification.type === notificationTypes.post && notification.postId !== null) {
 			return groupRoutes.postDetail(notification.groupId, notification.postId);
 		}
 
 		return "/notifications";
 	}, [notification]);
 
-	const TypeIcon = notification.type === "CHATROOM" ? MessageCircleIcon : FileTextIcon;
-	const typeLabel = notification.type === "CHATROOM" ? "채팅 알림" : "게시글 알림";
+	const TypeIcon =
+		notification.type === notificationTypes.chatroom ? MessageCircleIcon : FileTextIcon;
+	const typeLabel = notificationMessages.typeLabels[notification.type];
 
 	return (
 		<div className="flex items-start gap-2 border-b border-border/70 px-3 py-3 hover:bg-secondary">
@@ -116,7 +118,7 @@ function NotificationEmptyState() {
 		<div className="flex min-h-64 flex-col items-center justify-center gap-3 rounded-2xl  px-6 text-center">
 			<div className="flex flex-1 items-center justify-center px-4 py-6">
 				<Typography type="body-sm" className="text-muted-foreground">
-					확인할 알림이 없어요.
+					{notificationMessages.empty}
 				</Typography>
 			</div>
 		</div>

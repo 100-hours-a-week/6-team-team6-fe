@@ -15,12 +15,14 @@ import {
 	getMyNotifications,
 	notificationQueryKeys,
 } from "@/features/notification/api";
+import {
+	notificationErrorMessages,
+	notificationListConfig,
+} from "@/features/notification/lib/constants";
+import { resolveNotificationErrorMessage } from "@/features/notification/lib/resolveNotificationErrorMessage";
 import type { Notification, NotificationsResponse } from "@/features/notification/schemas";
 
 import { useIntersectionObserver } from "@/shared/hooks/useIntersectionObserver";
-
-import { getApiErrorCode } from "@/shared/lib/api/error-guards";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 
 type UseNotificationsOptions = {
 	rootMargin?: string;
@@ -44,11 +46,6 @@ type DeleteContext = {
 	previousData?: InfiniteData<NotificationsResponse, string | undefined>;
 };
 
-export const NOTIFICATION_MESSAGES = {
-	loadFailed: "알림 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
-	deleteFailed: "알림 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.",
-};
-
 const removeNotificationFromPages = (
 	data: InfiniteData<NotificationsResponse, string | undefined> | undefined,
 	notificationId: number,
@@ -68,25 +65,11 @@ const removeNotificationFromPages = (
 	};
 };
 
-const resolveNotificationErrorMessage = (error: unknown, fallbackMessage: string) => {
-	const code = getApiErrorCode(error);
-	const mappedMessage = getApiErrorMessage(code);
-	if (mappedMessage) {
-		return mappedMessage;
-	}
-
-	if (error instanceof Error && error.message && error.message !== "UNKNOWN_ERROR") {
-		return error.message;
-	}
-
-	return fallbackMessage;
-};
-
 function useNotifications(options: UseNotificationsOptions = {}): {
 	state: NotificationsState;
 	actions: NotificationsActions;
 } {
-	const { rootMargin = "0px 0px 160px 0px" } = options;
+	const { rootMargin = notificationListConfig.rootMargin } = options;
 	const queryClient = useQueryClient();
 	const queryKey = notificationQueryKeys.list();
 
@@ -144,7 +127,9 @@ function useNotifications(options: UseNotificationsOptions = {}): {
 				queryClient.setQueryData(queryKey, context.previousData);
 			}
 
-			toast.error(resolveNotificationErrorMessage(error, NOTIFICATION_MESSAGES.deleteFailed));
+			toast.error(
+				resolveNotificationErrorMessage(error, notificationErrorMessages.deleteNotification),
+			);
 		},
 	});
 
@@ -154,7 +139,10 @@ function useNotifications(options: UseNotificationsOptions = {}): {
 		}
 
 		toast.error(
-			resolveNotificationErrorMessage(notificationsQuery.error, NOTIFICATION_MESSAGES.loadFailed),
+			resolveNotificationErrorMessage(
+				notificationsQuery.error,
+				notificationErrorMessages.loadNotifications,
+			),
 		);
 	}, [notificationsQuery.error]);
 

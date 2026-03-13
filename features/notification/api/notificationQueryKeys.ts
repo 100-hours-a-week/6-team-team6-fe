@@ -1,4 +1,7 @@
+const notificationQueryKeysBase = ["notifications"] as const;
+
 export const notificationQueryKeys = {
-	list: () => ["notifications", "list"] as const,
-	webPushSetting: () => ["notifications", "web-push-setting"] as const,
+	all: () => notificationQueryKeysBase,
+	list: () => [...notificationQueryKeys.all(), "list"] as const,
+	webPushSetting: () => [...notificationQueryKeys.all(), "web-push-setting"] as const,
 };

@@ -8,6 +8,11 @@ import {
 	NotificationItem,
 } from "@/features/notification/components/NotificationItem";
 import { useNotificationList } from "@/features/notification/hooks/useNotificationList";
+import {
+	notificationErrorMessages,
+	notificationListConfig,
+	notificationMessages,
+} from "@/features/notification/lib/constants";
 
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Spinner } from "@/shared/components/ui/spinner";
@@ -16,7 +21,7 @@ import { Typography } from "@/shared/components/ui/typography";
 function NotificationListLoading() {
 	return (
 		<div className="flex flex-col gap-3">
-			{Array.from({ length: 5 }).map((_, index) => (
+			{Array.from({ length: notificationListConfig.skeletonCount }).map((_, index) => (
 				<div
 					key={index}
 					className="flex items-center gap-3 rounded-2xl border border-border/70 bg-background px-3 py-3"
@@ -37,9 +42,9 @@ function NotificationListLoading() {
 function NotificationListError() {
 	return (
 		<section className="my-auto flex flex-col gap-3 h-full justify-center items-center">
-			<Typography type="subtitle">알림을 불러오지 못했어요.</Typography>
+			<Typography type="subtitle">{notificationErrorMessages.listLoadFailedTitle}</Typography>
 			<Typography type="body-sm" className="text-muted-foreground">
-				잠시 후 다시 시도해 주세요.
+				{notificationErrorMessages.listLoadFailedDescription}
 			</Typography>
 		</section>
 	);
@@ -90,12 +95,12 @@ function NotificationList() {
 				{isFetchingNextPage ? (
 					<div className="flex items-center justify-center gap-2 text-muted-foreground">
 						<Spinner />
-						<Typography type="body-sm">알림을 더 불러오는 중...</Typography>
+						<Typography type="body-sm">{notificationMessages.listLoadingMore}</Typography>
 					</div>
 				) : null}
 				{!hasNextPage ? (
 					<Typography type="caption" className="text-center text-muted-foreground">
-						모든 알림을 확인했어요.
+						{notificationMessages.listEnd}
 					</Typography>
 				) : null}
 			</div>

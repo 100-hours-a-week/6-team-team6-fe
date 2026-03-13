@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { notificationTypes, pushTokenPlatformValues } from "@/features/notification/lib/constants";
+
 const webPushSettingSchema = z
 	.object({
 		enabled: z.boolean(),
@@ -10,7 +12,7 @@ const webPushSettingUpdateSchema = z.object({
 	enabled: z.boolean(),
 });
 
-const pushTokenPlatformSchema = z.enum(["WEB", "IOS", "AOS"]);
+const pushTokenPlatformSchema = z.enum(pushTokenPlatformValues);
 
 const pushTokenRegisterSchema = z.object({
 	platform: pushTokenPlatformSchema,
@@ -18,9 +20,7 @@ const pushTokenRegisterSchema = z.object({
 	newToken: z.string().min(1),
 });
 
-const notificationTypeSchema = z.enum(["CHATROOM", "POST"]);
-
-const notificationBaseSchema = z.object({
+const notificationSchemaBase = z.object({
 	notificationId: z.number().int(),
 	title: z.string().min(1),
 	groupName: z.string().min(1),
@@ -30,19 +30,18 @@ const notificationBaseSchema = z.object({
 	postFirstImageUrl: z.string().nullable(),
 });
 
-const chatroomNotificationSchema = notificationBaseSchema.extend({
-	type: z.literal("CHATROOM"),
-	chatroomId: z.number().int(),
-	postId: z.null(),
-});
-
-const postNotificationSchema = notificationBaseSchema.extend({
-	type: z.literal("POST"),
-	chatroomId: z.null(),
-	postId: z.number().int(),
-});
-
-const notificationSchema = z.union([chatroomNotificationSchema, postNotificationSchema]);
+const notificationSchema = z.discriminatedUnion("type", [
+	notificationSchemaBase.extend({
+		type: z.literal(notificationTypes.chatroom),
+		chatroomId: z.number().int(),
+		postId: z.null(),
+	}),
+	notificationSchemaBase.extend({
+		type: z.literal(notificationTypes.post),
+		chatroomId: z.null(),
+		postId: z.number().int(),
+	}),
+]);
 
 const notificationsResponseSchema = z.object({
 	notifications: z.array(notificationSchema),
@@ -57,12 +56,8 @@ type Notification = z.infer<typeof notificationSchema>;
 type NotificationsResponse = z.infer<typeof notificationsResponseSchema>;
 
 export {
-	chatroomNotificationSchema,
-	notificationBaseSchema,
 	notificationSchema,
 	notificationsResponseSchema,
-	notificationTypeSchema,
-	postNotificationSchema,
 	pushTokenPlatformSchema,
 	pushTokenRegisterSchema,
 	webPushSettingSchema,
