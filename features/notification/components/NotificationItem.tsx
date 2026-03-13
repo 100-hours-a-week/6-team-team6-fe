@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 
+import Image from "next/image";
 import Link from "next/link";
 
 import { EllipsisVerticalIcon, FileTextIcon, MessageCircleIcon } from "lucide-react";
@@ -41,7 +42,7 @@ function NotificationItem(props: NotificationItemProps) {
 	const typeLabel = notification.type === "CHATROOM" ? "채팅 알림" : "게시글 알림";
 
 	return (
-		<div className="flex items-start gap-2 border-b border-border/70 px-3 py-3">
+		<div className="flex items-start gap-2 border-b border-border/70 px-3 py-3 hover:bg-secondary">
 			<Link
 				href={href}
 				aria-disabled={disabled}
@@ -56,9 +57,25 @@ function NotificationItem(props: NotificationItemProps) {
 					disabled && "pointer-events-none opacity-70",
 				)}
 			>
-				<div className={cn("flex size-10 shrink-0 items-center justify-center rounded-full")}>
-					<TypeIcon className="size-5" aria-hidden="true" />
-					<span className="sr-only">{typeLabel}</span>
+				<div
+					className={cn(
+						"relative flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted",
+					)}
+				>
+					{notification.postFirstImageUrl ? (
+						<Image
+							src={notification.postFirstImageUrl}
+							alt={notification.title}
+							fill
+							sizes="40px"
+							className="object-cover"
+						/>
+					) : (
+						<>
+							<TypeIcon className="size-5" aria-hidden="true" />
+							<span className="sr-only">{typeLabel}</span>
+						</>
+					)}
 				</div>
 				<div className="min-w-0 flex-1">
 					<Typography type="body-sm" className="truncate-1 font-semibold text-foreground">
