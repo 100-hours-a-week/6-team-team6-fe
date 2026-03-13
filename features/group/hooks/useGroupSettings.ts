@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 
+import { useRouter } from "next/navigation";
+
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
@@ -11,7 +13,10 @@ import {
 	getGroupSettings,
 	type GetGroupSettingsError,
 } from "@/features/group/api/getGroupSettings";
-import { getMyGroupMembership, type GetMyGroupMembershipError } from "@/features/group/api/getMyGroupMembership";
+import {
+	getMyGroupMembership,
+	type GetMyGroupMembershipError,
+} from "@/features/group/api/getMyGroupMembership";
 import { groupQueryKeys } from "@/features/group/api/groupQueryKeys";
 import { leaveGroup as leaveGroupApi, type LeaveGroupError } from "@/features/group/api/leaveGroup";
 import {
@@ -71,6 +76,7 @@ interface GroupSettingsActions {
 	submitNickname: () => void;
 	copyInviteLink: () => Promise<void>;
 	leaveGroup: () => void;
+	moveToKeywordNotificationPage: () => void;
 }
 
 const resolveGroupSettingsErrorMessage = (error: unknown, fallbackMessage: string) => {
@@ -93,6 +99,8 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 } {
 	const { groupId, onLeaveGroupSuccess } = options;
 	const queryClient = useQueryClient();
+	const router = useRouter();
+
 	const groupDetailQueryKey = groupQueryKeys.detail(groupId);
 	const membershipQueryKey = groupQueryKeys.membershipMe(groupId);
 	const invitationQueryKey = groupQueryKeys.invitation(groupId);
@@ -200,9 +208,7 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 			onLeaveGroupSuccess();
 		},
 		onError: (error) => {
-			toast.error(
-				resolveGroupSettingsErrorMessage(error, GROUP_SETTINGS_LABELS.leaveFailedToast),
-			);
+			toast.error(resolveGroupSettingsErrorMessage(error, GROUP_SETTINGS_LABELS.leaveFailedToast));
 		},
 	});
 
@@ -251,9 +257,7 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 	const isNicknameSubmitDisabled = useMemo(() => {
 		const trimmedNicknameInput = nicknameInput.trim();
 		return (
-			trimmedNicknameInput.length === 0 ||
-			trimmedNicknameInput === nickname ||
-			isNicknameSubmitting
+			trimmedNicknameInput.length === 0 || trimmedNicknameInput === nickname || isNicknameSubmitting
 		);
 	}, [nicknameInput, nickname, isNicknameSubmitting]);
 
@@ -326,6 +330,10 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 		leaveGroupMutate();
 	}, [leaveGroupMutate]);
 
+	const moveToKeywordNotificationPage = () => {
+		router.push(`/groups/${groupId}/keyword-notifications`);
+	};
+
 	return {
 		state: {
 			groupName,
@@ -355,6 +363,7 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 			submitNickname,
 			copyInviteLink,
 			leaveGroup,
+			moveToKeywordNotificationPage,
 		},
 	};
 }
