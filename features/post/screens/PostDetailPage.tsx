@@ -107,6 +107,8 @@ export function PostDetailPage() {
 				</section>
 			</div>
 			<PostDetailNavigation
+				groupId={normalizedGroupId}
+				detailPostId={normalizedPostId}
 				isSeller={post.isSeller}
 				activeChatroomCount={post.activeChatroomCount}
 				chatroomId={post.chatroomId}
