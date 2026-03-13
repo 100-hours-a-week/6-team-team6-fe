@@ -32,11 +32,15 @@ const KEYWORD_NOTIFICATION_MESSAGES = {
 	addButton: "등록",
 	addSuccess: "키워드를 등록했어요.",
 	addFailed: "키워드 등록에 실패했어요. 잠시 후 다시 시도해 주세요.",
+	deleteTitle: "키워드를 삭제할까요?",
+	deleteDescription: "삭제하면 복구할 수 없어요.",
 	deleteFailed: "키워드 삭제에 실패했어요. 잠시 후 다시 시도해 주세요.",
+	deleteSuccess: "키워드를 삭제했어요.",
 	loadFailed: "키워드 목록을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
 	empty: "아직 등록된 키워드가 없어요.\n키워드를 등록해 보세요",
 	listTitle: "등록한 키워드",
 	deleteAction: "삭제",
+	cancelAction: "취소",
 };
 
 type KeywordNotificationsState = {
@@ -47,12 +51,16 @@ type KeywordNotificationsState = {
 	isError: boolean;
 	isCreating: boolean;
 	isDeleting: boolean;
+	selectedKeywordSubscriptionId: number | null;
+	isDeleteDialogOpen: boolean;
 };
 
 type KeywordNotificationsActions = {
 	changeKeywordInput: (value: string) => void;
 	submitKeyword: () => void;
-	deleteKeyword: (keywordSubscriptionId: number) => void;
+	openDeleteDialog: (keywordSubscriptionId: number) => void;
+	closeDeleteDialog: () => void;
+	confirmDeleteKeyword: () => void;
 };
 
 const resolveKeywordNotificationErrorMessage = (error: unknown, fallbackMessage: string) => {
@@ -78,6 +86,9 @@ function useKeywordNotifications(groupId: string): {
 	const queryKey = groupQueryKeys.keywordSubscriptions(groupId);
 	const [keywordInput, setKeywordInput] = useState("");
 	const [keywordError, setKeywordError] = useState<string | null>(null);
+	const [selectedKeywordSubscriptionId, setSelectedKeywordSubscriptionId] = useState<number | null>(
+		null,
+	);
 
 	const subscriptionsQuery = useQuery({
 		queryKey,
@@ -118,7 +129,9 @@ function useKeywordNotifications(groupId: string): {
 		mutationFn: (keywordSubscriptionId) =>
 			deleteKeywordSubscription({ groupId, keywordSubscriptionId }),
 		onSuccess: async () => {
+			setSelectedKeywordSubscriptionId(null);
 			await queryClient.invalidateQueries({ queryKey });
+			toast.success(KEYWORD_NOTIFICATION_MESSAGES.deleteSuccess);
 		},
 		onError: (error) => {
 			toast.error(
@@ -164,12 +177,25 @@ function useKeywordNotifications(groupId: string): {
 		createKeywordMutate(trimmedKeyword);
 	}, [createKeywordMutate, keywordInput]);
 
-	const deleteKeyword = useCallback(
-		(keywordSubscriptionId: number) => {
-			deleteKeywordMutate(keywordSubscriptionId);
-		},
-		[deleteKeywordMutate],
-	);
+	const openDeleteDialog = useCallback((keywordSubscriptionId: number) => {
+		setSelectedKeywordSubscriptionId(keywordSubscriptionId);
+	}, []);
+
+	const closeDeleteDialog = useCallback(() => {
+		if (isDeleting) {
+			return;
+		}
+
+		setSelectedKeywordSubscriptionId(null);
+	}, [isDeleting]);
+
+	const confirmDeleteKeyword = useCallback(() => {
+		if (selectedKeywordSubscriptionId === null) {
+			return;
+		}
+
+		deleteKeywordMutate(selectedKeywordSubscriptionId);
+	}, [deleteKeywordMutate, selectedKeywordSubscriptionId]);
 
 	return {
 		state: {
@@ -180,11 +206,15 @@ function useKeywordNotifications(groupId: string): {
 			isError: subscriptionsQuery.isError,
 			isCreating,
 			isDeleting,
+			selectedKeywordSubscriptionId,
+			isDeleteDialogOpen: selectedKeywordSubscriptionId !== null,
 		},
 		actions: {
 			changeKeywordInput,
 			submitKeyword,
-			deleteKeyword,
+			openDeleteDialog,
+			closeDeleteDialog,
+			confirmDeleteKeyword,
 		},
 		labels: KEYWORD_NOTIFICATION_MESSAGES,
 	};

@@ -2,6 +2,7 @@
 
 import { Trash2Icon } from "lucide-react";
 
+import { KeywordSubscriptionDeleteDialog } from "@/features/group/components/KeywordSubscriptionDeleteDialog";
 import type {
 	KeywordNotificationsActions,
 	KeywordNotificationsState,
@@ -27,6 +28,9 @@ interface KeywordNotificationsViewProps {
 		empty: string;
 		listTitle: string;
 		deleteAction: string;
+		deleteTitle: string;
+		deleteDescription: string;
+		cancelAction: string;
 	};
 }
 
@@ -97,7 +101,7 @@ function KeywordNotificationsView(props: KeywordNotificationsViewProps) {
 										size="sm"
 										className="shrink-0 hover:bg-transparent hover:text-destructive hover:bg-none"
 										disabled={state.isDeleting}
-										onClick={() => actions.deleteKeyword(subscription.keywordSubscriptionId)}
+										onClick={() => actions.openDeleteDialog(subscription.keywordSubscriptionId)}
 									>
 										<Trash2Icon className="size-4 " />
 									</Button>
@@ -107,6 +111,16 @@ function KeywordNotificationsView(props: KeywordNotificationsViewProps) {
 					</ul>
 				) : null}
 			</div>
+			<KeywordSubscriptionDeleteDialog
+				open={state.isDeleteDialogOpen}
+				onOpenChange={actions.closeDeleteDialog}
+				isDeleting={state.isDeleting}
+				onConfirm={actions.confirmDeleteKeyword}
+				title={labels.deleteTitle}
+				description={labels.deleteDescription}
+				confirmLabel={labels.deleteAction}
+				cancelLabel={labels.cancelAction}
+			/>
 		</section>
 	);
 }
