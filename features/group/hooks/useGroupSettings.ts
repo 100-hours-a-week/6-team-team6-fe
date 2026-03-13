@@ -23,6 +23,7 @@ import {
 	updateMyGroupMembershipNickname,
 	type UpdateMyGroupMembershipNicknameError,
 } from "@/features/group/api/updateMyGroupMembershipNickname";
+import { groupRoutes } from "@/features/group/lib/groupRoutes";
 import {
 	createGroupInviteLink,
 	getGroupCoverImageByGroupId,
@@ -331,7 +332,7 @@ function useGroupSettings(options: UseGroupSettingsOptions): {
 	}, [leaveGroupMutate]);
 
 	const moveToKeywordNotificationPage = () => {
-		router.push(`/groups/${groupId}/keyword-notifications`);
+		router.push(groupRoutes.keywordNotifications(groupId));
 	};
 
 	return {
