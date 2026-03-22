@@ -88,7 +88,7 @@ function RecommendedPostCard(props: RecommendedPostCardProps) {
 						) : null}
 					</div>
 					<div className="flex flex-col gap-y-1.5 p-3">
-						<Typography type="subtitle" className="line-clamp-2 whitespace-normal leading-snug">
+						<Typography type="subtitle" className="line-clamp-1 whitespace-normal leading-snug">
 							{item.postTitle}
 						</Typography>
 						<Typography type="body-sm">
