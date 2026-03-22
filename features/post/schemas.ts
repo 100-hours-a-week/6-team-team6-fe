@@ -29,6 +29,28 @@ const PostSummariesResponseApiSchema = z.object({
 	hasNextPage: z.boolean(),
 });
 
+const PostRecommendationDtoSchema = z.object({
+	postId: z.number(),
+	postTitle: z.string().min(1),
+	postImageId: z.number(),
+	postFirstImageUrl: z.string().nullable().optional(),
+	rentalFee: z.number().min(0),
+	feeUnit: feeUnitSchema,
+	rentalStatus: rentalStatusSchema,
+	updatedAt: z.string().min(1),
+	feedItemType: z.string().min(1),
+});
+
+const PostRecommendationsResponseApiSchema = z.object({
+	size: z.number().int().min(0),
+	recommendations: z.array(PostRecommendationDtoSchema),
+});
+
+const PostRecommendationsResponseDtoSchema = z.object({
+	size: z.number().int().min(0),
+	recommendations: z.array(PostRecommendationDtoSchema),
+});
+
 const PostImageInfoDtoSchema = z.object({
 	postImageId: z.number(),
 	imageUrl: z.string().min(1),
@@ -120,12 +142,16 @@ type FeeUnit = z.infer<typeof feeUnitSchema>;
 type RentalStatus = z.infer<typeof rentalStatusSchema>;
 type PostSummaryDto = z.infer<typeof PostSummaryDtoSchema>;
 type PostSummariesResponseDto = z.infer<typeof PostSummariesResponseDtoSchema>;
+type PostRecommendationDto = z.infer<typeof PostRecommendationDtoSchema>;
+type PostRecommendationsResponseDto = z.infer<typeof PostRecommendationsResponseDtoSchema>;
 type PostDetailDto = z.infer<typeof PostDetailDtoSchema>;
 
 export type {
 	FeeUnit,
 	PostDetailDto,
 	PostEditorValues,
+	PostRecommendationDto,
+	PostRecommendationsResponseDto,
 	PostSummariesResponseDto,
 	PostSummaryDto,
 	RentalStatus,
@@ -138,6 +164,9 @@ export {
 	PostDetailResponseApiSchema,
 	PostEditorSchema,
 	PostImageInfoDtoSchema,
+	PostRecommendationDtoSchema,
+	PostRecommendationsResponseApiSchema,
+	PostRecommendationsResponseDtoSchema,
 	PostSummariesResponseApiSchema,
 	PostSummariesResponseDtoSchema,
 	PostSummaryDtoSchema,
