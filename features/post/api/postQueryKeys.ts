@@ -4,6 +4,7 @@ const postQueryKeys = {
 	list: (groupId: string) => [...postQueryKeys.group(groupId), "list"] as const,
 	detail: (groupId: string, postId: string) =>
 		[...postQueryKeys.group(groupId), "detail", postId] as const,
+	recommendations: (postId: string) => [...postQueryKeys.all, "recommendations", postId] as const,
 };
 
 export { postQueryKeys };
