@@ -1,17 +1,23 @@
 "use client";
 
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import { useRouter } from "next/navigation";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 
+import {
+	checkPostContent,
+	CheckPostContentError,
+} from "@/features/post/api/checkPostContent";
+import { uploadPostImagesWithErrorHandling } from "@/features/post/api/postImageUtils";
 import { postQueries } from "@/features/post/api/postQueries";
 import { postQueryKeys } from "@/features/post/api/postQueryKeys";
 import {
 	updatePost,
 	UpdatePostError,
+	type UpdatePostImageInfo,
 	type UpdatePostParams,
 	type UpdatePostResponse,
 } from "@/features/post/api/updatePost";
@@ -34,11 +40,12 @@ export function PostEditPage(props: PostEditPageProps) {
 	const { groupId, postId } = props;
 	const router = useRouter();
 	const queryClient = useQueryClient();
+	const [isPreparingSubmit, setIsPreparingSubmit] = useState(false);
 	const detailQueryKey = postQueryKeys.detail(groupId, postId);
 	const listQueryKey = postQueryKeys.list(groupId);
 	const canUsePost = Boolean(groupId) && Boolean(postId);
 	const detailQuery = useQuery(postQueries.detail({ groupId, postId, enabled: canUsePost }));
-	const updateMutation = useMutation<
+	const { mutateAsync: mutateUpdatePostAsync, isPending } = useMutation<
 		UpdatePostResponse,
 		UpdatePostError,
 		Omit<UpdatePostParams, "groupId" | "postId">
@@ -55,7 +62,6 @@ export function PostEditPage(props: PostEditPageProps) {
 		},
 	});
 	const { data: post, isLoading } = detailQuery;
-	const { mutate: mutateUpdatePost, isPending } = updateMutation;
 
 	const existingImages = useMemo<ExistingImage[]>(() => {
 		if (!post) {
@@ -77,8 +83,12 @@ export function PostEditPage(props: PostEditPageProps) {
 	}, [post]);
 
 	const handleSubmit = useCallback(
-		(payload: EditPostPayload) => {
-			const imageUrls = payload.keepImageIds.flatMap((id) => {
+		async (payload: EditPostPayload) => {
+			if (isPreparingSubmit || isPending) {
+				return;
+			}
+
+			const keptImageUrls: UpdatePostImageInfo[] = payload.keepImageIds.flatMap((id) => {
 				const url = imageUrlMap.get(id);
 				if (!url) {
 					return [];
@@ -86,28 +96,50 @@ export function PostEditPage(props: PostEditPageProps) {
 				return [{ postImageId: Number(id), imageUrl: url }];
 			});
 
-			mutateUpdatePost(
-				{
+			setIsPreparingSubmit(true);
+
+			try {
+				const uploadedImageUrls = await uploadPostImagesWithErrorHandling(
+					payload.newImages,
+					(status, code) => new UpdatePostError(status, code),
+				);
+				const nextImageUrls: UpdatePostImageInfo[] = [
+					...keptImageUrls,
+					...uploadedImageUrls.map((imageUrl) => ({ postImageId: null, imageUrl })),
+				];
+
+				await checkPostContent({
+					imageUrls: nextImageUrls.map((image) => image.imageUrl),
+					title: payload.title,
+					content: payload.content,
+				});
+
+				await mutateUpdatePostAsync({
 					title: payload.title,
 					content: payload.content,
 					rentalFee: payload.rentalFee,
 					feeUnit: payload.feeUnit,
-					imageUrls,
-					newImages: payload.newImages,
-				},
-				{
-					onSuccess: () => {
-						toast.success("게시글이 수정되었습니다.");
-						router.replace(postRoutes.postDetail(groupId, postId));
-					},
-					onError: (updateError) => {
-						const message = getApiErrorMessage(updateError?.code ?? "게시글 수정에 실패했습니다.");
-						toast.error(message);
-					},
-				},
-			);
+					imageUrls: nextImageUrls,
+				});
+
+				toast.success("게시글이 수정되었습니다.");
+				router.replace(postRoutes.postDetail(groupId, postId));
+			} catch (error) {
+				const errorCode =
+					error instanceof UpdatePostError || error instanceof CheckPostContentError
+						? error.code
+						: undefined;
+				const message =
+					getApiErrorMessage(errorCode) ??
+					(error instanceof CheckPostContentError
+						? "게시글 AI 검증에 실패했습니다."
+						: "게시글 수정에 실패했습니다.");
+				toast.error(message);
+			} finally {
+				setIsPreparingSubmit(false);
+			}
 		},
-		[groupId, imageUrlMap, mutateUpdatePost, postId, router],
+		[groupId, imageUrlMap, isPending, isPreparingSubmit, mutateUpdatePostAsync, postId, router],
 	);
 
 	if (isLoading) {
@@ -124,7 +156,7 @@ export function PostEditPage(props: PostEditPageProps) {
 			<PostEditor
 				mode="edit"
 				postId={postId}
-				isSubmitting={isPending}
+				isSubmitting={isPending || isPreparingSubmit}
 				initialValues={{
 					title: post.title,
 					content: post.content,

@@ -3,7 +3,6 @@
 import { z } from "zod";
 
 import { PostApiError } from "@/features/post/api/postApiError";
-import { uploadPostImagesWithErrorHandling } from "@/features/post/api/postImageUtils";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
@@ -28,7 +27,6 @@ type UpdatePostParams = {
 	rentalFee: number;
 	feeUnit: FeeUnit;
 	imageUrls: UpdatePostImageInfo[];
-	newImages: File[];
 };
 
 class UpdatePostError extends PostApiError {
@@ -38,22 +36,13 @@ class UpdatePostError extends PostApiError {
 }
 
 async function updatePost(params: UpdatePostParams): Promise<UpdatePostResponse> {
-	const { groupId, postId, title, content, rentalFee, feeUnit, imageUrls, newImages } = params;
-
-	const uploadedImageUrls = await uploadPostImagesWithErrorHandling(newImages, (status, code) => {
-		return new UpdatePostError(status, code);
-	});
-
-	const nextImageUrls: UpdatePostImageInfo[] = [
-		...imageUrls,
-		...uploadedImageUrls.map((imageUrl) => ({ postImageId: null, imageUrl })),
-	];
+	const { groupId, postId, title, content, rentalFee, feeUnit, imageUrls } = params;
 	const payload = {
 		title,
 		content,
 		rentalFee,
 		feeUnit,
-		imageUrls: nextImageUrls,
+		imageUrls,
 	};
 
 	return await requestJson(
