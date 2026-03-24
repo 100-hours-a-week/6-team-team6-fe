@@ -3,7 +3,6 @@
 import { z } from "zod";
 
 import { PostApiError } from "@/features/post/api/postApiError";
-import { uploadPostImagesWithErrorHandling } from "@/features/post/api/postImageUtils";
 import type { FeeUnit } from "@/features/post/schemas";
 
 import { apiClient } from "@/shared/lib/api/api-client";
@@ -21,7 +20,7 @@ type CreatePostParams = {
 	content: string;
 	rentalFee: number;
 	feeUnit: FeeUnit;
-	newImages: File[];
+	imageUrls: string[];
 };
 
 class CreatePostError extends PostApiError {
@@ -31,11 +30,7 @@ class CreatePostError extends PostApiError {
 }
 
 async function createPost(params: CreatePostParams): Promise<CreatePostResponse> {
-	const { groupId, title, content, rentalFee, feeUnit, newImages } = params;
-
-	const imageUrls = await uploadPostImagesWithErrorHandling(newImages, (status, code) => {
-		return new CreatePostError(status, code);
-	});
+	const { groupId, title, content, rentalFee, feeUnit, imageUrls } = params;
 
 	const payload = {
 		title,
