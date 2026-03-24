@@ -12,15 +12,18 @@ import {
 	type GetWebPushSettingError,
 	updateWebPushSetting,
 } from "@/features/notification/api";
+import {
+	notificationErrorMessages,
+	notificationMessages,
+} from "@/features/notification/lib/constants";
 import { enableWebPush, type EnableWebPushResult } from "@/features/notification/lib/enableWebPush";
 import {
 	getCurrentNotificationPermission,
 	requestNotificationPermission,
 } from "@/features/notification/lib/requestNotificationPermission";
+import { resolveNotificationErrorMessage } from "@/features/notification/lib/resolveNotificationErrorMessage";
 import type { WebPushSettingDto } from "@/features/notification/schemas";
 
-import { getApiErrorCode } from "@/shared/lib/api/error-guards";
-import { getApiErrorMessage } from "@/shared/lib/error-message-map";
 import { getPushDeviceId } from "@/shared/lib/push-device";
 
 interface WebPushSettingState {
@@ -37,50 +40,22 @@ interface UpdateContext {
 	previousSetting?: WebPushSettingDto;
 }
 
-const NOTIFICATION_SETTINGS_MESSAGES = {
-	loadFailed: "알림 설정을 불러오지 못했어요. 잠시 후 다시 시도해 주세요.",
-	updateFailed: "알림 설정 변경에 실패했어요. 잠시 후 다시 시도해 주세요.",
-	tokenDeleteFailed: "토큰 정리에 실패했어요. 잠시 후 다시 시도해 주세요.",
-	notificationUnsupported: "이 디바이스 환경은 푸시 알림을 지원하지 않습니다.",
-	notificationPermissionDenied: "알림 권한이 필요합니다.",
-	vapidKeyMissing: "VAPID 키가 설정되지 않았어요.",
-	deviceIdUnavailable: "디바이스 ID를 생성하지 못했어요.",
-	tokenIssueFailed: "FCM 토큰 발급에 실패했어요.",
-	permissionGrantedRetry: "권한이 허용되었어요. 알림 토글을 다시 켜주세요.",
-	permissionStillDenied: "알림 권한이 허용되지 않았어요.",
-	permissionDeniedGuide: "브라우저 또는 기기 설정에서 알림을 허용한 뒤 다시 시도해 주세요.",
-};
-
-const resolveNotificationSettingErrorMessage = (error: unknown, fallbackMessage: string) => {
-	const code = getApiErrorCode(error);
-	const mappedMessage = getApiErrorMessage(code);
-	if (mappedMessage) {
-		return mappedMessage;
-	}
-
-	if (error instanceof Error && error.message && error.message !== "UNKNOWN_ERROR") {
-		return error.message;
-	}
-
-	return fallbackMessage;
-};
-
 const isPermissionDeniedError = (error: unknown) =>
 	error instanceof Error &&
-	error.message === NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
+	error.message === notificationErrorMessages.notificationPermissionDenied;
 
 const resolveEnableWebPushFailureMessage = (result: EnableWebPushResult) => {
 	switch (result) {
 		case "unsupported":
-			return NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported;
+			return notificationErrorMessages.notificationUnsupported;
 		case "permission_denied":
-			return NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied;
+			return notificationErrorMessages.notificationPermissionDenied;
 		case "vapid_missing":
-			return NOTIFICATION_SETTINGS_MESSAGES.vapidKeyMissing;
+			return notificationErrorMessages.vapidKeyMissing;
 		case "device_id_unavailable":
-			return NOTIFICATION_SETTINGS_MESSAGES.deviceIdUnavailable;
+			return notificationErrorMessages.deviceIdUnavailable;
 		case "token_issue_failed":
-			return NOTIFICATION_SETTINGS_MESSAGES.tokenIssueFailed;
+			return notificationErrorMessages.tokenIssueFailed;
 		case "enabled":
 		default:
 			return null;
@@ -91,30 +66,30 @@ const showNotificationPermissionToast = () => {
 	const permission = getCurrentNotificationPermission();
 
 	if (permission === "default") {
-		toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied, {
+		toast.error(notificationErrorMessages.notificationPermissionDenied, {
 			action: {
-				label: "권한 허용",
+				label: notificationMessages.permissionActionLabel,
 				onClick: async () => {
 					const nextPermission = await requestNotificationPermission();
 					if (nextPermission === "unsupported") {
-						toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported);
+						toast.error(notificationErrorMessages.notificationUnsupported);
 						return;
 					}
 
 					if (nextPermission === "granted") {
-						toast.success(NOTIFICATION_SETTINGS_MESSAGES.permissionGrantedRetry);
+						toast.success(notificationMessages.permissionGrantedRetry);
 						return;
 					}
 
-					toast.error(NOTIFICATION_SETTINGS_MESSAGES.permissionStillDenied);
+					toast.error(notificationErrorMessages.permissionStillDenied);
 				},
 			},
 		});
 		return;
 	}
 
-	toast.error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied, {
-		description: NOTIFICATION_SETTINGS_MESSAGES.permissionDeniedGuide,
+	toast.error(notificationErrorMessages.notificationPermissionDenied, {
+		description: notificationErrorMessages.permissionDeniedGuide,
 	});
 };
 
@@ -133,11 +108,11 @@ function useWebPushSetting(): {
 	const enableWebPushSetting = async (): Promise<WebPushSettingDto> => {
 		const permission = await requestNotificationPermission();
 		if (permission === "unsupported") {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationUnsupported);
+			throw new Error(notificationErrorMessages.notificationUnsupported);
 		}
 
 		if (permission !== "granted") {
-			throw new Error(NOTIFICATION_SETTINGS_MESSAGES.notificationPermissionDenied);
+			throw new Error(notificationErrorMessages.notificationPermissionDenied);
 		}
 
 		const result = await enableWebPush();
@@ -158,10 +133,7 @@ function useWebPushSetting(): {
 				await deletePushToken(deviceId);
 			} catch (error) {
 				toast.error(
-					resolveNotificationSettingErrorMessage(
-						error,
-						NOTIFICATION_SETTINGS_MESSAGES.tokenDeleteFailed,
-					),
+					resolveNotificationErrorMessage(error, notificationErrorMessages.tokenDeleteFailed),
 				);
 			}
 		}
@@ -194,9 +166,7 @@ function useWebPushSetting(): {
 				return;
 			}
 
-			toast.error(
-				resolveNotificationSettingErrorMessage(error, NOTIFICATION_SETTINGS_MESSAGES.updateFailed),
-			);
+			toast.error(resolveNotificationErrorMessage(error, notificationErrorMessages.updateSettings));
 		},
 		onSuccess: (data) => {
 			queryClient.setQueryData<WebPushSettingDto>(queryKey, data);
@@ -209,9 +179,9 @@ function useWebPushSetting(): {
 		}
 
 		toast.error(
-			resolveNotificationSettingErrorMessage(
+			resolveNotificationErrorMessage(
 				webPushSettingQuery.error,
-				NOTIFICATION_SETTINGS_MESSAGES.loadFailed,
+				notificationErrorMessages.loadSettings,
 			),
 		);
 	}, [webPushSettingQuery.error]);

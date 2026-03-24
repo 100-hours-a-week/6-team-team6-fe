@@ -8,6 +8,8 @@ export const groupRoutes = {
 	invite: (invitationToken: RouteParam) => `/groups/invite/${toPathValue(invitationToken)}`,
 	posts: (groupId: RouteParam) => `/groups/${toPathValue(groupId)}/posts`,
 	settings: (groupId: RouteParam) => `/groups/${toPathValue(groupId)}/settings`,
+	keywordNotifications: (groupId: RouteParam) =>
+		`/groups/${toPathValue(groupId)}/keyword-notifications`,
 	postDetail: (groupId: RouteParam, postId: RouteParam) =>
 		`/groups/${toPathValue(groupId)}/posts/${toPathValue(postId)}`,
 };

@@ -37,6 +37,7 @@ const GROUP_SETTINGS_LABELS = {
 	leaveFailedToast: "그룹 탈퇴에 실패했습니다. 다시 시도해주세요.",
 	leaveSheetTitle: "그룹을 탈퇴하시겠어요?",
 	leaveCompletedToast: "그룹을 탈퇴했습니다.",
+	keywordGuide: "이 그룹에서 알림 받을 키워드를 설정해요",
 } as const;
 
 const GROUP_SETTINGS_ERROR_CODES = {
@@ -63,7 +64,7 @@ const resolveAppOrigin = () => {
 		return window.location.origin;
 	}
 
-	return "https://billage.app";
+	return "https://www.billages.com/";
 };
 
 const createGroupInviteLink = (invitationToken: string) =>

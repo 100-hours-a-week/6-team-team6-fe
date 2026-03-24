@@ -95,6 +95,51 @@ const GroupInvitationJoinResponseDtoSchema = z.object({
 
 const GroupInvitationJoinFormSchema = GroupInvitationJoinRequestSchema;
 
+const KEYWORD_SUBSCRIPTION_MIN_LENGTH = 2;
+const KEYWORD_SUBSCRIPTION_MAX_LENGTH = 30;
+
+const KeywordSubscriptionCreateRequestSchema = z.object({
+	keyword: z
+		.string()
+		.trim()
+		.min(
+			KEYWORD_SUBSCRIPTION_MIN_LENGTH,
+			`키워드는 ${KEYWORD_SUBSCRIPTION_MIN_LENGTH}자 이상 입력해 주세요.`,
+		)
+		.max(
+			KEYWORD_SUBSCRIPTION_MAX_LENGTH,
+			`키워드는 ${KEYWORD_SUBSCRIPTION_MAX_LENGTH}자 이하로 입력해 주세요.`,
+		),
+});
+
+const KeywordSubscriptionCreateResponseApiSchema = z.object({
+	keywordSubscriptionId: z.number().int(),
+});
+
+const KeywordSubscriptionCreateResponseDtoSchema = z.object({
+	keywordSubscriptionId: z.number().int(),
+});
+
+const KeywordSubscriptionSummaryApiSchema = z.object({
+	keywordSubscriptionId: z.number().int(),
+	keyword: z.string().min(1),
+	createdAt: z.string().min(1),
+});
+
+const KeywordSubscriptionSummaryDtoSchema = z.object({
+	keywordSubscriptionId: z.number().int(),
+	keyword: z.string().min(1),
+	createdAt: z.string().min(1),
+});
+
+const KeywordSubscriptionsResponseApiSchema = z.object({
+	keywordSubscriptions: z.array(KeywordSubscriptionSummaryApiSchema),
+});
+
+const KeywordSubscriptionsResponseDtoSchema = z.object({
+	keywordSubscriptions: z.array(KeywordSubscriptionSummaryDtoSchema),
+});
+
 const GroupSummaryDtoSchema = z.object({
 	groupId: z.number(),
 	groupName: z.string().min(1),
@@ -152,6 +197,10 @@ type GroupMembershipNicknameUpdateDto = z.infer<
 	typeof GroupMembershipNicknameUpdateResponseDtoSchema
 >;
 type GroupInvitationCreateDto = z.infer<typeof GroupInvitationCreateResponseDtoSchema>;
+type KeywordSubscriptionCreateDto = z.infer<typeof KeywordSubscriptionCreateResponseDtoSchema>;
+type KeywordSubscriptionCreateFormValues = z.infer<typeof KeywordSubscriptionCreateRequestSchema>;
+type KeywordSubscriptionSummaryDto = z.infer<typeof KeywordSubscriptionSummaryDtoSchema>;
+type KeywordSubscriptionsResponseDto = z.infer<typeof KeywordSubscriptionsResponseDtoSchema>;
 type GroupInvitationJoinDto = z.infer<typeof GroupInvitationJoinResponseDtoSchema>;
 type GroupInvitationJoinFormValues = z.infer<typeof GroupInvitationJoinFormSchema>;
 type GroupInvitationValidateDto = z.infer<typeof GroupInvitationValidateResponseDtoSchema>;
@@ -170,6 +219,10 @@ export type {
 	GroupMembershipNicknameUpdateDto,
 	GroupSettingsDto,
 	GroupSummaryDto,
+	KeywordSubscriptionCreateDto,
+	KeywordSubscriptionCreateFormValues,
+	KeywordSubscriptionsResponseDto,
+	KeywordSubscriptionSummaryDto,
 	MyGroupsResponseDto,
 	MyPostSummariesResponseDto,
 	MyPostSummaryDto,
@@ -194,9 +247,17 @@ export {
 	GroupSettingsResponseApiSchema,
 	GroupSettingsResponseDtoSchema,
 	GroupSummaryDtoSchema,
+	KeywordSubscriptionCreateRequestSchema,
+	KeywordSubscriptionCreateResponseApiSchema,
+	KeywordSubscriptionCreateResponseDtoSchema,
+	KeywordSubscriptionsResponseApiSchema,
+	KeywordSubscriptionsResponseDtoSchema,
+	KeywordSubscriptionSummaryApiSchema,
+	KeywordSubscriptionSummaryDtoSchema,
 	MyGroupsResponseApiSchema,
 	MyGroupsResponseDtoSchema,
 	MyPostSummariesResponseApiSchema,
 	MyPostSummariesResponseDtoSchema,
+	MyPostSummaryApiSchema,
 	MyPostSummaryDtoSchema,
 };

@@ -1,0 +1,32 @@
+"use client";
+
+import { GetMyNotificationsError } from "@/features/notification/api";
+import {
+	type NotificationsResponse,
+	notificationsResponseSchema,
+} from "@/features/notification/schemas";
+
+import { apiClient } from "@/shared/lib/api/api-client";
+import { requestJson } from "@/shared/lib/api/request";
+
+type GetMyNotificationsParams = {
+	cursor?: string;
+};
+
+async function getMyNotifications(
+	params: GetMyNotificationsParams = {},
+): Promise<NotificationsResponse> {
+	const { cursor } = params;
+	const searchParams = cursor ? { cursor } : undefined;
+
+	const parsed = await requestJson(
+		apiClient.get("users/me/notifications", { searchParams }),
+		notificationsResponseSchema,
+		GetMyNotificationsError,
+	);
+
+	return parsed;
+}
+
+export type { GetMyNotificationsParams };
+export { getMyNotifications };
