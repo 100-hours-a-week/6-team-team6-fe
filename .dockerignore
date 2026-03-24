@@ -1,0 +1,39 @@
+# 불필요한 파일 제외
+
+# Git
+.git
+.gitignore
+
+# Node.js
+node_modules
+.pnpm-store
+
+# Next.js
+.next
+out
+
+# IDE
+.idea
+*.iml
+.vscode
+
+# OS
+.DS_Store
+Thumbs.db
+
+# 민감 정보 제외
+.env
+.env.*
+!.env.example
+
+# 테스트/문서
+*.md
+*.log
+coverage
+__tests__
+*.test.*
+*.spec.*
+
+# Docker 관련 (빌드 시 불필요)
+Dockerfile*
+docker-compose*

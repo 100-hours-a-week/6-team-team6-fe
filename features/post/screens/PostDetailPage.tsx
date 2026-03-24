@@ -5,10 +5,12 @@ import { PostDetailImages } from "@/features/post/components/PostDetailImages";
 import { PostDetailMeta } from "@/features/post/components/PostDetailMeta";
 import PostDetailNavigation from "@/features/post/components/PostDetailNavigation";
 import { PostStateMessage } from "@/features/post/components/PostStateMessage";
+import { RecommendedPostsSection } from "@/features/post/components/RecommendedPostsSection";
 import { usePostDetailActions } from "@/features/post/hooks/usePostDetailActions";
 import { usePostDetailParams } from "@/features/post/hooks/usePostDetailParams";
 import { usePostDetailQuery } from "@/features/post/hooks/usePostDetailQuery";
 import { usePostDetailUIState } from "@/features/post/hooks/usePostDetailUIState";
+import usePostRecommendations from "@/features/post/hooks/usePostRecommendations";
 
 import GroupHeader from "@/shared/components/layout/headers/GroupHeader";
 import PostDetailHeader from "@/shared/components/layout/headers/PostDetailHeader";
@@ -30,6 +32,8 @@ export function PostDetailPage() {
 		normalizedGroupId,
 		normalizedPostId,
 	);
+	const { recommendations, isLoading: isRecommendationsLoading } =
+		usePostRecommendations(normalizedPostId);
 
 	const rentalStatusValue = post?.rentalStatus ?? "AVAILABLE";
 	const isAvailable = rentalStatusValue === "AVAILABLE";
@@ -86,7 +90,7 @@ export function PostDetailPage() {
 					isDeleting={isDeleting}
 				/>
 			) : null}
-			<div className="flex flex-1 pb-(--h-bottom-nav)">
+			<div className="flex flex-1 flex-col pb-(--h-bottom-nav)">
 				<section className="flex flex-1 flex-col h-full overflow-y-scroll no-scrollbar">
 					<PostDetailSeller avatarUrl={post.sellerAvatar} nickname={post.sellerNickname} />
 					<PostDetailImages images={post.imageUrls.imageInfos} />
@@ -103,6 +107,13 @@ export function PostDetailPage() {
 						/>
 						<Separator className="my-6" />
 						<PostDetailBody content={post.content} />
+					</HorizontalPaddingBox>
+					<HorizontalPaddingBox className="mt-10 flex flex-col gap-y-4">
+						<RecommendedPostsSection
+							groupId={normalizedGroupId}
+							recommendations={recommendations}
+							isLoading={isRecommendationsLoading}
+						/>
 					</HorizontalPaddingBox>
 				</section>
 			</div>
